@@ -1,0 +1,47 @@
+.shadow {
+  box-shadow: 0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12);
+}
+.menubar {
+  display: table;
+  width: 100%;
+  height: var(--menu-top-height);
+  padding: 0px 8px;
+  background-color: rgb(var(--accent-1));
+  font-size: 14px;
+  overflow:hidden;
+  -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; 
+  -moz-user-select: none; -ms-user-select: none; user-select: none;
+}
+.menuitem {
+  font-size: 17px;
+  text-align: center;
+  padding: 8px 6px;
+  font-weight: bold;
+  vertical-align: middle;
+  width: auto;
+  display: table-cell;
+  cursor: pointer;
+  -webkit-touch-callout:none;
+  -webkit-user-select:none;
+  -khtml-user-select:none;
+  -moz-user-select:none;
+  -ms-user-select:none;
+  user-select:none;
+}
+.exit:hover {
+  color: rgb(var(--functional-red))!important;
+  fill: rgb(var(--functional-red))!important;
+}
+.menu-label {
+  color: rgba(var(--accent-1c), 0.85);
+  fill: rgba(var(--accent-1c), 0.85);
+}
+.menu-label:hover {
+  color: rgb(var(--functional-yellow));
+  fill: rgb(var(--functional-yellow));
+}
+@media (min-width:769px){
+  .sidebar{
+    display: none;
+  }
+}

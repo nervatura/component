@@ -1,0 +1,338 @@
+package page
+
+import (
+	"reflect"
+	"testing"
+
+	bc "github.com/nervatura/component/component/base"
+)
+
+func TestApplication_Render(t *testing.T) {
+	type fields struct {
+		BaseComponent bc.BaseComponent
+		Title         string
+		Theme         string
+		Header        bc.SM
+		Script        []string
+		HeadLink      []HeadLink
+		MainComponent bc.ClientComponent
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr bool
+	}{
+		{
+			name: "header",
+			fields: fields{
+				Header: bc.SM{"X-CSRF-Token": "TOKEN1234"},
+			},
+			wantErr: false,
+		},
+		{
+			name: "ok",
+			fields: fields{
+				MainComponent: NewDemo("", ""),
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			app := &Application{
+				BaseComponent: tt.fields.BaseComponent,
+				Title:         tt.fields.Title,
+				Theme:         tt.fields.Theme,
+				Header:        tt.fields.Header,
+				Script:        tt.fields.Script,
+				HeadLink:      tt.fields.HeadLink,
+				MainComponent: tt.fields.MainComponent,
+			}
+			_, err := app.Render()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Application.Render() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
+
+func TestApplication_GetProperty(t *testing.T) {
+	type fields struct {
+		BaseComponent bc.BaseComponent
+		Title         string
+		Theme         string
+		Header        bc.SM
+		Script        []string
+		HeadLink      []HeadLink
+		MainComponent bc.ClientComponent
+	}
+	type args struct {
+		propName string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   interface{}
+	}{
+		{
+			name: "get",
+			args: args{
+				propName: "title",
+			},
+			want: "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			app := &Application{
+				BaseComponent: tt.fields.BaseComponent,
+				Title:         tt.fields.Title,
+				Theme:         tt.fields.Theme,
+				Header:        tt.fields.Header,
+				Script:        tt.fields.Script,
+				HeadLink:      tt.fields.HeadLink,
+				MainComponent: tt.fields.MainComponent,
+			}
+			if got := app.GetProperty(tt.args.propName); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Application.GetProperty() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestApplication_Validation(t *testing.T) {
+	type fields struct {
+		BaseComponent bc.BaseComponent
+		Title         string
+		Theme         string
+		Header        bc.SM
+		Script        []string
+		HeadLink      []HeadLink
+		MainComponent bc.ClientComponent
+	}
+	type args struct {
+		propName  string
+		propValue interface{}
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   interface{}
+	}{
+		{
+			name: "base",
+			args: args{
+				propName:  "id",
+				propValue: "BTNID",
+			},
+			want: "BTNID",
+		},
+		{
+			name: "invalid",
+			args: args{
+				propName:  "invalid",
+				propValue: "",
+			},
+			want: "",
+		},
+		{
+			name: "main",
+			args: args{
+				propName:  "main",
+				propValue: &Demo{},
+			},
+			want: &Demo{},
+		},
+		{
+			name: "main_nil",
+			args: args{
+				propName:  "main",
+				propValue: nil,
+			},
+			want: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			app := &Application{
+				BaseComponent: tt.fields.BaseComponent,
+				Title:         tt.fields.Title,
+				Theme:         tt.fields.Theme,
+				Header:        tt.fields.Header,
+				Script:        tt.fields.Script,
+				HeadLink:      tt.fields.HeadLink,
+				MainComponent: tt.fields.MainComponent,
+			}
+			if got := app.Validation(tt.args.propName, tt.args.propValue); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Application.Validation() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestApplication_SetProperty(t *testing.T) {
+	type fields struct {
+		BaseComponent bc.BaseComponent
+		Title         string
+		Theme         string
+		Header        bc.SM
+		Script        []string
+		HeadLink      []HeadLink
+		MainComponent bc.ClientComponent
+	}
+	type args struct {
+		propName  string
+		propValue interface{}
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   interface{}
+	}{
+		{
+			name: "base",
+			args: args{
+				propName:  "id",
+				propValue: "BTNID",
+			},
+			want: "BTNID",
+		},
+		{
+			name: "invalid",
+			args: args{
+				propName:  "invalid",
+				propValue: "",
+			},
+			want: "",
+		},
+		{
+			name: "main",
+			args: args{
+				propName:  "main",
+				propValue: &Demo{},
+			},
+			want: &Demo{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			app := &Application{
+				BaseComponent: tt.fields.BaseComponent,
+				Title:         tt.fields.Title,
+				Theme:         tt.fields.Theme,
+				Header:        tt.fields.Header,
+				Script:        tt.fields.Script,
+				HeadLink:      tt.fields.HeadLink,
+				MainComponent: tt.fields.MainComponent,
+			}
+			if got := app.SetProperty(tt.args.propName, tt.args.propValue); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Application.SetProperty() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestApplication_OnRequest(t *testing.T) {
+	type fields struct {
+		BaseComponent bc.BaseComponent
+		Title         string
+		Theme         string
+		Header        bc.SM
+		Script        []string
+		HeadLink      []HeadLink
+		MainComponent bc.ClientComponent
+	}
+	type args struct {
+		te bc.TriggerEvent
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+	}{
+		{
+			name: "invalid",
+			args: args{
+				te: bc.TriggerEvent{},
+			},
+		},
+		{
+			name: "valid",
+			fields: fields{
+				BaseComponent: bc.BaseComponent{
+					RequestMap: map[string]bc.ClientComponent{
+						"ID12345": &Demo{},
+					},
+				},
+			},
+			args: args{
+				te: bc.TriggerEvent{
+					Id: "ID12345",
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			app := &Application{
+				BaseComponent: tt.fields.BaseComponent,
+				Title:         tt.fields.Title,
+				Theme:         tt.fields.Theme,
+				Header:        tt.fields.Header,
+				Script:        tt.fields.Script,
+				HeadLink:      tt.fields.HeadLink,
+				MainComponent: tt.fields.MainComponent,
+			}
+			app.OnRequest(tt.args.te)
+		})
+	}
+}
+
+func TestApplication_getComponent(t *testing.T) {
+	type fields struct {
+		BaseComponent bc.BaseComponent
+		Title         string
+		Theme         string
+		Header        bc.SM
+		Script        []string
+		HeadLink      []HeadLink
+		MainComponent bc.ClientComponent
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr bool
+	}{
+		{
+			name: "main",
+			fields: fields{
+				MainComponent: &Demo{
+					demoMap: DemoMap,
+				},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			app := &Application{
+				BaseComponent: tt.fields.BaseComponent,
+				Title:         tt.fields.Title,
+				Theme:         tt.fields.Theme,
+				Header:        tt.fields.Header,
+				Script:        tt.fields.Script,
+				HeadLink:      tt.fields.HeadLink,
+				MainComponent: tt.fields.MainComponent,
+			}
+			_, err := app.getComponent()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Application.getComponent() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}

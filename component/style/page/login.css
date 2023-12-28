@@ -1,0 +1,38 @@
+.login-middle {
+  margin: 20px 10px 10px;
+}
+
+.title {
+  width: 100%;
+  border-bottom: 0.5px solid rgba(var(--neutral-1), 0.2);
+  background-color: rgb(var(--accent-1));
+  color: rgba(var(--accent-1c), 0.85);
+  fill: rgba(var(--accent-1c), 0.85);
+}
+
+.version-cell {
+  padding: 8px 16px;
+  text-align: right;
+  font-size: 13px;
+  font-weight: normal;
+}
+
+.title-cell {
+  padding: 8px 16px;
+  font-weight: bold;
+}
+
+.label-cell {
+  width: 35%;
+}
+
+@media only screen and (min-width: 601px){
+  .login-middle {
+    margin: 0px;
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    -ms-transform:translate(-50%,-50%)
+  }
+}

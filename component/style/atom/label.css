@@ -1,0 +1,34 @@
+.label {
+  font-family: var(--font-family);
+  font-size: var(--font-size);
+}
+.label_text {
+  color: var(--text-1);
+  fill: var(--text-1);
+}
+.label.cell {
+  line-height: 1;
+}
+.label_info_left {
+  padding: 0 0 0 3px;
+}
+.label_info_right {
+  text-align: right;
+  padding: 0 3px 0 0;
+}
+.label_icon_left {
+  text-align: center;
+  width: auto;
+}
+.label_icon_right {
+  text-align: right;
+  width: auto;
+}
+.label_link {
+  color: rgb(var(--functional-blue));
+  fill: rgb(var(--functional-blue));
+  cursor: pointer;
+}
+.label_link:hover {
+  text-decoration: underline;
+}
