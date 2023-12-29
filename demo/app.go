@@ -117,7 +117,6 @@ func (app *App) HomeRoute(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) AppEvent(w http.ResponseWriter, r *http.Request) {
-	app.infoLog.Println("app_event_start")
 	r.ParseForm()
 	sessionID := r.Header.Get("X-CSRF-Token")
 	te := bc.TriggerEvent{
@@ -126,7 +125,6 @@ func (app *App) AppEvent(w http.ResponseWriter, r *http.Request) {
 		Target: r.Header.Get("HX-Target"),
 		Values: r.Form,
 	}
-	app.infoLog.Println(te.Name)
 	ccApp := app.appSession[sessionID]
 	evt := ccApp.OnRequest(te)
 	for key, value := range evt.Header {
