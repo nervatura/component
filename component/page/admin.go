@@ -498,7 +498,7 @@ func (adm *Admin) getComponent(name string) (res string, err error) {
 			}
 			rows := []bc.IM{}
 
-			if envList, valid := adm.Data["env_list"].(bc.SM); valid {
+			if envList, valid := adm.Data["env_list"].([]bc.SM); valid {
 				for key, value := range envList {
 					rows = append(rows, bc.IM{"key": key, "value": value})
 				}
