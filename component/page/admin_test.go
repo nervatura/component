@@ -29,7 +29,7 @@ func TestAdmin_Validation(t *testing.T) {
 		HelpURL       string
 		ClientURL     string
 		Labels        bc.SM
-		Verified      func(token string) bool
+		TokenLogin    func(darabase, token string) bool
 	}
 	type args struct {
 		propName  string
@@ -70,7 +70,7 @@ func TestAdmin_Validation(t *testing.T) {
 				HelpURL:       tt.fields.HelpURL,
 				ClientURL:     tt.fields.ClientURL,
 				Labels:        tt.fields.Labels,
-				Verified:      tt.fields.Verified,
+				TokenLogin:    tt.fields.TokenLogin,
 			}
 			if got := adm.Validation(tt.args.propName, tt.args.propValue); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Admin.Validation() = %v, want %v", got, tt.want)
@@ -90,7 +90,7 @@ func TestAdmin_SetProperty(t *testing.T) {
 		HelpURL       string
 		ClientURL     string
 		Labels        bc.SM
-		Verified      func(token string) bool
+		TokenLogin    func(darabase, token string) bool
 	}
 	type args struct {
 		propName  string
@@ -131,7 +131,7 @@ func TestAdmin_SetProperty(t *testing.T) {
 				HelpURL:       tt.fields.HelpURL,
 				ClientURL:     tt.fields.ClientURL,
 				Labels:        tt.fields.Labels,
-				Verified:      tt.fields.Verified,
+				TokenLogin:    tt.fields.TokenLogin,
 			}
 			if got := adm.SetProperty(tt.args.propName, tt.args.propValue); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Admin.SetProperty() = %v, want %v", got, tt.want)
@@ -151,7 +151,7 @@ func TestAdmin_msg(t *testing.T) {
 		HelpURL       string
 		ClientURL     string
 		Labels        bc.SM
-		Verified      func(token string) bool
+		TokenLogin    func(darabase, token string) bool
 	}
 	type args struct {
 		labelID string
@@ -182,7 +182,7 @@ func TestAdmin_msg(t *testing.T) {
 				HelpURL:       tt.fields.HelpURL,
 				ClientURL:     tt.fields.ClientURL,
 				Labels:        tt.fields.Labels,
-				Verified:      tt.fields.Verified,
+				TokenLogin:    tt.fields.TokenLogin,
 			}
 			if got := adm.msg(tt.args.labelID); got != tt.want {
 				t.Errorf("Admin.msg() = %v, want %v", got, tt.want)
@@ -203,7 +203,7 @@ func TestAdmin_response(t *testing.T) {
 		ClientURL     string
 		LocalesURL    string
 		Labels        bc.SM
-		Verified      func(token string) bool
+		TokenLogin    func(darabase, token string) bool
 	}
 	type args struct {
 		evt bc.ResponseEvent
@@ -344,7 +344,7 @@ func TestAdmin_response(t *testing.T) {
 				ClientURL:     tt.fields.ClientURL,
 				LocalesURL:    tt.fields.LocalesURL,
 				Labels:        tt.fields.Labels,
-				Verified:      tt.fields.Verified,
+				TokenLogin:    tt.fields.TokenLogin,
 			}
 			adm.response(tt.args.evt)
 		})

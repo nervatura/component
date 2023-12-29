@@ -75,7 +75,7 @@ type Admin struct {
 	ClientURL  string
 	LocalesURL string
 	Labels     bc.SM
-	Verified   func(token string) bool // Token validation
+	TokenLogin func(database, token string) bool // Token validation
 }
 
 func (adm *Admin) Properties() bc.IM {
@@ -549,9 +549,10 @@ func (adm *Admin) Render() (res string, err error) {
 			}
 			return false
 		},
-		"verified": func() bool {
-			if adm.Verified != nil {
-				return adm.Verified(adm.Token)
+		"tokenLogin": func() bool {
+			if adm.TokenLogin != nil {
+				database := bc.ToString(adm.Data["database"], "")
+				return adm.TokenLogin(database, adm.Token)
 			}
 			return false
 		},
@@ -596,7 +597,7 @@ func (adm *Admin) Render() (res string, err error) {
 	</div>
 	{{ end }}
 	{{ if eq .Module "login" }}
-	{{ if eq verified false }}
+	{{ if eq tokenLogin false }}
 	<div class="row full section-small" >
 	<div class="row full container-small section-small-bottom" >
 	<div class="cell padding-small mobile">
@@ -874,10 +875,10 @@ func DemoAdmin(eventURL, parentID string) []bc.DemoComponent {
 						"database": "demo",
 					},
 				},
-				Module:   "login",
-				Token:    "TOKEN0123456789",
-				Verified: func(token string) bool { return (token != "") },
-				View:     "password",
+				Module:     "login",
+				Token:      "TOKEN0123456789",
+				TokenLogin: func(database, token string) bool { return (token != "") },
+				View:       "password",
 			}},
 		{
 			Label:         "Report",
@@ -893,10 +894,10 @@ func DemoAdmin(eventURL, parentID string) []bc.DemoComponent {
 						"report_list": testReportList,
 					},
 				},
-				Module:   "login",
-				Token:    "TOKEN0123456789",
-				Verified: func(token string) bool { return (token != "") },
-				View:     "report",
+				Module:     "login",
+				Token:      "TOKEN0123456789",
+				TokenLogin: func(database, token string) bool { return (token != "") },
+				View:       "report",
 			}},
 		{
 			Label:         "Configuration",
@@ -912,10 +913,10 @@ func DemoAdmin(eventURL, parentID string) []bc.DemoComponent {
 						"env_list": testEnvList,
 					},
 				},
-				Module:   "login",
-				Token:    "TOKEN0123456789",
-				Verified: func(token string) bool { return (token != "") },
-				View:     "configuration",
+				Module:     "login",
+				Token:      "TOKEN0123456789",
+				TokenLogin: func(database, token string) bool { return (token != "") },
+				View:       "configuration",
 			}},
 	}
 }
