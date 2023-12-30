@@ -42,7 +42,7 @@ type DemoView struct {
 }
 
 var ComponentGroup []string = []string{
-	ComponentGroupAtom, ComponentGroupMolecule, ComponentGroupModal, ComponentGroupPage,
+	ComponentGroupAtom, ComponentGroupMolecule, ComponentGroupModal,
 }
 var ViewSize []string = []string{ViewSizeCentered, ViewSizeFull}
 
@@ -64,9 +64,6 @@ var DemoMap map[string][]DemoView = map[string][]DemoView{
 	},
 	ComponentGroupModal: {
 		{ComponentType: bc.ComponentTypeLogin, Stories: md.DemoLogin},
-	},
-	ComponentGroupPage: {
-		{ComponentType: bc.ComponentTypeAdmin, Stories: DemoAdmin},
 	},
 }
 
