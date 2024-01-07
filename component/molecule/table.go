@@ -130,7 +130,8 @@ func (tbl *Table) Validation(propName string, propValue interface{}) interface{}
 		},
 		"current_page": func() interface{} {
 			value := bc.ToInteger(propValue, 1)
-			pageCount := int64(math.Ceil(float64(len(tbl.Rows)) / float64(tbl.PageSize)))
+			rows := tbl.filterRows()
+			pageCount := int64(math.Ceil(float64(len(rows)) / float64(tbl.PageSize)))
 			if value > pageCount {
 				value = pageCount
 			}
@@ -620,8 +621,9 @@ func (tbl *Table) Render() (res string, err error) {
 		},
 		"pageRows": func() []bc.IM {
 			if tbl.Pagination != PaginationTypeNone {
-				start := (tbl.CurrentPage - 1) * tbl.PageSize
-				end := tbl.CurrentPage * tbl.PageSize
+				currentPage := tbl.Validation("current_page", tbl.CurrentPage).(int64)
+				start := (currentPage - 1) * tbl.PageSize
+				end := currentPage * tbl.PageSize
 				if end > int64(len(rows)) {
 					end = int64(len(rows))
 				}
