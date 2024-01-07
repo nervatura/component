@@ -20,58 +20,61 @@ type ClientComponent interface {
 	Validation(propName string, propValue interface{}) interface{}
 	GetProperty(propName string) interface{}
 	SetProperty(propName string, propValue interface{}) interface{}
-	InitProps()
+	InitProps(cc ClientComponent)
 	Render() (res string, err error)
 	OnRequest(te TriggerEvent) (re ResponseEvent)
 }
 
 type DemoComponent struct {
-	Label         string
-	ComponentType string
-	Component     ClientComponent
+	Label         string          `json:"label"`
+	ComponentType string          `json:"component_type"`
+	Component     ClientComponent `json:"component"`
 }
 
 type TriggerEvent struct {
-	Id     string
-	Name   string
-	Target string
-	Values url.Values
+	Id     string     `json:"id"`
+	Name   string     `json:"name"`
+	Target string     `json:"target"`
+	Values url.Values `json:"values"`
 }
 
 type ResponseEvent struct {
-	Trigger     ClientComponent
-	TriggerName string
-	Name        string
-	Value       interface{}
-	Header      SM
+	Trigger     ClientComponent `json:"trigger"`
+	TriggerName string          `json:"trigger_name"`
+	Name        string          `json:"name"`
+	Value       interface{}     `json:"value"`
+	Header      SM              `json:"header"`
 }
 
 type BaseComponent struct {
-	Id         string
-	Name       string
-	EventURL   string
-	Target     string
-	Swap       string
-	Indicator  string
-	Class      []string
-	Style      SM
-	Data       IM
-	RequestMap map[string]ClientComponent
-	OnResponse func(evt ResponseEvent) (re ResponseEvent)
+	Id           string                                     `json:"id"`
+	Name         string                                     `json:"name"`
+	EventURL     string                                     `json:"event_url"`
+	Target       string                                     `json:"target"`
+	Swap         string                                     `json:"swap"`
+	Indicator    string                                     `json:"indicator"`
+	Class        []string                                   `json:"class"`
+	Style        SM                                         `json:"style"`
+	Data         IM                                         `json:"data"`
+	RequestValue map[string]IM                              `json:"request_value"`
+	RequestMap   map[string]ClientComponent                 `json:"-"`
+	OnResponse   func(evt ResponseEvent) (re ResponseEvent) `json:"-"`
+	init         bool
 }
 
 func (bcc *BaseComponent) Properties() IM {
 	return IM{
-		"id":          bcc.Id,
-		"name":        bcc.Name,
-		"event_url":   bcc.EventURL,
-		"target":      bcc.Target,
-		"swap":        bcc.Swap,
-		"indicator":   bcc.Indicator,
-		"class":       bcc.Class,
-		"style":       bcc.Style,
-		"data":        bcc.Data,
-		"request_map": bcc.RequestMap,
+		"id":            bcc.Id,
+		"name":          bcc.Name,
+		"event_url":     bcc.EventURL,
+		"target":        bcc.Target,
+		"swap":          bcc.Swap,
+		"indicator":     bcc.Indicator,
+		"class":         bcc.Class,
+		"style":         bcc.Style,
+		"data":          bcc.Data,
+		"request_value": bcc.RequestValue,
+		"request_map":   bcc.RequestMap,
 	}
 }
 
@@ -125,12 +128,29 @@ func (bcc *BaseComponent) Validation(propName string, propValue interface{}) int
 			}
 			return value
 		},
-		"request_map": func() interface{} {
-			value := SetCMValue(bcc.RequestMap, "", nil)
-			if cmap, valid := propValue.(map[string]ClientComponent); valid {
-				value = MergeCM(value, cmap)
+		"request_value": func() interface{} {
+			if bcc.RequestValue == nil {
+				bcc.RequestValue = make(map[string]IM)
+			}
+			if _, found := bcc.RequestValue[bcc.Id]; !found && (bcc.Id != "") {
+				bcc.RequestValue[bcc.Id] = IM{}
+			}
+			value := bcc.RequestValue
+			if rvmap, valid := propValue.(map[string]IM); valid {
+				if ccmap, found := rvmap[bcc.Id]; found {
+					value[bcc.Id] = MergeIM(value[bcc.Id], ccmap)
+				}
 			}
 			return value
+		},
+		"request_map": func() interface{} {
+			if bcc.RequestMap == nil {
+				bcc.RequestMap = map[string]ClientComponent{}
+			}
+			if _, valid := propValue.(ClientComponent); valid && (bcc.Id != "") {
+				return true
+			}
+			return false
 		},
 	}
 	if _, found := pm[propName]; found {
@@ -182,24 +202,41 @@ func (bcc *BaseComponent) SetProperty(propName string, propValue interface{}) in
 			return bcc.Data
 		},
 		"request_map": func() interface{} {
-			bcc.RequestMap = bcc.Validation(propName, propValue).(map[string]ClientComponent)
+			if bcc.Validation(propName, propValue).(bool) {
+				bcc.RequestMap[bcc.Id] = propValue.(ClientComponent)
+			}
 			return bcc.RequestMap
 		},
 	}
 	if _, found := pm[propName]; found {
-		return pm[propName]()
+		return bcc.SetRequestValue(propName, pm[propName](), []string{"request_map"})
 	}
 	return propValue
 }
 
-func (bcc *BaseComponent) InitProps() {
-	for key, value := range bcc.Properties() {
-		bcc.SetProperty(key, value)
+func (bcc *BaseComponent) SetRequestValue(propName string, propValue interface{}, staticFields []string) interface{} {
+	if !Contains(staticFields, propName) && bcc.Id != "" && !bcc.init {
+		bcc.RequestValue = bcc.Validation("request_value", map[string]IM{bcc.Id: {propName: propValue}}).(map[string]IM)
 	}
+	return propValue
+}
+
+func (bcc *BaseComponent) InitProps(cc ClientComponent) {
+	bcc.init = true
+	for key, value := range cc.Properties() {
+		cc.SetProperty(key, value)
+	}
+	requestValue := cc.Validation("request_value", bcc.RequestValue).(map[string]IM)
+	if rq, found := requestValue[bcc.Id]; found {
+		for key, value := range rq {
+			cc.SetProperty(key, value)
+		}
+	}
+	bcc.init = false
 }
 
 func (bcc *BaseComponent) Render() (res string, err error) {
-	bcc.InitProps()
+	bcc.InitProps(bcc)
 
 	funcMap := map[string]any{
 		"styleMap": func() bool {

@@ -9,19 +9,19 @@ import (
 )
 
 type HeadLink struct {
-	Rel  string
-	Href string
-	Type string
+	Rel  string `json:"rel"`
+	Href string `json:"href"`
+	Type string `json:"type"`
 }
 
 type Application struct {
 	bc.BaseComponent
-	Title         string
-	Theme         string
-	Header        bc.SM
-	Script        []string
-	HeadLink      []HeadLink
-	MainComponent bc.ClientComponent
+	Title         string             `json:"title"`
+	Theme         string             `json:"theme"`
+	Header        bc.SM              `json:"header"`
+	Script        []string           `json:"script"`
+	HeadLink      []HeadLink         `json:"head_link"`
+	MainComponent bc.ClientComponent `json:"main_component"`
 }
 
 func (app *Application) Properties() bc.IM {
@@ -148,17 +148,12 @@ func (app *Application) OnRequest(te bc.TriggerEvent) (re bc.ResponseEvent) {
 
 func (app *Application) getComponent() (res string, err error) {
 	if app.MainComponent != nil {
-		if res, err = app.MainComponent.Render(); err == nil {
-			app.RequestMap = bc.MergeCM(app.RequestMap, app.MainComponent.GetProperty("request_map").(map[string]bc.ClientComponent))
-		}
+		return app.MainComponent.Render()
 	}
 	return res, err
 }
 
 func (app *Application) InitProps() {
-	if app.MainComponent != nil {
-		app.MainComponent.SetProperty("id", bc.ToString(app.SetProperty("id", ""), "")+"_main")
-	}
 	for key, value := range app.Properties() {
 		app.SetProperty(key, value)
 	}

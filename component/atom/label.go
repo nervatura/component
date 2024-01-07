@@ -12,11 +12,11 @@ const (
 
 type Label struct {
 	bc.BaseComponent
-	Value     string
-	Centered  bool
-	LeftIcon  string
-	RightIcon string
-	IconStyle bc.SM
+	Value     string `json:"value"`
+	Centered  bool   `json:"centered"`
+	LeftIcon  string `json:"left_icon"`
+	RightIcon string `json:"right_icon"`
+	IconStyle bc.SM  `json:"icon_style"`
 }
 
 func (lbl *Label) Properties() bc.IM {
@@ -78,7 +78,7 @@ func (lbl *Label) SetProperty(propName string, propValue interface{}) interface{
 		},
 	}
 	if _, found := pm[propName]; found {
-		return pm[propName]()
+		return lbl.SetRequestValue(propName, pm[propName](), []string{})
 	}
 	if lbl.BaseComponent.GetProperty(propName) != nil {
 		return lbl.BaseComponent.SetProperty(propName, propValue)
@@ -121,14 +121,8 @@ func (lbl *Label) getComponent(name string) (string, error) {
 	return ccMap[name]().Render()
 }
 
-func (lbl *Label) InitProps() {
-	for key, value := range lbl.Properties() {
-		lbl.SetProperty(key, value)
-	}
-}
-
 func (lbl *Label) Render() (res string, err error) {
-	lbl.InitProps()
+	lbl.InitProps(lbl)
 
 	funcMap := map[string]any{
 		"styleMap": func() bool {
@@ -165,7 +159,7 @@ func (lbl *Label) Render() (res string, err error) {
 	>{{ .Value }}</span>{{ end }}`
 
 	if res, err = bc.TemplateBuilder("label", tpl, funcMap, lbl); err == nil && lbl.EventURL != "" {
-		bc.SetCMValue(lbl.RequestMap, lbl.Id, lbl)
+		lbl.SetProperty("request_map", lbl)
 	}
 	return res, nil
 }
@@ -187,18 +181,28 @@ var demoLblResponse func(evt bc.ResponseEvent) (re bc.ResponseEvent) = func(evt 
 	return re
 }
 
-func DemoLabel(eventURL, parentID string) []bc.DemoComponent {
+func DemoLabel(demo bc.ClientComponent) []bc.DemoComponent {
+	id := bc.ToString(demo.GetProperty("id"), "")
+	eventURL := bc.ToString(demo.GetProperty("event_url"), "")
+	requestValue := demo.GetProperty("request_value").(map[string]bc.IM)
+	requestMap := demo.GetProperty("request_map").(map[string]bc.ClientComponent)
 	return []bc.DemoComponent{
 		{
 			Label:         "Default label",
 			ComponentType: bc.ComponentTypeLabel,
 			Component: &Label{
+				BaseComponent: bc.BaseComponent{
+					Id: id + "_label_default",
+				},
 				Value: "Label",
 			}},
 		{
 			Label:         "Left icon",
 			ComponentType: bc.ComponentTypeLabel,
 			Component: &Label{
+				BaseComponent: bc.BaseComponent{
+					Id: id + "_label_left_icon",
+				},
 				Value:    "Label",
 				LeftIcon: "InfoCircle",
 			}},
@@ -206,6 +210,9 @@ func DemoLabel(eventURL, parentID string) []bc.DemoComponent {
 			Label:         "Right icon",
 			ComponentType: bc.ComponentTypeLabel,
 			Component: &Label{
+				BaseComponent: bc.BaseComponent{
+					Id: id + "_label_right_icon",
+				},
 				Value:     "Label",
 				RightIcon: "InfoCircle",
 			}},
@@ -213,6 +220,9 @@ func DemoLabel(eventURL, parentID string) []bc.DemoComponent {
 			Label:         "Centered",
 			ComponentType: bc.ComponentTypeLabel,
 			Component: &Label{
+				BaseComponent: bc.BaseComponent{
+					Id: id + "_label_centered",
+				},
 				Value:    "Label",
 				LeftIcon: "InfoCircle",
 				Centered: true,
@@ -222,6 +232,7 @@ func DemoLabel(eventURL, parentID string) []bc.DemoComponent {
 			ComponentType: bc.ComponentTypeLabel,
 			Component: &Label{
 				BaseComponent: bc.BaseComponent{
+					Id:    id + "_label_style",
 					Style: bc.SM{"color": "red"},
 				},
 				Value:     "Label",
@@ -233,12 +244,14 @@ func DemoLabel(eventURL, parentID string) []bc.DemoComponent {
 			ComponentType: bc.ComponentTypeLabel,
 			Component: &Label{
 				BaseComponent: bc.BaseComponent{
-					Id:       bc.GetComponentID(),
+					Id:       id + "_label_toast",
 					EventURL: eventURL,
 					Data: bc.IM{
 						"toast_value": "Link value",
 					},
-					OnResponse: demoLblResponse,
+					OnResponse:   demoLblResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
 				},
 				Value:    "Label link",
 				LeftIcon: "Globe",

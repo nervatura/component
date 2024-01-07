@@ -13,17 +13,17 @@ const (
 
 type NumberInput struct {
 	bc.BaseComponent
-	Value     float64
-	Integer   bool
-	Label     string
-	SetMax    bool
-	MaxValue  float64
-	SetMin    bool
-	MinValue  float64
-	Disabled  bool
-	ReadOnly  bool
-	AutoFocus bool
-	Full      bool
+	Value     float64 `json:"value"`
+	Integer   bool    `json:"integer"`
+	Label     string  `json:"label"`
+	SetMax    bool    `json:"set_max"`
+	MaxValue  float64 `json:"max_value"`
+	SetMin    bool    `json:"set_min"`
+	MinValue  float64 `json:"min_value"`
+	Disabled  bool    `json:"disabled"`
+	ReadOnly  bool    `json:"read_only"`
+	AutoFocus bool    `json:"auto_focus"`
+	Full      bool    `json:"full"`
 }
 
 func (inp *NumberInput) Properties() bc.IM {
@@ -121,7 +121,7 @@ func (inp *NumberInput) SetProperty(propName string, propValue interface{}) inte
 		},
 	}
 	if _, found := pm[propName]; found {
-		return pm[propName]()
+		return inp.SetRequestValue(propName, pm[propName](), []string{})
 	}
 	if inp.BaseComponent.GetProperty(propName) != nil {
 		return inp.BaseComponent.SetProperty(propName, propValue)
@@ -143,14 +143,8 @@ func (inp *NumberInput) OnRequest(te bc.TriggerEvent) (re bc.ResponseEvent) {
 	return evt
 }
 
-func (inp *NumberInput) InitProps() {
-	for key, value := range inp.Properties() {
-		inp.SetProperty(key, value)
-	}
-}
-
 func (inp *NumberInput) Render() (res string, err error) {
-	inp.InitProps()
+	inp.InitProps(inp)
 
 	funcMap := map[string]any{
 		"styleMap": func() bool {
@@ -172,19 +166,26 @@ func (inp *NumberInput) Render() (res string, err error) {
 	></input>`
 
 	if res, err = bc.TemplateBuilder("number", tpl, funcMap, inp); err == nil && inp.EventURL != "" {
-		bc.SetCMValue(inp.RequestMap, inp.Id, inp)
+		inp.SetProperty("request_map", inp)
 	}
 	return res, nil
 }
 
-func DemoNumberInput(eventURL, parentID string) []bc.DemoComponent {
+func DemoNumberInput(demo bc.ClientComponent) []bc.DemoComponent {
+	id := bc.ToString(demo.GetProperty("id"), "")
+	eventURL := bc.ToString(demo.GetProperty("event_url"), "")
+	requestValue := demo.GetProperty("request_value").(map[string]bc.IM)
+	requestMap := demo.GetProperty("request_map").(map[string]bc.ClientComponent)
 	return []bc.DemoComponent{
 		{
 			Label:         "Default",
 			ComponentType: bc.ComponentTypeNumberInput,
 			Component: &NumberInput{
 				BaseComponent: bc.BaseComponent{
-					EventURL: eventURL,
+					Id:           id + "_number_default",
+					EventURL:     eventURL,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
 				},
 				Value: 1.5,
 			}},
@@ -193,7 +194,10 @@ func DemoNumberInput(eventURL, parentID string) []bc.DemoComponent {
 			ComponentType: bc.ComponentTypeNumberInput,
 			Component: &NumberInput{
 				BaseComponent: bc.BaseComponent{
-					EventURL: eventURL,
+					Id:           id + "_number_integer",
+					EventURL:     eventURL,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
 				},
 				Value:     0,
 				Integer:   true,
@@ -204,7 +208,10 @@ func DemoNumberInput(eventURL, parentID string) []bc.DemoComponent {
 			ComponentType: bc.ComponentTypeNumberInput,
 			Component: &NumberInput{
 				BaseComponent: bc.BaseComponent{
-					EventURL: eventURL,
+					Id:           id + "_number_min_max",
+					EventURL:     eventURL,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
 				},
 				Value:    150,
 				SetMax:   true,
@@ -217,6 +224,9 @@ func DemoNumberInput(eventURL, parentID string) []bc.DemoComponent {
 			Label:         "ReadOnly",
 			ComponentType: bc.ComponentTypeNumberInput,
 			Component: &NumberInput{
+				BaseComponent: bc.BaseComponent{
+					Id: id + "_number_readonly",
+				},
 				Value:    1234,
 				ReadOnly: true,
 			}},
@@ -224,6 +234,9 @@ func DemoNumberInput(eventURL, parentID string) []bc.DemoComponent {
 			Label:         "Disabled",
 			ComponentType: bc.ComponentTypeNumberInput,
 			Component: &NumberInput{
+				BaseComponent: bc.BaseComponent{
+					Id: id + "_number_disabled",
+				},
 				Value:    1234,
 				Disabled: true,
 			}},

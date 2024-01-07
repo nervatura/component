@@ -8,7 +8,7 @@ import (
 )
 
 func TestDemoPagination(t *testing.T) {
-	for _, tt := range DemoPagination("/demo", "") {
+	for _, tt := range DemoPagination(&bc.BaseComponent{EventURL: "/demo"}) {
 		t.Run(tt.Label, func(t *testing.T) {
 			tt.Component.Render()
 		})

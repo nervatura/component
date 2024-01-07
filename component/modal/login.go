@@ -25,13 +25,17 @@ var loginDefaultLabel bc.SM = bc.SM{
 	"login_theme":    "Theme",
 }
 
+var loginThemeMap map[string][]string = map[string][]string{
+	bc.ThemeDark: {bc.ThemeLight, "Sun"}, bc.ThemeLight: {bc.ThemeDark, "Moon"},
+}
+
 type Login struct {
 	bc.BaseComponent
-	Version string
-	Lang    string
-	Theme   string
-	Labels  bc.SM
-	Locales []fm.SelectOption
+	Version string            `json:"version"`
+	Lang    string            `json:"lang"`
+	Theme   string            `json:"theme"`
+	Labels  bc.SM             `json:"labels"`
+	Locales []fm.SelectOption `json:"locales"`
 }
 
 func (lgn *Login) Properties() bc.IM {
@@ -122,7 +126,7 @@ func (lgn *Login) SetProperty(propName string, propValue interface{}) interface{
 		},
 	}
 	if _, found := pm[propName]; found {
-		return pm[propName]()
+		return lgn.SetRequestValue(propName, pm[propName](), []string{})
 	}
 	if lgn.BaseComponent.GetProperty(propName) != nil {
 		return lgn.BaseComponent.SetProperty(propName, propValue)
@@ -142,7 +146,7 @@ func (lgn *Login) response(evt bc.ResponseEvent) (re bc.ResponseEvent) {
 
 	case "theme":
 		lgnEvt.Name = LoginEventTheme
-		lgn.SetProperty("theme", lgnEvt.Value)
+		lgn.SetProperty("theme", loginThemeMap[lgn.Theme][0])
 
 	case "login":
 		lgnEvt.Name = LoginEventLogin
@@ -161,17 +165,16 @@ func (lgn *Login) response(evt bc.ResponseEvent) (re bc.ResponseEvent) {
 
 func (lgn *Login) getComponent(name string) (res string, err error) {
 	var loginDisabled bool = ((bc.ToString(lgn.Data["username"], "") == "") || (bc.ToString(lgn.Data["database"], "") == ""))
-	themeMap := map[string][]string{
-		bc.ThemeDark: {bc.ThemeLight, "Sun"}, bc.ThemeLight: {bc.ThemeDark, "Moon"},
-	}
 	ccInp := func(itype string) *fm.Input {
 		return &fm.Input{
 			BaseComponent: bc.BaseComponent{
 				Id: lgn.Id + "_" + name, Name: name,
-				EventURL:   lgn.EventURL,
-				Target:     lgn.Target,
-				Swap:       bc.SwapOuterHTML,
-				OnResponse: lgn.response,
+				EventURL:     lgn.EventURL,
+				Target:       lgn.Target,
+				Swap:         bc.SwapOuterHTML,
+				OnResponse:   lgn.response,
+				RequestValue: lgn.RequestValue,
+				RequestMap:   lgn.RequestMap,
 			},
 			Type:  itype,
 			Label: lgn.Labels["login_"+name],
@@ -207,9 +210,11 @@ func (lgn *Login) getComponent(name string) (res string, err error) {
 			return &fm.Button{
 				BaseComponent: bc.BaseComponent{
 					Id: lgn.Id + "_" + name, Name: name,
-					EventURL:   lgn.EventURL,
-					Target:     lgn.Target,
-					OnResponse: lgn.response,
+					EventURL:     lgn.EventURL,
+					Target:       lgn.Target,
+					OnResponse:   lgn.response,
+					RequestValue: lgn.RequestValue,
+					RequestMap:   lgn.RequestMap,
 				},
 				Type:     fm.ButtonTypePrimary,
 				Label:    lgn.Labels["login_"+name],
@@ -221,23 +226,26 @@ func (lgn *Login) getComponent(name string) (res string, err error) {
 			return &fm.Button{
 				BaseComponent: bc.BaseComponent{
 					Id: lgn.Id + "_" + name, Name: name,
-					EventURL:   lgn.EventURL,
-					Target:     lgn.Target,
-					OnResponse: lgn.response,
+					EventURL:     lgn.EventURL,
+					Target:       lgn.Target,
+					OnResponse:   lgn.response,
+					RequestValue: lgn.RequestValue,
+					RequestMap:   lgn.RequestMap,
 				},
 				Type:           fm.ButtonTypeBorder,
 				Label:          lgn.Labels["login_"+name],
-				Value:          themeMap[lgn.Theme][0],
-				LabelComponent: &fm.Icon{Value: themeMap[lgn.Theme][1], Width: 18, Height: 18},
+				LabelComponent: &fm.Icon{Value: loginThemeMap[lgn.Theme][1], Width: 18, Height: 18},
 			}
 		},
 		"lang": func() bc.ClientComponent {
 			return &fm.Select{
 				BaseComponent: bc.BaseComponent{
 					Id: lgn.Id + "_" + name, Name: name,
-					EventURL:   lgn.EventURL,
-					Target:     lgn.Target,
-					OnResponse: lgn.response,
+					EventURL:     lgn.EventURL,
+					Target:       lgn.Target,
+					OnResponse:   lgn.response,
+					RequestValue: lgn.RequestValue,
+					RequestMap:   lgn.RequestMap,
 				},
 				Label:   lgn.Labels["login_"+name],
 				IsNull:  false,
@@ -248,17 +256,9 @@ func (lgn *Login) getComponent(name string) (res string, err error) {
 	}
 	cc := ccMap[name]()
 	res, err = cc.Render()
-	if err == nil {
-		lgn.RequestMap = bc.MergeCM(lgn.RequestMap, cc.GetProperty("request_map").(map[string]bc.ClientComponent))
-	}
 	return res, err
 }
 
-func (lgn *Login) InitProps() {
-	for key, value := range lgn.Properties() {
-		lgn.SetProperty(key, value)
-	}
-}
 func (lgn *Login) msg(labelID string) string {
 	if label, found := lgn.Labels[labelID]; found {
 		return label
@@ -267,7 +267,7 @@ func (lgn *Login) msg(labelID string) string {
 }
 
 func (lgn *Login) Render() (res string, err error) {
-	lgn.InitProps()
+	lgn.InitProps(lgn)
 
 	funcMap := map[string]any{
 		"msg": func(labelID string) string {
@@ -365,16 +365,22 @@ var demoLoginResponse func(evt bc.ResponseEvent) (re bc.ResponseEvent) = func(ev
 	return evt
 }
 
-func DemoLogin(eventURL, parentID string) []bc.DemoComponent {
+func DemoLogin(demo bc.ClientComponent) []bc.DemoComponent {
+	id := bc.ToString(demo.GetProperty("id"), "")
+	eventURL := bc.ToString(demo.GetProperty("event_url"), "")
+	requestValue := demo.GetProperty("request_value").(map[string]bc.IM)
+	requestMap := demo.GetProperty("request_map").(map[string]bc.ClientComponent)
 	return []bc.DemoComponent{
 		{
 			Label:         "Default",
 			ComponentType: bc.ComponentTypeLogin,
 			Component: &Login{
 				BaseComponent: bc.BaseComponent{
-					Id:         bc.GetComponentID(),
-					EventURL:   eventURL,
-					OnResponse: demoLoginResponse,
+					Id:           id + "_login_default",
+					EventURL:     eventURL,
+					OnResponse:   demoLoginResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
 					Data: bc.IM{
 						"username": "admin",
 						"database": "demo",

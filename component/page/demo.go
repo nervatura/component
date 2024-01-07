@@ -1,6 +1,7 @@
 package page
 
 import (
+	"fmt"
 	"strings"
 
 	fm "github.com/nervatura/component/component/atom"
@@ -10,6 +11,10 @@ import (
 )
 
 const (
+	DemoEventChange   = "change"
+	DemoEventTheme    = "theme"
+	DemoEventViewSize = "view_size"
+
 	ComponentGroupAtom     = "atom"
 	ComponentGroupMolecule = "molecule"
 	ComponentGroupModal    = "modal"
@@ -21,24 +26,24 @@ const (
 
 type Demo struct {
 	bc.BaseComponent
-	Title         string
-	Theme         string
-	ViewSize      string
-	SelectedGroup string
-	SelectedType  int64
-	SelectedDemo  int64
-	demoMap       map[string][]DemoView
+	Title         string                `json:"title"`
+	Theme         string                `json:"theme"`
+	ViewSize      string                `json:"view_size"`
+	SelectedGroup string                `json:"selected_group"`
+	SelectedType  int64                 `json:"selected_type"`
+	SelectedDemo  int64                 `json:"selected_demo"`
+	DemoMap       map[string][]DemoView `json:"-"`
 }
 
 type DemoSession struct {
-	Label     string
-	Component bc.ClientComponent
+	Label     string             `json:"label"`
+	Component bc.ClientComponent `json:"component"`
 }
 
 type DemoView struct {
-	ComponentType string
-	Stories       func(eventURL, parentID string) []bc.DemoComponent
-	Session       []DemoSession
+	ComponentType string                                           `json:"component_type"`
+	Session       []DemoSession                                    `json:"session"`
+	Stories       func(demo bc.ClientComponent) []bc.DemoComponent `json:"-"`
 }
 
 var ComponentGroup []string = []string{
@@ -67,26 +72,33 @@ var DemoMap map[string][]DemoView = map[string][]DemoView{
 	},
 }
 
+var demoIcoMap map[string][]string = map[string][]string{
+	bc.ThemeDark: {bc.ThemeLight, "Sun"}, bc.ThemeLight: {bc.ThemeDark, "Moon"},
+	ViewSizeCentered: {ViewSizeFull, "Desktop"}, ViewSizeFull: {ViewSizeCentered, "Mobile"},
+}
+
 func NewDemo(eventURL, title string) *Demo {
 	sto := &Demo{
 		BaseComponent: bc.BaseComponent{
-			Id:       bc.GetComponentID(),
-			EventURL: eventURL,
+			Id:           bc.GetComponentID(),
+			EventURL:     eventURL,
+			RequestValue: map[string]bc.IM{},
+			RequestMap:   map[string]bc.ClientComponent{},
 		},
 		Title:   title,
-		demoMap: DemoMap,
+		DemoMap: DemoMap,
 	}
-	sto.initDemoMap()
+	sto.InitDemoMap()
 	return sto
 }
 
-func (sto *Demo) initDemoMap() {
-	for group, sg := range sto.demoMap {
+func (sto *Demo) InitDemoMap() {
+	for group, sg := range sto.DemoMap {
 		for index, sv := range sg {
-			sto.demoMap[group][index].Session = make([]DemoSession, 0)
-			for _, sc := range sv.Stories(sto.EventURL, sto.Id) {
-				sto.demoMap[group][index].Session = append(
-					sto.demoMap[group][index].Session, DemoSession{Label: sc.Label, Component: sc.Component})
+			sto.DemoMap[group][index].Session = make([]DemoSession, 0)
+			for _, sc := range sv.Stories(sto) {
+				sto.DemoMap[group][index].Session = append(
+					sto.DemoMap[group][index].Session, DemoSession{Label: sc.Label, Component: sc.Component})
 			}
 		}
 	}
@@ -122,18 +134,21 @@ func (sto *Demo) Validation(propName string, propValue interface{}) interface{} 
 		},
 		"selected_type": func() interface{} {
 			value := bc.ToInteger(propValue, 0)
-			if value > int64(len(sto.demoMap[sto.SelectedGroup])-1) {
+			if value > int64(len(sto.DemoMap[sto.SelectedGroup])-1) {
 				value = 0
 			}
 			return value
 		},
 		"selected_demo": func() interface{} {
 			value := bc.ToInteger(propValue, 0)
+			if len(sto.DemoMap[sto.SelectedGroup]) == 0 || value > int64(len(sto.DemoMap[sto.SelectedGroup][sto.SelectedType].Session)-1) {
+				value = 0
+			}
 			return value
 		},
 	}
 	if _, found := pm[propName]; found {
-		return pm[propName]()
+		return sto.SetRequestValue(propName, pm[propName](), []string{})
 	}
 	if sto.BaseComponent.GetProperty(propName) != nil {
 		return sto.BaseComponent.Validation(propName, propValue)
@@ -181,7 +196,7 @@ func (sto *Demo) SetProperty(propName string, propValue interface{}) interface{}
 		},
 	}
 	if _, found := pm[propName]; found {
-		return pm[propName]()
+		return sto.SetRequestValue(propName, pm[propName](), []string{})
 	}
 	if sto.BaseComponent.GetProperty(propName) != nil {
 		return sto.BaseComponent.SetProperty(propName, propValue)
@@ -189,18 +204,51 @@ func (sto *Demo) SetProperty(propName string, propValue interface{}) interface{}
 	return propValue
 }
 
-func (sto *Demo) response(evt bc.ResponseEvent) (re bc.ResponseEvent) {
-	value := sto.SetProperty(evt.TriggerName, evt.Value)
-	return bc.ResponseEvent{
-		Trigger: sto, TriggerName: sto.Name, Name: evt.TriggerName, Value: value,
+func (sto *Demo) OnRequest(te bc.TriggerEvent) (re bc.ResponseEvent) {
+	if cc, found := sto.RequestMap[te.Id]; found {
+		return cc.OnRequest(te)
 	}
+	re = bc.ResponseEvent{
+		Trigger: &fm.Toast{
+			Type:  fm.ToastTypeError,
+			Value: fmt.Sprintf("Invalid parameter: %s", te.Id),
+		},
+		TriggerName: te.Name,
+		Name:        te.Name,
+		Header: bc.SM{
+			bc.HeaderRetarget: "#toast-msg",
+			bc.HeaderReswap:   "innerHTML",
+		},
+	}
+	return re
+}
+
+func (sto *Demo) response(evt bc.ResponseEvent) (re bc.ResponseEvent) {
+	stoEvt := bc.ResponseEvent{
+		Trigger: sto, TriggerName: sto.Name,
+	}
+	var value interface{}
+	switch evt.TriggerName {
+	case "theme":
+		stoEvt.Name = DemoEventTheme
+		value = sto.SetProperty("theme", demoIcoMap[sto.Theme][0])
+
+	case "view_size":
+		stoEvt.Name = DemoEventViewSize
+		value = sto.SetProperty("view_size", demoIcoMap[sto.ViewSize][0])
+
+	default:
+		sto.Name = DemoEventChange
+		value = sto.SetProperty(evt.TriggerName, evt.Value)
+	}
+	stoEvt.Value = value
+	if sto.OnResponse != nil {
+		return sto.OnResponse(stoEvt)
+	}
+	return stoEvt
 }
 
 func (sto *Demo) getComponent(name string) (res string, err error) {
-	btnMap := map[string][]string{
-		bc.ThemeDark: {bc.ThemeLight, "Sun"}, bc.ThemeLight: {bc.ThemeDark, "Moon"},
-		ViewSizeCentered: {ViewSizeFull, "Desktop"}, ViewSizeFull: {ViewSizeCentered, "Mobile"},
-	}
 	propValue := bc.SM{
 		"theme": sto.Theme, "view_size": sto.ViewSize,
 		"selected_group": sto.SelectedGroup, "selected_type": bc.ToString(sto.SelectedType, ""),
@@ -210,23 +258,26 @@ func (sto *Demo) getComponent(name string) (res string, err error) {
 		return &fm.Button{
 			BaseComponent: bc.BaseComponent{
 				Id: sto.Id + "_" + name, Name: name,
-				Style:      bc.SM{"padding": "8px"},
-				EventURL:   sto.EventURL,
-				Target:     sto.Id,
-				OnResponse: sto.response,
+				Style:        bc.SM{"padding": "8px"},
+				EventURL:     sto.EventURL,
+				Target:       sto.Id,
+				OnResponse:   sto.response,
+				RequestValue: sto.RequestValue,
+				RequestMap:   sto.RequestMap,
 			},
 			Type:           fm.ButtonTypePrimary,
-			Value:          btnMap[propValue[name]][0],
-			LabelComponent: &fm.Icon{Value: btnMap[propValue[name]][1], Width: 18, Height: 18},
+			LabelComponent: &fm.Icon{Value: demoIcoMap[propValue[name]][1], Width: 18, Height: 18},
 		}
 	}
 	ccSel := func() *fm.Select {
 		return &fm.Select{
 			BaseComponent: bc.BaseComponent{
 				Id: sto.Id + "_" + name, Name: name,
-				EventURL:   sto.EventURL,
-				Target:     sto.Id,
-				OnResponse: sto.response,
+				EventURL:     sto.EventURL,
+				Target:       sto.Id,
+				OnResponse:   sto.response,
+				RequestValue: sto.RequestValue,
+				RequestMap:   sto.RequestMap,
 			},
 			Value:   propValue[name],
 			Options: []fm.SelectOption{},
@@ -245,7 +296,7 @@ func (sto *Demo) getComponent(name string) (res string, err error) {
 		},
 		"selected_type": func() bc.ClientComponent {
 			sc := ccSel()
-			for index, v := range sto.demoMap[sto.SelectedGroup] {
+			for index, v := range sto.DemoMap[sto.SelectedGroup] {
 				sc.Options = append(
 					sc.Options, fm.SelectOption{Value: bc.ToString(index, ""), Text: v.ComponentType})
 			}
@@ -253,7 +304,7 @@ func (sto *Demo) getComponent(name string) (res string, err error) {
 		},
 		"selected_demo": func() bc.ClientComponent {
 			sc := ccSel()
-			for index, v := range sto.demoMap[sto.SelectedGroup][sto.SelectedType].Session {
+			for index, v := range sto.DemoMap[sto.SelectedGroup][sto.SelectedType].Session {
 				sc.Options = append(
 					sc.Options, fm.SelectOption{Value: bc.ToString(index, ""), Text: v.Label})
 			}
@@ -262,20 +313,11 @@ func (sto *Demo) getComponent(name string) (res string, err error) {
 	}
 	cc := ccMap[name]()
 	res, err = cc.Render()
-	if err == nil {
-		sto.RequestMap = bc.MergeCM(sto.RequestMap, cc.GetProperty("request_map").(map[string]bc.ClientComponent))
-	}
 	return res, err
 }
 
-func (sto *Demo) InitProps() {
-	for key, value := range sto.Properties() {
-		sto.SetProperty(key, value)
-	}
-}
-
 func (sto *Demo) Render() (res string, err error) {
-	sto.InitProps()
+	sto.InitProps(sto)
 
 	funcMap := map[string]any{
 		"styleMap": func() bool {
@@ -295,16 +337,13 @@ func (sto *Demo) Render() (res string, err error) {
 		},
 		"clientComponent": func(cc bc.ClientComponent) (string, error) {
 			res, err := cc.Render()
-			if err == nil {
-				sto.RequestMap = bc.MergeCM(sto.RequestMap, cc.GetProperty("request_map").(map[string]bc.ClientComponent))
-			}
 			return res, err
 		},
 		"stories": func() []DemoSession {
-			return sto.demoMap[sto.SelectedGroup][sto.SelectedType].Session
+			return sto.DemoMap[sto.SelectedGroup][sto.SelectedType].Session
 		},
 		"demo": func() DemoSession {
-			return sto.demoMap[sto.SelectedGroup][sto.SelectedType].Session[sto.SelectedDemo]
+			return sto.DemoMap[sto.SelectedGroup][sto.SelectedType].Session[sto.SelectedDemo]
 		},
 	}
 	tpl := `<div id="{{ .Id }}" theme="{{ .Theme }}" class="demo row mobile {{ .ViewSize }} {{ customClass }}"

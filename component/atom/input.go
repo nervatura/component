@@ -19,18 +19,18 @@ var InputType []string = []string{InputTypeText, InputTypeColor, InputTypeFile, 
 
 type Input struct {
 	bc.BaseComponent
-	Type        string
-	Value       string
-	Placeholder string
-	Label       string
-	Disabled    bool
-	ReadOnly    bool
-	AutoFocus   bool
-	Invalid     bool
-	Accept      string
-	MaxLength   int64
-	Size        int64
-	Full        bool
+	Type        string `json:"type"`
+	Value       string `json:"value"`
+	Placeholder string `json:"placeholder"`
+	Label       string `json:"label"`
+	Disabled    bool   `json:"disabled"`
+	ReadOnly    bool   `json:"read_only"`
+	AutoFocus   bool   `json:"auto_focus"`
+	Invalid     bool   `json:"invalid"`
+	Accept      string `json:"accept"`
+	MaxLength   int64  `json:"max_length"`
+	Size        int64  `json:"size"`
+	Full        bool   `json:"full"`
 }
 
 func (inp *Input) Properties() bc.IM {
@@ -123,7 +123,7 @@ func (inp *Input) SetProperty(propName string, propValue interface{}) interface{
 		},
 	}
 	if _, found := pm[propName]; found {
-		return pm[propName]()
+		return inp.SetRequestValue(propName, pm[propName](), []string{})
 	}
 	if inp.BaseComponent.GetProperty(propName) != nil {
 		return inp.BaseComponent.SetProperty(propName, propValue)
@@ -144,14 +144,8 @@ func (inp *Input) OnRequest(te bc.TriggerEvent) (re bc.ResponseEvent) {
 	return evt
 }
 
-func (inp *Input) InitProps() {
-	for key, value := range inp.Properties() {
-		inp.SetProperty(key, value)
-	}
-}
-
 func (inp *Input) Render() (res string, err error) {
-	inp.InitProps()
+	inp.InitProps(inp)
 
 	funcMap := map[string]any{
 		"styleMap": func() bool {
@@ -177,7 +171,7 @@ func (inp *Input) Render() (res string, err error) {
 	></input>`
 
 	if res, err = bc.TemplateBuilder("input", tpl, funcMap, inp); err == nil && inp.EventURL != "" {
-		bc.SetCMValue(inp.RequestMap, inp.Id, inp)
+		inp.SetProperty("request_map", inp)
 	}
 	return res, nil
 }
@@ -190,12 +184,19 @@ var demoInputResponse func(evt bc.ResponseEvent) (re bc.ResponseEvent) = func(ev
 	return evt
 }
 
-func DemoInput(eventURL, parentID string) []bc.DemoComponent {
+func DemoInput(demo bc.ClientComponent) []bc.DemoComponent {
+	id := bc.ToString(demo.GetProperty("id"), "")
+	eventURL := bc.ToString(demo.GetProperty("event_url"), "")
+	requestValue := demo.GetProperty("request_value").(map[string]bc.IM)
+	requestMap := demo.GetProperty("request_map").(map[string]bc.ClientComponent)
 	return []bc.DemoComponent{
 		{
 			Label:         "Default and AutoFocus",
 			ComponentType: bc.ComponentTypeInput,
 			Component: &Input{
+				BaseComponent: bc.BaseComponent{
+					Id: id + "_input_default",
+				},
 				Type:        InputTypeText,
 				Placeholder: "placeholder text",
 				AutoFocus:   true,
@@ -205,9 +206,12 @@ func DemoInput(eventURL, parentID string) []bc.DemoComponent {
 			ComponentType: bc.ComponentTypeInput,
 			Component: &Input{
 				BaseComponent: bc.BaseComponent{
-					EventURL:   eventURL,
-					Swap:       bc.SwapOuterHTML,
-					OnResponse: demoInputResponse,
+					Id:           id + "_input_valid",
+					EventURL:     eventURL,
+					Swap:         bc.SwapOuterHTML,
+					OnResponse:   demoInputResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
 				},
 				Type:  InputTypeText,
 				Value: "valid",
@@ -216,6 +220,9 @@ func DemoInput(eventURL, parentID string) []bc.DemoComponent {
 			Label:         "ReadOnly",
 			ComponentType: bc.ComponentTypeInput,
 			Component: &Input{
+				BaseComponent: bc.BaseComponent{
+					Id: id + "_input_readonly",
+				},
 				Type:     InputTypeText,
 				Value:    "hello",
 				ReadOnly: true,
@@ -224,6 +231,9 @@ func DemoInput(eventURL, parentID string) []bc.DemoComponent {
 			Label:         "Disabled",
 			ComponentType: bc.ComponentTypeInput,
 			Component: &Input{
+				BaseComponent: bc.BaseComponent{
+					Id: id + "_input_disabled",
+				},
 				Type:     InputTypeText,
 				Value:    "hello",
 				Disabled: true,
@@ -232,6 +242,9 @@ func DemoInput(eventURL, parentID string) []bc.DemoComponent {
 			Label:         "Password full",
 			ComponentType: bc.ComponentTypeInput,
 			Component: &Input{
+				BaseComponent: bc.BaseComponent{
+					Id: id + "_input_password",
+				},
 				Type:  InputTypePassword,
 				Value: "secret",
 				Full:  true,
@@ -240,6 +253,9 @@ func DemoInput(eventURL, parentID string) []bc.DemoComponent {
 			Label:         "File input",
 			ComponentType: bc.ComponentTypeInput,
 			Component: &Input{
+				BaseComponent: bc.BaseComponent{
+					Id: id + "_input_file",
+				},
 				Type:   InputTypeFile,
 				Accept: ".jpg,.png",
 			}},
@@ -247,6 +263,9 @@ func DemoInput(eventURL, parentID string) []bc.DemoComponent {
 			Label:         "Color input",
 			ComponentType: bc.ComponentTypeInput,
 			Component: &Input{
+				BaseComponent: bc.BaseComponent{
+					Id: id + "_input_color",
+				},
 				Type:  InputTypeColor,
 				Value: "#845185",
 			}},

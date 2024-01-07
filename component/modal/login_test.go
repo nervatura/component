@@ -9,7 +9,7 @@ import (
 )
 
 func TestDemoLogin(t *testing.T) {
-	for _, tt := range DemoLogin("/demo", "") {
+	for _, tt := range DemoLogin(&bc.BaseComponent{EventURL: "/demo"}) {
 		t.Run(tt.Label, func(t *testing.T) {
 			tt.Component.Render()
 		})
@@ -176,6 +176,7 @@ func TestLogin_response(t *testing.T) {
 						return evt
 					},
 				},
+				Theme: bc.ThemeLight,
 			},
 			args: args{
 				evt: bc.ResponseEvent{

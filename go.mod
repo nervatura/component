@@ -10,5 +10,6 @@ require (
 	github.com/gorilla/csrf v1.7.2
 	github.com/gorilla/mux v1.8.1
 	github.com/gorilla/sessions v1.2.2
+	github.com/kelindar/binary v1.0.18
 	github.com/pkg/errors v0.9.1 // indirect
 )

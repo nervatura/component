@@ -16,9 +16,9 @@ var ToastType []string = []string{ToastTypeInfo, ToastTypeError, ToastTypeSucces
 
 type Toast struct {
 	bc.BaseComponent
-	Type    string
-	Value   string
-	Timeout int64
+	Type    string `json:"type"`
+	Value   string `json:"value"`
+	Timeout int64  `json:"timeout"`
 }
 
 func (tst *Toast) Properties() bc.IM {
@@ -66,7 +66,7 @@ func (tst *Toast) SetProperty(propName string, propValue interface{}) interface{
 		},
 	}
 	if _, found := pm[propName]; found {
-		return pm[propName]()
+		return tst.SetRequestValue(propName, pm[propName](), []string{})
 	}
 	if tst.BaseComponent.GetProperty(propName) != nil {
 		return tst.BaseComponent.SetProperty(propName, propValue)
@@ -93,14 +93,8 @@ func (tst *Toast) getComponent(name string) (string, error) {
 	return ccMap[name]().Render()
 }
 
-func (tst *Toast) InitProps() {
-	for key, value := range tst.Properties() {
-		tst.SetProperty(key, value)
-	}
-}
-
 func (tst *Toast) Render() (res string, err error) {
-	tst.InitProps()
+	tst.InitProps(tst)
 
 	funcMap := map[string]any{
 		"styleMap": func() bool {
@@ -142,18 +136,25 @@ var demoToastResponse func(evt bc.ResponseEvent) (re bc.ResponseEvent) = func(ev
 	return re
 }
 
-func DemoToast(eventURL, parentID string) []bc.DemoComponent {
+func DemoToast(demo bc.ClientComponent) []bc.DemoComponent {
+	id := bc.ToString(demo.GetProperty("id"), "")
+	eventURL := bc.ToString(demo.GetProperty("event_url"), "")
+	requestValue := demo.GetProperty("request_value").(map[string]bc.IM)
+	requestMap := demo.GetProperty("request_map").(map[string]bc.ClientComponent)
 	return []bc.DemoComponent{
 		{
 			Label:         "Info toast message",
 			ComponentType: bc.ComponentTypeToast,
 			Component: &Button{
 				BaseComponent: bc.BaseComponent{
+					Id: id + "_toast_default",
 					Data: bc.IM{
 						"toast-type": "info", "toast-value": "This is an info message.", "toast-timeout": "4",
 					},
-					EventURL:   eventURL,
-					OnResponse: demoToastResponse,
+					EventURL:     eventURL,
+					OnResponse:   demoToastResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
 				},
 				Type:  ButtonTypeDefault,
 				Align: bc.TextAlignCenter,
@@ -165,11 +166,14 @@ func DemoToast(eventURL, parentID string) []bc.DemoComponent {
 			ComponentType: bc.ComponentTypeToast,
 			Component: &Button{
 				BaseComponent: bc.BaseComponent{
+					Id: id + "_toast_error",
 					Data: bc.IM{
 						"toast-type": "error", "toast-value": "<i>This is an error message.</i>", "toast-timeout": "0",
 					},
-					EventURL:   eventURL,
-					OnResponse: demoToastResponse,
+					EventURL:     eventURL,
+					OnResponse:   demoToastResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
 				},
 				Type:  ButtonTypeDefault,
 				Align: bc.TextAlignCenter,
@@ -180,13 +184,16 @@ func DemoToast(eventURL, parentID string) []bc.DemoComponent {
 			ComponentType: bc.ComponentTypeToast,
 			Component: &Button{
 				BaseComponent: bc.BaseComponent{
+					Id: id + "_toast_success",
 					Data: bc.IM{
 						"toast-type":    "success",
 						"toast-value":   "This is an success message. This is an success message. This is an success message. This is an success message",
 						"toast-timeout": "4",
 					},
-					EventURL:   eventURL,
-					OnResponse: demoToastResponse,
+					EventURL:     eventURL,
+					OnResponse:   demoToastResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
 				},
 				Type:  ButtonTypeDefault,
 				Align: bc.TextAlignCenter,

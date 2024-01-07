@@ -73,6 +73,7 @@ func TestBaseComponent_SetProperty(t *testing.T) {
 		propName  string
 		propValue interface{}
 	}
+	cc := &BaseComponent{}
 	tests := []struct {
 		name   string
 		fields fields
@@ -145,11 +146,25 @@ func TestBaseComponent_SetProperty(t *testing.T) {
 		},
 		{
 			name: "request_map",
+			fields: fields{
+				Id: "id",
+			},
 			args: args{
 				propName:  "request_map",
-				propValue: map[string]ClientComponent{"value": nil},
+				propValue: cc,
 			},
-			want: map[string]ClientComponent{"value": nil},
+			want: map[string]ClientComponent{"id": cc},
+		},
+		{
+			name: "request_map",
+			fields: fields{
+				Id: "",
+			},
+			args: args{
+				propName:  "request_map",
+				propValue: cc,
+			},
+			want: map[string]ClientComponent{},
 		},
 		{
 			name: "class",
@@ -244,17 +259,18 @@ func TestBaseComponent_Validation(t *testing.T) {
 
 func TestBaseComponent_Render(t *testing.T) {
 	type fields struct {
-		Id         string
-		Name       string
-		EventURL   string
-		Target     string
-		Swap       string
-		Indicator  string
-		Class      []string
-		Style      SM
-		Data       IM
-		RequestMap map[string]ClientComponent
-		OnResponse func(evt ResponseEvent) (re ResponseEvent)
+		Id           string
+		Name         string
+		EventURL     string
+		Target       string
+		Swap         string
+		Indicator    string
+		Class        []string
+		Style        SM
+		Data         IM
+		RequestValue map[string]IM
+		RequestMap   map[string]ClientComponent
+		OnResponse   func(evt ResponseEvent) (re ResponseEvent)
 	}
 	tests := []struct {
 		name    string
@@ -262,24 +278,33 @@ func TestBaseComponent_Render(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "ok",
+			name: "ok",
+			fields: fields{
+				Id: "id",
+				RequestValue: map[string]IM{
+					"id": {
+						"id": "id",
+					},
+				},
+			},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			bcc := &BaseComponent{
-				Id:         tt.fields.Id,
-				Name:       tt.fields.Name,
-				EventURL:   tt.fields.EventURL,
-				Target:     tt.fields.Target,
-				Swap:       tt.fields.Swap,
-				Indicator:  tt.fields.Indicator,
-				Class:      tt.fields.Class,
-				Style:      tt.fields.Style,
-				Data:       tt.fields.Data,
-				RequestMap: tt.fields.RequestMap,
-				OnResponse: tt.fields.OnResponse,
+				Id:           tt.fields.Id,
+				Name:         tt.fields.Name,
+				EventURL:     tt.fields.EventURL,
+				Target:       tt.fields.Target,
+				Swap:         tt.fields.Swap,
+				Indicator:    tt.fields.Indicator,
+				Class:        tt.fields.Class,
+				Style:        tt.fields.Style,
+				Data:         tt.fields.Data,
+				RequestMap:   tt.fields.RequestMap,
+				RequestValue: tt.fields.RequestValue,
+				OnResponse:   tt.fields.OnResponse,
 			}
 			_, err := bcc.Render()
 			if (err != nil) != tt.wantErr {

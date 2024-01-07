@@ -32,7 +32,7 @@ func TestApplication_Render(t *testing.T) {
 		{
 			name: "ok",
 			fields: fields{
-				MainComponent: NewDemo("", ""),
+				MainComponent: &bc.BaseComponent{},
 			},
 			wantErr: false,
 		},
@@ -310,9 +310,7 @@ func TestApplication_getComponent(t *testing.T) {
 		{
 			name: "main",
 			fields: fields{
-				MainComponent: &Demo{
-					demoMap: DemoMap,
-				},
+				MainComponent: &bc.BaseComponent{},
 			},
 			wantErr: false,
 		},

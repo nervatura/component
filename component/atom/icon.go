@@ -13,17 +13,17 @@ const (
 
 type Icon struct {
 	bc.BaseComponent
-	Value  string
-	Width  float64
-	Height float64
-	Color  string
+	Value  string  `json:"value"`
+	Width  float64 `json:"width"`
+	Height float64 `json:"height"`
+	Color  string  `json:"color"`
 }
 
 type IconData struct {
-	ViewBox string
-	Width   float64
-	Height  float64
-	Path    string
+	ViewBox string  `json:"view_box"`
+	Width   float64 `json:"width"`
+	Height  float64 `json:"height"`
+	Path    string  `json:"path"`
 }
 
 func (ico *Icon) Properties() bc.IM {
@@ -90,7 +90,7 @@ func (ico *Icon) SetProperty(propName string, propValue interface{}) interface{}
 		},
 	}
 	if _, found := pm[propName]; found {
-		return pm[propName]()
+		return ico.SetRequestValue(propName, pm[propName](), []string{})
 	}
 	if ico.BaseComponent.GetProperty(propName) != nil {
 		return ico.BaseComponent.SetProperty(propName, propValue)
@@ -111,14 +111,8 @@ func (ico *Icon) OnRequest(te bc.TriggerEvent) (re bc.ResponseEvent) {
 	return evt
 }
 
-func (ico *Icon) InitProps() {
-	for key, value := range ico.Properties() {
-		ico.SetProperty(key, value)
-	}
-}
-
 func (ico *Icon) Render() (res string, err error) {
-	ico.InitProps()
+	ico.InitProps(ico)
 	idata := IconMap[ico.Value]
 
 	funcMap := map[string]any{
@@ -144,7 +138,7 @@ func (ico *Icon) Render() (res string, err error) {
 	</svg>`
 
 	if res, err = bc.TemplateBuilder("icon", tpl, funcMap, ico); err == nil && ico.EventURL != "" {
-		bc.SetCMValue(ico.RequestMap, ico.Id, ico)
+		ico.SetProperty("request_map", ico)
 	}
 	return res, nil
 }
@@ -166,12 +160,19 @@ var demoIcoResponse func(evt bc.ResponseEvent) (re bc.ResponseEvent) = func(evt 
 	return re
 }
 
-func DemoIcon(eventURL, parentID string) []bc.DemoComponent {
+func DemoIcon(demo bc.ClientComponent) []bc.DemoComponent {
+	id := bc.ToString(demo.GetProperty("id"), "")
+	eventURL := bc.ToString(demo.GetProperty("event_url"), "")
+	requestValue := demo.GetProperty("request_value").(map[string]bc.IM)
+	requestMap := demo.GetProperty("request_map").(map[string]bc.ClientComponent)
 	return []bc.DemoComponent{
 		{
 			Label:         "Default",
 			ComponentType: bc.ComponentTypeIcon,
 			Component: &Icon{
+				BaseComponent: bc.BaseComponent{
+					Id: id + "_icon_default",
+				},
 				Value: "ExclamationTriangle",
 			}},
 		{
@@ -179,6 +180,7 @@ func DemoIcon(eventURL, parentID string) []bc.DemoComponent {
 			ComponentType: bc.ComponentTypeIcon,
 			Component: &Icon{
 				BaseComponent: bc.BaseComponent{
+					Id: id + "_icon_custom",
 					Style: bc.SM{
 						"cursor": "pointer",
 					},
@@ -192,6 +194,9 @@ func DemoIcon(eventURL, parentID string) []bc.DemoComponent {
 			Label:         "Invalid icon",
 			ComponentType: bc.ComponentTypeIcon,
 			Component: &Icon{
+				BaseComponent: bc.BaseComponent{
+					Id: id + "_icon_invalid",
+				},
 				Value: "Copy123",
 			}},
 		{
@@ -199,12 +204,14 @@ func DemoIcon(eventURL, parentID string) []bc.DemoComponent {
 			ComponentType: bc.ComponentTypeIcon,
 			Component: &Icon{
 				BaseComponent: bc.BaseComponent{
-					Id:       bc.GetComponentID(),
+					Id:       id + "_icon_link",
 					EventURL: eventURL,
 					Data: bc.IM{
 						"toast_value": "Link icon",
 					},
-					OnResponse: demoIcoResponse,
+					OnResponse:   demoIcoResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
 				},
 				Value: "Globe",
 			}},

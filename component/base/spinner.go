@@ -1,8 +1,8 @@
 package base
 
 type Spinner struct {
-	Id      string
-	NoModal bool
+	Id      string `json:"id"`
+	NoModal bool   `json:"no_modal"`
 }
 
 func (spn *Spinner) Render() (result string, err error) {

@@ -33,44 +33,44 @@ var TableFieldType []string = []string{TableFieldTypeString, TableFieldTypeNumbe
 
 type Table struct {
 	bc.BaseComponent
-	RowKey            string
-	Rows              []bc.IM
-	Fields            []TableField
-	Pagination        string
-	CurrentPage       int64
-	PageSize          int64
-	HidePaginatonSize bool
-	TableFilter       bool
-	AddItem           bool
-	FilterPlaceholder string
-	FilterValue       string
-	LabelYes          string
-	LabelNo           string
-	LabelAdd          string
-	AddIcon           string
-	TablePadding      string
-	SortCol           string
-	SortAsc           bool
-	RowSelected       bool
+	RowKey            string       `json:"row_key"`
+	Rows              []bc.IM      `json:"rows"`
+	Fields            []TableField `json:"fields"`
+	Pagination        string       `json:"pagination"`
+	CurrentPage       int64        `json:"current_page"`
+	PageSize          int64        `json:"page_size"`
+	HidePaginatonSize bool         `json:"hide_paginaton_size"`
+	TableFilter       bool         `json:"table_filter"`
+	AddItem           bool         `json:"add_item"`
+	FilterPlaceholder string       `json:"filter_placeholder"`
+	FilterValue       string       `json:"filter_value"`
+	LabelYes          string       `json:"label_yes"`
+	LabelNo           string       `json:"label_no"`
+	LabelAdd          string       `json:"label_add"`
+	AddIcon           string       `json:"add_icon"`
+	TablePadding      string       `json:"table_padding"`
+	SortCol           string       `json:"sort_col"`
+	SortAsc           bool         `json:"sort_asc"`
+	RowSelected       bool         `json:"row_selected"`
 }
 
 type TableField struct {
-	Name          string
-	FieldType     string
-	Label         string
-	TextAlign     string
-	VerticalAlign string
-	Format        bool
-	Column        *TableColumn
+	Name          string       `json:"name"`
+	FieldType     string       `json:"field_type"`
+	Label         string       `json:"label"`
+	TextAlign     string       `json:"text_align"`
+	VerticalAlign string       `json:"vertical_align"`
+	Format        bool         `json:"format"`
+	Column        *TableColumn `json:"column"`
 }
 
 type TableColumn struct {
-	Id          string
-	Header      string
-	HeaderStyle bc.SM
-	CellStyle   bc.SM
-	Field       TableField
-	Cell        func(row bc.IM, col TableColumn, value interface{}) string
+	Id          string                                                     `json:"id"`
+	Header      string                                                     `json:"header"`
+	HeaderStyle bc.SM                                                      `json:"header_style"`
+	CellStyle   bc.SM                                                      `json:"cell_style"`
+	Field       TableField                                                 `json:"field"`
+	Cell        func(row bc.IM, col TableColumn, value interface{}) string `json:"-"`
 }
 
 func (tbl *Table) Properties() bc.IM {
@@ -108,10 +108,7 @@ func (tbl *Table) Validation(propName string, propValue interface{}) interface{}
 			return bc.ToString(propValue, "id")
 		},
 		"rows": func() interface{} {
-			if rows, valid := propValue.([]bc.IM); valid && (rows != nil) {
-				return rows
-			}
-			return []bc.IM{}
+			return bc.ToIMA(propValue, []bc.IM{})
 		},
 		"fields": func() interface{} {
 			fields := []TableField{}
@@ -251,7 +248,7 @@ func (tbl *Table) SetProperty(propName string, propValue interface{}) interface{
 		},
 	}
 	if _, found := pm[propName]; found {
-		return pm[propName]()
+		return tbl.SetRequestValue(propName, pm[propName](), []string{})
 	}
 	if tbl.BaseComponent.GetProperty(propName) != nil {
 		return tbl.BaseComponent.SetProperty(propName, propValue)
@@ -337,9 +334,11 @@ func (tbl *Table) getComponent(name string, pageCount int64, data bc.IM) (res st
 		return &Pagination{
 			BaseComponent: bc.BaseComponent{
 				Id: tbl.Id + "_" + name, Name: name,
-				EventURL:   tbl.EventURL,
-				Target:     tbl.Target,
-				OnResponse: tbl.response,
+				EventURL:     tbl.EventURL,
+				Target:       tbl.Target,
+				OnResponse:   tbl.response,
+				RequestValue: tbl.RequestValue,
+				RequestMap:   tbl.RequestMap,
 			},
 			Value: tbl.CurrentPage, PageSize: tbl.PageSize,
 			PageCount:    pageCount,
@@ -357,11 +356,13 @@ func (tbl *Table) getComponent(name string, pageCount int64, data bc.IM) (res st
 			return &fm.Input{
 				BaseComponent: bc.BaseComponent{
 					Id: tbl.Id + "_" + name, Name: name,
-					Style:      bc.SM{"border-radius": "0", "margin": "1px 0 2px"},
-					EventURL:   tbl.EventURL,
-					Target:     tbl.Target,
-					Swap:       bc.SwapOuterHTML,
-					OnResponse: tbl.response,
+					Style:        bc.SM{"border-radius": "0", "margin": "1px 0 2px"},
+					EventURL:     tbl.EventURL,
+					Target:       tbl.Target,
+					Swap:         bc.SwapOuterHTML,
+					OnResponse:   tbl.response,
+					RequestValue: tbl.RequestValue,
+					RequestMap:   tbl.RequestMap,
 				},
 				Type:        fm.InputTypeText,
 				Label:       tbl.FilterPlaceholder,
@@ -374,10 +375,12 @@ func (tbl *Table) getComponent(name string, pageCount int64, data bc.IM) (res st
 			return &fm.Button{
 				BaseComponent: bc.BaseComponent{
 					Id: tbl.Id + "_" + name, Name: name,
-					Style:      bc.SM{"padding": "8px 16px", "border-radius": "0", "margin": "1px 0 2px 1px"},
-					EventURL:   tbl.EventURL,
-					Target:     tbl.Target,
-					OnResponse: tbl.response,
+					Style:        bc.SM{"padding": "8px 16px", "border-radius": "0", "margin": "1px 0 2px 1px"},
+					EventURL:     tbl.EventURL,
+					Target:       tbl.Target,
+					OnResponse:   tbl.response,
+					RequestValue: tbl.RequestValue,
+					RequestMap:   tbl.RequestMap,
 				},
 				Type: fm.ButtonTypeBorder,
 				Icon: tbl.AddIcon, Label: tbl.LabelAdd,
@@ -386,12 +389,14 @@ func (tbl *Table) getComponent(name string, pageCount int64, data bc.IM) (res st
 		"link_cell": func() bc.ClientComponent {
 			return &fm.Label{
 				BaseComponent: bc.BaseComponent{
-					Id:         tbl.Id + "_" + bc.ToString(data["fieldname"], "") + "_" + bc.ToString(data["row"].(bc.IM)[tbl.RowKey], ""),
-					Name:       name,
-					EventURL:   tbl.EventURL,
-					Target:     tbl.Target,
-					Data:       data,
-					OnResponse: tbl.response,
+					Id:           tbl.Id + "_" + bc.ToString(data["fieldname"], "") + "_" + bc.ToString(data["row"].(bc.IM)[tbl.RowKey], ""),
+					Name:         name,
+					EventURL:     tbl.EventURL,
+					Target:       tbl.Target,
+					Data:         data,
+					OnResponse:   tbl.response,
+					RequestValue: tbl.RequestValue,
+					RequestMap:   tbl.RequestMap,
 				},
 				Value: bc.ToString(data["value"], ""),
 			}
@@ -399,16 +404,7 @@ func (tbl *Table) getComponent(name string, pageCount int64, data bc.IM) (res st
 	}
 	cc := ccMap[name]()
 	res, err = cc.Render()
-	if err == nil {
-		tbl.RequestMap = bc.MergeCM(tbl.RequestMap, cc.GetProperty("request_map").(map[string]bc.ClientComponent))
-	}
 	return res, err
-}
-
-func (tbl *Table) InitProps() {
-	for key, value := range tbl.Properties() {
-		tbl.SetProperty(key, value)
-	}
 }
 
 func (tbl *Table) getStyle(styleMap bc.SM) string {
@@ -600,7 +596,7 @@ func (tbl *Table) filterRows() (rows []bc.IM) {
 }
 
 func (tbl *Table) Render() (res string, err error) {
-	tbl.InitProps()
+	tbl.InitProps(tbl)
 
 	cols := tbl.columns()
 	rows := tbl.filterRows()
@@ -637,10 +633,12 @@ func (tbl *Table) Render() (res string, err error) {
 			colID := tbl.Id + "_header_" + col.Id
 			lbl := &fm.Label{BaseComponent: bc.BaseComponent{
 				Id: colID, Name: "header_sort",
-				Data:       bc.IM{"fieldname": col.Id, "fieldtype": col.Field.FieldType},
-				OnResponse: tbl.response,
+				Data:         bc.IM{"fieldname": col.Id, "fieldtype": col.Field.FieldType},
+				OnResponse:   tbl.response,
+				RequestValue: tbl.RequestValue,
+				RequestMap:   tbl.RequestMap,
 			}}
-			bc.SetCMValue(tbl.RequestMap, lbl.Id, lbl)
+			lbl.SetProperty("request_map", lbl)
 			return colID
 		},
 		"rowID": func(row bc.IM, index int) string {
@@ -655,9 +653,11 @@ func (tbl *Table) Render() (res string, err error) {
 					Id: rowID, Name: "data_row", Data: bc.IM{
 						"row": row, "index": index,
 					},
-					OnResponse: tbl.response,
+					OnResponse:   tbl.response,
+					RequestValue: tbl.RequestValue,
+					RequestMap:   tbl.RequestMap,
 				}}
-				bc.SetCMValue(tbl.RequestMap, lbl.Id, lbl)
+				lbl.SetProperty("request_map", lbl)
 			}
 			return rowID
 		},
@@ -789,16 +789,22 @@ var demoTableResponse func(evt bc.ResponseEvent) (re bc.ResponseEvent) = func(ev
 	return evt
 }
 
-func DemoTable(eventURL, parentID string) []bc.DemoComponent {
+func DemoTable(demo bc.ClientComponent) []bc.DemoComponent {
+	id := bc.ToString(demo.GetProperty("id"), "")
+	eventURL := bc.ToString(demo.GetProperty("event_url"), "")
+	requestValue := demo.GetProperty("request_value").(map[string]bc.IM)
+	requestMap := demo.GetProperty("request_map").(map[string]bc.ClientComponent)
 	return []bc.DemoComponent{
 		{
 			Label:         "Default",
 			ComponentType: bc.ComponentTypeTable,
 			Component: &Table{
 				BaseComponent: bc.BaseComponent{
-					Id:         bc.GetComponentID(),
-					EventURL:   eventURL,
-					OnResponse: demoTableResponse,
+					Id:           id + "_table_default",
+					EventURL:     eventURL,
+					OnResponse:   demoTableResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
 				},
 				Rows:       testRows,
 				Fields:     testFields,
@@ -810,9 +816,11 @@ func DemoTable(eventURL, parentID string) []bc.DemoComponent {
 			ComponentType: bc.ComponentTypeTable,
 			Component: &Table{
 				BaseComponent: bc.BaseComponent{
-					Id:         bc.GetComponentID(),
-					EventURL:   eventURL,
-					OnResponse: demoTableResponse,
+					Id:           id + "_table_string_row_selected",
+					EventURL:     eventURL,
+					OnResponse:   demoTableResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
 				},
 				Rows: []bc.IM{
 					{"name": "Fluffy", "age": 9, "breed": "calico", "gender": "male"},
@@ -841,9 +849,11 @@ func DemoTable(eventURL, parentID string) []bc.DemoComponent {
 			ComponentType: bc.ComponentTypeTable,
 			Component: &Table{
 				BaseComponent: bc.BaseComponent{
-					Id:         bc.GetComponentID(),
-					EventURL:   eventURL,
-					OnResponse: demoTableResponse,
+					Id:           id + "_table_bottom_pagination",
+					EventURL:     eventURL,
+					OnResponse:   demoTableResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
 				},
 				Rows:              testRows,
 				Fields:            testFields,
@@ -861,9 +871,11 @@ func DemoTable(eventURL, parentID string) []bc.DemoComponent {
 			ComponentType: bc.ComponentTypeTable,
 			Component: &Table{
 				BaseComponent: bc.BaseComponent{
-					Id:         bc.GetComponentID(),
-					EventURL:   eventURL,
-					OnResponse: demoTableResponse,
+					Id:           id + "_table_filtered",
+					EventURL:     eventURL,
+					OnResponse:   demoTableResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
 				},
 				Rows:        testRows,
 				Fields:      testFields,

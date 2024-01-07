@@ -40,8 +40,9 @@ func TestDemo_Render(t *testing.T) {
 		SelectedGroup string
 		SelectedType  int64
 		SelectedDemo  int64
-		demoMap       map[string][]DemoView
+		DemoMap       map[string][]DemoView
 	}
+	demo := NewDemo("", "")
 	tests := []struct {
 		name    string
 		fields  fields
@@ -50,15 +51,25 @@ func TestDemo_Render(t *testing.T) {
 		{
 			name: "atom",
 			fields: fields{
-				demoMap: DemoMap,
+				BaseComponent: bc.BaseComponent{
+					RequestValue: map[string]bc.IM{},
+					RequestMap:   map[string]bc.ClientComponent{},
+				},
+				DemoMap: DemoMap,
 			},
 			wantErr: false,
 		},
 		{
 			name: "molecule",
 			fields: fields{
-				demoMap:       DemoMap,
+				BaseComponent: bc.BaseComponent{
+					RequestValue: map[string]bc.IM{},
+					RequestMap:   map[string]bc.ClientComponent{},
+				},
+				DemoMap:       demo.DemoMap,
 				SelectedGroup: ComponentGroupMolecule,
+				SelectedType:  0,
+				SelectedDemo:  0,
 			},
 			wantErr: false,
 		},
@@ -73,7 +84,7 @@ func TestDemo_Render(t *testing.T) {
 				SelectedGroup: tt.fields.SelectedGroup,
 				SelectedType:  tt.fields.SelectedType,
 				SelectedDemo:  tt.fields.SelectedDemo,
-				demoMap:       tt.fields.demoMap,
+				DemoMap:       tt.fields.DemoMap,
 			}
 			_, err := sto.Render()
 			if (err != nil) != tt.wantErr {
@@ -93,7 +104,7 @@ func TestDemo_GetProperty(t *testing.T) {
 		SelectedGroup string
 		SelectedType  int64
 		SelectedDemo  int64
-		demoMap       map[string][]DemoView
+		DemoMap       map[string][]DemoView
 	}
 	type args struct {
 		propName string
@@ -122,7 +133,7 @@ func TestDemo_GetProperty(t *testing.T) {
 				SelectedGroup: tt.fields.SelectedGroup,
 				SelectedType:  tt.fields.SelectedType,
 				SelectedDemo:  tt.fields.SelectedDemo,
-				demoMap:       tt.fields.demoMap,
+				DemoMap:       tt.fields.DemoMap,
 			}
 			if got := sto.GetProperty(tt.args.propName); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Demo.GetProperty() = %v, want %v", got, tt.want)
@@ -140,7 +151,7 @@ func TestDemo_Validation(t *testing.T) {
 		SelectedGroup string
 		SelectedType  int64
 		SelectedDemo  int64
-		demoMap       map[string][]DemoView
+		DemoMap       map[string][]DemoView
 	}
 	type args struct {
 		propName  string
@@ -187,7 +198,7 @@ func TestDemo_Validation(t *testing.T) {
 				SelectedGroup: tt.fields.SelectedGroup,
 				SelectedType:  tt.fields.SelectedType,
 				SelectedDemo:  tt.fields.SelectedDemo,
-				demoMap:       tt.fields.demoMap,
+				DemoMap:       tt.fields.DemoMap,
 			}
 			if got := sto.Validation(tt.args.propName, tt.args.propValue); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Demo.Validation() = %v, want %v", got, tt.want)
@@ -205,7 +216,7 @@ func TestDemo_SetProperty(t *testing.T) {
 		SelectedGroup string
 		SelectedType  int64
 		SelectedDemo  int64
-		demoMap       map[string][]DemoView
+		DemoMap       map[string][]DemoView
 	}
 	type args struct {
 		propName  string
@@ -266,7 +277,7 @@ func TestDemo_SetProperty(t *testing.T) {
 				SelectedGroup: tt.fields.SelectedGroup,
 				SelectedType:  tt.fields.SelectedType,
 				SelectedDemo:  tt.fields.SelectedDemo,
-				demoMap:       tt.fields.demoMap,
+				DemoMap:       tt.fields.DemoMap,
 			}
 			if got := sto.SetProperty(tt.args.propName, tt.args.propValue); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Demo.SetProperty() = %v, want %v", got, tt.want)
@@ -284,7 +295,7 @@ func TestDemo_response(t *testing.T) {
 		SelectedGroup string
 		SelectedType  int64
 		SelectedDemo  int64
-		demoMap       map[string][]DemoView
+		DemoMap       map[string][]DemoView
 	}
 	type args struct {
 		evt bc.ResponseEvent
@@ -296,8 +307,37 @@ func TestDemo_response(t *testing.T) {
 	}{
 		{
 			name: "ok",
+			fields: fields{
+				BaseComponent: bc.BaseComponent{
+					OnResponse: func(evt bc.ResponseEvent) (re bc.ResponseEvent) {
+						return evt
+					},
+				},
+			},
 			args: args{
 				evt: bc.ResponseEvent{},
+			},
+		},
+		{
+			name: "theme",
+			fields: fields{
+				Theme: bc.ThemeLight,
+			},
+			args: args{
+				evt: bc.ResponseEvent{
+					TriggerName: DemoEventTheme,
+				},
+			},
+		},
+		{
+			name: "view_size",
+			fields: fields{
+				ViewSize: ViewSizeCentered,
+			},
+			args: args{
+				evt: bc.ResponseEvent{
+					TriggerName: DemoEventViewSize,
+				},
 			},
 		},
 	}
@@ -311,9 +351,67 @@ func TestDemo_response(t *testing.T) {
 				SelectedGroup: tt.fields.SelectedGroup,
 				SelectedType:  tt.fields.SelectedType,
 				SelectedDemo:  tt.fields.SelectedDemo,
-				demoMap:       tt.fields.demoMap,
+				DemoMap:       tt.fields.DemoMap,
 			}
 			sto.response(tt.args.evt)
+		})
+	}
+}
+
+func TestDemo_OnRequest(t *testing.T) {
+	type fields struct {
+		BaseComponent bc.BaseComponent
+		Title         string
+		Theme         string
+		ViewSize      string
+		SelectedGroup string
+		SelectedType  int64
+		SelectedDemo  int64
+		DemoMap       map[string][]DemoView
+	}
+	type args struct {
+		te bc.TriggerEvent
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+	}{
+		{
+			name: "invalid",
+			args: args{
+				te: bc.TriggerEvent{},
+			},
+		},
+		{
+			name: "valid",
+			fields: fields{
+				BaseComponent: bc.BaseComponent{
+					RequestMap: map[string]bc.ClientComponent{
+						"ID12345": &Demo{},
+					},
+				},
+			},
+			args: args{
+				te: bc.TriggerEvent{
+					Id: "ID12345",
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sto := &Demo{
+				BaseComponent: tt.fields.BaseComponent,
+				Title:         tt.fields.Title,
+				Theme:         tt.fields.Theme,
+				ViewSize:      tt.fields.ViewSize,
+				SelectedGroup: tt.fields.SelectedGroup,
+				SelectedType:  tt.fields.SelectedType,
+				SelectedDemo:  tt.fields.SelectedDemo,
+				DemoMap:       tt.fields.DemoMap,
+			}
+			sto.OnRequest(tt.args.te)
 		})
 	}
 }

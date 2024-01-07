@@ -148,6 +148,35 @@ func ToBoolean(value interface{}, defValue bool) bool {
 	return defValue
 }
 
+func ToIMA(value interface{}, defValue []IM) []IM {
+	if imaValue, valid := value.([]IM); valid {
+		return imaValue
+	}
+	var iRows []IM = []IM{}
+	if smaValue, valid := value.([]SM); valid {
+		for _, sm := range smaValue {
+			for key, svalue := range sm {
+				iRows = append(iRows, IM{key: svalue})
+			}
+		}
+		return iRows
+	}
+	if ifaValue, valid := value.([]interface{}); valid {
+		for _, ifRow := range ifaValue {
+			if im, valid := ifRow.(IM); valid {
+				iRows = append(iRows, im)
+			}
+			if sm, valid := ifRow.(SM); valid {
+				for key, svalue := range sm {
+					iRows = append(iRows, IM{key: svalue})
+				}
+			}
+		}
+		return iRows
+	}
+	return defValue
+}
+
 // StringToDateTime - parse string to datetime
 func StringToDateTime(value string) (time.Time, error) {
 	tm, err := time.Parse("2006-01-02T15:04:05-07:00", value)
@@ -236,17 +265,6 @@ func SetSMValue(smap SM, key string, value string) SM {
 	return smap
 }
 
-// SetCMValue - safe CM value setting
-func SetCMValue(cmap map[string]ClientComponent, key string, value ClientComponent) map[string]ClientComponent {
-	if cmap == nil {
-		cmap = map[string]ClientComponent{}
-	}
-	if key != "" {
-		cmap[key] = value
-	}
-	return cmap
-}
-
 func MergeSM(baseMap, valueMap SM) SM {
 	for key, svalue := range valueMap {
 		baseMap = SetSMValue(baseMap, key, svalue)
@@ -257,13 +275,6 @@ func MergeSM(baseMap, valueMap SM) SM {
 func MergeIM(baseMap, valueMap IM) IM {
 	for key, ivalue := range valueMap {
 		baseMap = SetIMValue(baseMap, key, ivalue)
-	}
-	return baseMap
-}
-
-func MergeCM(baseMap, valueMap map[string]ClientComponent) map[string]ClientComponent {
-	for key, ivalue := range valueMap {
-		baseMap = SetCMValue(baseMap, key, ivalue)
 	}
 	return baseMap
 }

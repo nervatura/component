@@ -8,7 +8,7 @@ import (
 )
 
 func TestDemoToast(t *testing.T) {
-	for _, tt := range DemoToast("/demo", "") {
+	for _, tt := range DemoToast(&bc.BaseComponent{EventURL: "/demo"}) {
 		t.Run(tt.Label, func(t *testing.T) {
 			tt.Component.Render()
 		})

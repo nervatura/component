@@ -18,20 +18,20 @@ var ButtonType []string = []string{ButtonTypeDefault, ButtonTypePrimary, ButtonT
 
 type Button struct {
 	bc.BaseComponent
-	Type           string
-	Align          string
-	Value          string
-	Label          string
-	LabelComponent bc.ClientComponent
-	Icon           string
-	Disabled       bool
-	AutoFocus      bool
-	Full           bool
-	Small          bool
-	Selected       bool
-	HideLabel      bool
-	Badge          int64
-	ShowBadge      bool
+	Type           string             `json:"type"`
+	Align          string             `json:"align"`
+	Value          string             `json:"value"`
+	Label          string             `json:"label"`
+	LabelComponent bc.ClientComponent `json:"label_component"`
+	Icon           string             `json:"icon"`
+	Disabled       bool               `json:"disabled"`
+	AutoFocus      bool               `json:"auto_focus"`
+	Full           bool               `json:"full"`
+	Small          bool               `json:"small"`
+	Selected       bool               `json:"selected"`
+	HideLabel      bool               `json:"hide_label"`
+	Badge          int64              `json:"badge"`
+	ShowBadge      bool               `json:"show_badge"`
 }
 
 func (btn *Button) Properties() bc.IM {
@@ -146,7 +146,7 @@ func (btn *Button) SetProperty(propName string, propValue interface{}) interface
 		},
 	}
 	if _, found := pm[propName]; found {
-		return pm[propName]()
+		return btn.SetRequestValue(propName, pm[propName](), []string{})
 	}
 	if btn.BaseComponent.GetProperty(propName) != nil {
 		return btn.BaseComponent.SetProperty(propName, propValue)
@@ -179,14 +179,8 @@ func (btn *Button) getComponent(name string) (string, error) {
 	return ccMap[name]().Render()
 }
 
-func (btn *Button) InitProps() {
-	for key, value := range btn.Properties() {
-		btn.SetProperty(key, value)
-	}
-}
-
 func (btn *Button) Render() (res string, err error) {
-	btn.InitProps()
+	btn.InitProps(btn)
 
 	funcMap := map[string]any{
 		"styleMap": func() bool {
@@ -217,7 +211,7 @@ func (btn *Button) Render() (res string, err error) {
 	</button>`
 
 	if res, err = bc.TemplateBuilder("button", tpl, funcMap, btn); err == nil && btn.EventURL != "" {
-		bc.SetCMValue(btn.RequestMap, btn.Id, btn)
+		btn.SetProperty("request_map", btn)
 	}
 	return res, err
 }
@@ -229,15 +223,22 @@ var demoBtnResponse func(evt bc.ResponseEvent) (re bc.ResponseEvent) = func(evt 
 	return evt
 }
 
-func DemoButton(eventURL, parentID string) []bc.DemoComponent {
+func DemoButton(demo bc.ClientComponent) []bc.DemoComponent {
+	id := bc.ToString(demo.GetProperty("id"), "")
+	eventURL := bc.ToString(demo.GetProperty("event_url"), "")
+	requestValue := demo.GetProperty("request_value").(map[string]bc.IM)
+	requestMap := demo.GetProperty("request_map").(map[string]bc.ClientComponent)
 	return []bc.DemoComponent{
 		{
 			Label:         "Default",
 			ComponentType: bc.ComponentTypeButton,
 			Component: &Button{
 				BaseComponent: bc.BaseComponent{
-					EventURL:   eventURL,
-					OnResponse: demoBtnResponse,
+					Id:           id + "_button_default",
+					EventURL:     eventURL,
+					OnResponse:   demoBtnResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
 				},
 				Type:  ButtonTypeDefault,
 				Align: bc.TextAlignCenter,
@@ -249,8 +250,11 @@ func DemoButton(eventURL, parentID string) []bc.DemoComponent {
 			ComponentType: bc.ComponentTypeButton,
 			Component: &Button{
 				BaseComponent: bc.BaseComponent{
-					EventURL:   eventURL,
-					OnResponse: demoBtnResponse,
+					Id:           id + "_button_right_icon",
+					EventURL:     eventURL,
+					OnResponse:   demoBtnResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
 				},
 				Type:      ButtonTypeDefault,
 				Align:     bc.TextAlignRight,
@@ -263,8 +267,11 @@ func DemoButton(eventURL, parentID string) []bc.DemoComponent {
 			ComponentType: bc.ComponentTypeButton,
 			Component: &Button{
 				BaseComponent: bc.BaseComponent{
-					EventURL:   eventURL,
-					OnResponse: demoBtnResponse,
+					Id:           id + "_button_primary",
+					EventURL:     eventURL,
+					OnResponse:   demoBtnResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
 				},
 				Type:     ButtonTypePrimary,
 				Align:    bc.TextAlignCenter,
@@ -277,8 +284,11 @@ func DemoButton(eventURL, parentID string) []bc.DemoComponent {
 			ComponentType: bc.ComponentTypeButton,
 			Component: &Button{
 				BaseComponent: bc.BaseComponent{
-					EventURL:   eventURL,
-					OnResponse: demoBtnResponse,
+					Id:           id + "_button_border",
+					EventURL:     eventURL,
+					OnResponse:   demoBtnResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
 				},
 				Type:     ButtonTypeBorder,
 				Align:    bc.TextAlignCenter,
@@ -290,8 +300,11 @@ func DemoButton(eventURL, parentID string) []bc.DemoComponent {
 			ComponentType: bc.ComponentTypeButton,
 			Component: &Button{
 				BaseComponent: bc.BaseComponent{
-					EventURL:   eventURL,
-					OnResponse: demoBtnResponse,
+					Id:           id + "_button_full",
+					EventURL:     eventURL,
+					OnResponse:   demoBtnResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
 				},
 				Type:      ButtonTypeBorder,
 				Align:     bc.TextAlignCenter,
@@ -315,8 +328,11 @@ func DemoButton(eventURL, parentID string) []bc.DemoComponent {
 			ComponentType: bc.ComponentTypeButton,
 			Component: &Button{
 				BaseComponent: bc.BaseComponent{
-					EventURL:   eventURL,
-					OnResponse: demoBtnResponse,
+					Id:           id + "_button_label",
+					EventURL:     eventURL,
+					OnResponse:   demoBtnResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
 				},
 				Type:           ButtonTypeDefault,
 				Align:          bc.TextAlignCenter,
@@ -328,8 +344,11 @@ func DemoButton(eventURL, parentID string) []bc.DemoComponent {
 			ComponentType: bc.ComponentTypeButton,
 			Component: &Button{
 				BaseComponent: bc.BaseComponent{
-					EventURL:   eventURL,
-					OnResponse: demoBtnResponse,
+					Id:           id + "_button_custom",
+					EventURL:     eventURL,
+					OnResponse:   demoBtnResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
 					Style: bc.SM{
 						"border-color": "green", "color": "red", "border-radius": "3px",
 					},

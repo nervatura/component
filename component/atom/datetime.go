@@ -19,15 +19,15 @@ var DateTimeType []string = []string{DateTimeTypeDate, DateTimeTypeTime, DateTim
 
 type DateTime struct {
 	bc.BaseComponent
-	Type      string
-	Value     string
-	Label     string
-	IsNull    bool
-	Picker    bool
-	Disabled  bool
-	ReadOnly  bool
-	AutoFocus bool
-	Full      bool
+	Type      string `json:"type"`
+	Value     string `json:"value"`
+	Label     string `json:"label"`
+	IsNull    bool   `json:"is_null"`
+	Picker    bool   `json:"picker"`
+	Disabled  bool   `json:"disabled"`
+	ReadOnly  bool   `json:"read_only"`
+	AutoFocus bool   `json:"auto_focus"`
+	Full      bool   `json:"full"`
 }
 
 func (dti *DateTime) Properties() bc.IM {
@@ -131,7 +131,7 @@ func (dti *DateTime) SetProperty(propName string, propValue interface{}) interfa
 		},
 	}
 	if _, found := pm[propName]; found {
-		return pm[propName]()
+		return dti.SetRequestValue(propName, pm[propName](), []string{})
 	}
 	if dti.BaseComponent.GetProperty(propName) != nil {
 		return dti.BaseComponent.SetProperty(propName, propValue)
@@ -152,14 +152,8 @@ func (dti *DateTime) OnRequest(te bc.TriggerEvent) (re bc.ResponseEvent) {
 	return evt
 }
 
-func (dti *DateTime) InitProps() {
-	for key, value := range dti.Properties() {
-		dti.SetProperty(key, value)
-	}
-}
-
 func (dti *DateTime) Render() (res string, err error) {
-	dti.InitProps()
+	dti.InitProps(dti)
 
 	funcMap := map[string]any{
 		"styleMap": func() bool {
@@ -182,17 +176,24 @@ func (dti *DateTime) Render() (res string, err error) {
 	></input>`
 
 	if res, err = bc.TemplateBuilder("datetime", tpl, funcMap, dti); err == nil && dti.EventURL != "" {
-		bc.SetCMValue(dti.RequestMap, dti.Id, dti)
+		dti.SetProperty("request_map", dti)
 	}
 	return res, nil
 }
 
-func DemoDateTime(eventURL, parentID string) []bc.DemoComponent {
+func DemoDateTime(demo bc.ClientComponent) []bc.DemoComponent {
+	id := bc.ToString(demo.GetProperty("id"), "")
+	eventURL := bc.ToString(demo.GetProperty("event_url"), "")
+	requestValue := demo.GetProperty("request_value").(map[string]bc.IM)
+	requestMap := demo.GetProperty("request_map").(map[string]bc.ClientComponent)
 	return []bc.DemoComponent{
 		{
 			Label:         "Default, focus, null",
 			ComponentType: bc.ComponentTypeInput,
 			Component: &DateTime{
+				BaseComponent: bc.BaseComponent{
+					Id: id + "_datetime_default",
+				},
 				Type:      DateTimeTypeDate,
 				Value:     "",
 				IsNull:    true,
@@ -202,6 +203,9 @@ func DemoDateTime(eventURL, parentID string) []bc.DemoComponent {
 			Label:         "DateTime, picker, full",
 			ComponentType: bc.ComponentTypeInput,
 			Component: &DateTime{
+				BaseComponent: bc.BaseComponent{
+					Id: id + "_datetime_picker",
+				},
 				Type:   DateTimeTypeDateTime,
 				Picker: true,
 			}},
@@ -210,8 +214,11 @@ func DemoDateTime(eventURL, parentID string) []bc.DemoComponent {
 			ComponentType: bc.ComponentTypeInput,
 			Component: &DateTime{
 				BaseComponent: bc.BaseComponent{
-					EventURL: eventURL,
-					Swap:     bc.SwapOuterHTML,
+					Id:           id + "_datetime_time",
+					EventURL:     eventURL,
+					Swap:         bc.SwapOuterHTML,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
 				},
 				Type: DateTimeTypeTime,
 			}},

@@ -20,8 +20,6 @@ const (
 
 	ComponentTypeLogin = "login"
 
-	ComponentTypeAdmin = "admin"
-
 	TextAlignLeft   = "align-left"
 	TextAlignCenter = "center"
 	TextAlignRight  = "align-right"
@@ -64,7 +62,7 @@ var ComponentType []string = []string{
 	ComponentTypeButton, ComponentTypeDateTime, ComponentTypeIcon, ComponentTypeInput,
 	ComponentTypeLabel, ComponentTypeNumberInput, ComponentTypeSelect, ComponentTypeToast,
 	ComponentTypeTable, ComponentTypePagination, ComponentTypeMenuBar,
-	ComponentTypeLogin, ComponentTypeAdmin,
+	ComponentTypeLogin,
 }
 var TextAlign []string = []string{TextAlignLeft, TextAlignCenter, TextAlignRight}
 var VerticalAlign []string = []string{VerticalAlignTop, VerticalAlignMiddle, VerticalAlignBottom}

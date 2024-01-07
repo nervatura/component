@@ -8,7 +8,7 @@ import (
 )
 
 func TestDemoDateTime(t *testing.T) {
-	for _, tt := range DemoDateTime("/demo", "") {
+	for _, tt := range DemoDateTime(&bc.BaseComponent{EventURL: "/demo"}) {
 		t.Run(tt.Label, func(t *testing.T) {
 			tt.Component.Render()
 		})

@@ -22,10 +22,10 @@ var ValidPageSize []int64 = []int64{5, 10, 20, 50, 100}
 
 type Pagination struct {
 	bc.BaseComponent
-	Value        int64
-	PageSize     int64
-	PageCount    int64
-	HidePageSize bool
+	Value        int64 `json:"value"`
+	PageSize     int64 `json:"page_size"`
+	PageCount    int64 `json:"page_count"`
+	HidePageSize bool  `json:"hide_pageSize"`
 }
 
 func (pgn *Pagination) Properties() bc.IM {
@@ -108,7 +108,7 @@ func (pgn *Pagination) SetProperty(propName string, propValue interface{}) inter
 		},
 	}
 	if _, found := pm[propName]; found {
-		return pm[propName]()
+		return pgn.SetRequestValue(propName, pm[propName](), []string{})
 	}
 	if pgn.BaseComponent.GetProperty(propName) != nil {
 		return pgn.BaseComponent.SetProperty(propName, propValue)
@@ -139,10 +139,12 @@ func (pgn *Pagination) getComponent(name string) (res string, err error) {
 		return &fm.Button{
 			BaseComponent: bc.BaseComponent{
 				Id: pgn.Id + "_" + name, Name: name,
-				Style:      style,
-				EventURL:   pgn.EventURL,
-				Target:     pgn.Target,
-				OnResponse: pgn.response,
+				Style:        style,
+				EventURL:     pgn.EventURL,
+				Target:       pgn.Target,
+				OnResponse:   pgn.response,
+				RequestValue: pgn.RequestValue,
+				RequestMap:   pgn.RequestMap,
 			},
 			Type:  fm.ButtonTypeBorder,
 			Label: label, Value: value, Disabled: disabled,
@@ -177,12 +179,14 @@ func (pgn *Pagination) getComponent(name string) (res string, err error) {
 		"pagination_input_value": func() bc.ClientComponent {
 			return &fm.NumberInput{
 				BaseComponent: bc.BaseComponent{
-					Id:         pgn.Id + "_" + name,
-					Name:       name,
-					Style:      bc.SM{"padding": "7px", "width": "60px", "font-weight": "bold"},
-					EventURL:   pgn.EventURL,
-					Target:     pgn.Target,
-					OnResponse: pgn.response,
+					Id:           pgn.Id + "_" + name,
+					Name:         name,
+					Style:        bc.SM{"padding": "7px", "width": "60px", "font-weight": "bold"},
+					EventURL:     pgn.EventURL,
+					Target:       pgn.Target,
+					OnResponse:   pgn.response,
+					RequestValue: pgn.RequestValue,
+					RequestMap:   pgn.RequestMap,
 				},
 				Value:    float64(pgn.Value),
 				Label:    "Page",
@@ -196,10 +200,12 @@ func (pgn *Pagination) getComponent(name string) (res string, err error) {
 			sel := &fm.Select{
 				BaseComponent: bc.BaseComponent{
 					Id: pgn.Id + "_" + name, Name: name,
-					Style:      bc.SM{"padding": "7px"},
-					EventURL:   pgn.EventURL,
-					Target:     pgn.Target,
-					OnResponse: pgn.response,
+					Style:        bc.SM{"padding": "7px"},
+					EventURL:     pgn.EventURL,
+					Target:       pgn.Target,
+					OnResponse:   pgn.response,
+					RequestValue: pgn.RequestValue,
+					RequestMap:   pgn.RequestMap,
 				},
 				Label:    "Size",
 				Disabled: (pgn.PageCount == 0),
@@ -216,20 +222,11 @@ func (pgn *Pagination) getComponent(name string) (res string, err error) {
 	}
 	cc := ccMap[name]()
 	res, err = cc.Render()
-	if err == nil {
-		pgn.RequestMap = bc.MergeCM(pgn.RequestMap, cc.GetProperty("request_map").(map[string]bc.ClientComponent))
-	}
 	return res, err
 }
 
-func (pgn *Pagination) InitProps() {
-	for key, value := range pgn.Properties() {
-		pgn.SetProperty(key, value)
-	}
-}
-
 func (pgn *Pagination) Render() (res string, err error) {
-	pgn.InitProps()
+	pgn.InitProps(pgn)
 
 	funcMap := map[string]any{
 		"styleMap": func() bool {
@@ -253,15 +250,21 @@ func (pgn *Pagination) Render() (res string, err error) {
 	return bc.TemplateBuilder("pagination", tpl, funcMap, pgn)
 }
 
-func DemoPagination(eventURL, parentID string) []bc.DemoComponent {
+func DemoPagination(demo bc.ClientComponent) []bc.DemoComponent {
+	id := bc.ToString(demo.GetProperty("id"), "")
+	eventURL := bc.ToString(demo.GetProperty("event_url"), "")
+	requestValue := demo.GetProperty("request_value").(map[string]bc.IM)
+	requestMap := demo.GetProperty("request_map").(map[string]bc.ClientComponent)
 	return []bc.DemoComponent{
 		{
 			Label:         "Default",
 			ComponentType: bc.ComponentTypePagination,
 			Component: &Pagination{
 				BaseComponent: bc.BaseComponent{
-					Id:       bc.GetComponentID(),
-					EventURL: eventURL,
+					Id:           id + "_table_default",
+					EventURL:     eventURL,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
 				},
 				PageSize:     5,
 				HidePageSize: true,
@@ -271,8 +274,10 @@ func DemoPagination(eventURL, parentID string) []bc.DemoComponent {
 			ComponentType: bc.ComponentTypePagination,
 			Component: &Pagination{
 				BaseComponent: bc.BaseComponent{
-					Id:       bc.GetComponentID(),
-					EventURL: eventURL,
+					Id:           id + "_table_page_size",
+					EventURL:     eventURL,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
 				},
 				Value:        2,
 				PageSize:     10,

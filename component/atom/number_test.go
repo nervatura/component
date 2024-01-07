@@ -8,7 +8,7 @@ import (
 )
 
 func TestDemoNumberInput(t *testing.T) {
-	for _, tt := range DemoNumberInput("/demo", "") {
+	for _, tt := range DemoNumberInput(&bc.BaseComponent{EventURL: "/demo"}) {
 		t.Run(tt.Label, func(t *testing.T) {
 			tt.Component.Render()
 		})

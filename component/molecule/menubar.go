@@ -13,19 +13,19 @@ const (
 )
 
 type MenuBarItem struct {
-	Value string
-	Label string
-	Icon  string
+	Value string `json:"value"`
+	Label string `json:"label"`
+	Icon  string `json:"icon"`
 }
 
 type MenuBar struct {
 	bc.BaseComponent
-	Value          string
-	SideBar        bool
-	SideVisibility string
-	LabelHide      string
-	LabelMenu      string
-	Items          []MenuBarItem
+	Value          string        `json:"value"`
+	SideBar        bool          `json:"side_bar"`
+	SideVisibility string        `json:"side_visibility"`
+	LabelHide      string        `json:"label_hide"`
+	LabelMenu      string        `json:"label_menu"`
+	Items          []MenuBarItem `json:"items"`
 }
 
 func (mnb *MenuBar) Properties() bc.IM {
@@ -107,7 +107,7 @@ func (mnb *MenuBar) SetProperty(propName string, propValue interface{}) interfac
 		},
 	}
 	if _, found := pm[propName]; found {
-		return pm[propName]()
+		return mnb.SetRequestValue(propName, pm[propName](), []string{})
 	}
 	if mnb.BaseComponent.GetProperty(propName) != nil {
 		return mnb.BaseComponent.SetProperty(propName, propValue)
@@ -149,12 +149,14 @@ func (mnb *MenuBar) getComponent(name string, item MenuBarItem) (res string, err
 			}
 			return &fm.Label{
 				BaseComponent: bc.BaseComponent{
-					Id:         mnb.Id + "_sidebar",
-					Name:       name,
-					EventURL:   mnb.EventURL,
-					Target:     mnb.Target,
-					OnResponse: mnb.response,
-					Class:      cclass,
+					Id:           mnb.Id + "_sidebar",
+					Name:         name,
+					EventURL:     mnb.EventURL,
+					Target:       mnb.Target,
+					OnResponse:   mnb.response,
+					RequestValue: mnb.RequestValue,
+					RequestMap:   mnb.RequestMap,
+					Class:        cclass,
 				},
 				Value:     label,
 				LeftIcon:  icon,
@@ -171,13 +173,15 @@ func (mnb *MenuBar) getComponent(name string, item MenuBarItem) (res string, err
 			}
 			return &fm.Label{
 				BaseComponent: bc.BaseComponent{
-					Id:         mnb.Id + "_" + item.Value,
-					Name:       name,
-					EventURL:   mnb.EventURL,
-					Target:     mnb.Target,
-					Data:       bc.IM{"item": item},
-					OnResponse: mnb.response,
-					Class:      cclass,
+					Id:           mnb.Id + "_" + item.Value,
+					Name:         name,
+					EventURL:     mnb.EventURL,
+					Target:       mnb.Target,
+					Data:         bc.IM{"item": item},
+					OnResponse:   mnb.response,
+					RequestValue: mnb.RequestValue,
+					RequestMap:   mnb.RequestMap,
+					Class:        cclass,
 				},
 				Value:    item.Label,
 				LeftIcon: item.Icon,
@@ -193,13 +197,15 @@ func (mnb *MenuBar) getComponent(name string, item MenuBarItem) (res string, err
 			}
 			return &fm.Icon{
 				BaseComponent: bc.BaseComponent{
-					Id:         mnb.Id + "_" + item.Value,
-					Name:       name,
-					EventURL:   mnb.EventURL,
-					Target:     mnb.Target,
-					Data:       bc.IM{"item": item},
-					OnResponse: mnb.response,
-					Class:      cclass,
+					Id:           mnb.Id + "_" + item.Value,
+					Name:         name,
+					EventURL:     mnb.EventURL,
+					Target:       mnb.Target,
+					Data:         bc.IM{"item": item},
+					OnResponse:   mnb.response,
+					RequestValue: mnb.RequestValue,
+					RequestMap:   mnb.RequestMap,
+					Class:        cclass,
 				},
 				Value: item.Icon,
 			}
@@ -207,20 +213,11 @@ func (mnb *MenuBar) getComponent(name string, item MenuBarItem) (res string, err
 	}
 	cc := ccMap[name]()
 	res, err = cc.Render()
-	if err == nil {
-		mnb.RequestMap = bc.MergeCM(mnb.RequestMap, cc.GetProperty("request_map").(map[string]bc.ClientComponent))
-	}
 	return res, err
 }
 
-func (mnb *MenuBar) InitProps() {
-	for key, value := range mnb.Properties() {
-		mnb.SetProperty(key, value)
-	}
-}
-
 func (mnb *MenuBar) Render() (res string, err error) {
-	mnb.InitProps()
+	mnb.InitProps(mnb)
 
 	funcMap := map[string]any{
 		"styleMap": func() bool {
@@ -264,15 +261,21 @@ func (mnb *MenuBar) Render() (res string, err error) {
 	return bc.TemplateBuilder("menubar", tpl, funcMap, mnb)
 }
 
-func DemoMenuBar(eventURL, parentID string) []bc.DemoComponent {
+func DemoMenuBar(demo bc.ClientComponent) []bc.DemoComponent {
+	id := bc.ToString(demo.GetProperty("id"), "")
+	eventURL := bc.ToString(demo.GetProperty("event_url"), "")
+	requestValue := demo.GetProperty("request_value").(map[string]bc.IM)
+	requestMap := demo.GetProperty("request_map").(map[string]bc.ClientComponent)
 	return []bc.DemoComponent{
 		{
 			Label:         "Default",
 			ComponentType: bc.ComponentTypeMenuBar,
 			Component: &MenuBar{
 				BaseComponent: bc.BaseComponent{
-					Id:       bc.GetComponentID(),
-					EventURL: eventURL,
+					Id:           id + "_menubar_default",
+					EventURL:     eventURL,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
 				},
 				Items: []MenuBarItem{
 					{Value: "search", Label: "Search", Icon: "Search"},

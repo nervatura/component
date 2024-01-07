@@ -11,19 +11,19 @@ const (
 )
 
 type SelectOption struct {
-	Value string
-	Text  string
+	Value string `json:"value"`
+	Text  string `json:"text"`
 }
 
 type Select struct {
 	bc.BaseComponent
-	Value     string
-	Options   []SelectOption
-	IsNull    bool
-	Label     string
-	Disabled  bool
-	AutoFocus bool
-	Full      bool
+	Value     string         `json:"value"`
+	Options   []SelectOption `json:"options"`
+	IsNull    bool           `json:"is_null"`
+	Label     string         `json:"label"`
+	Disabled  bool           `json:"disabled"`
+	AutoFocus bool           `json:"auto_focus"`
+	Full      bool           `json:"full"`
 }
 
 func (sel *Select) Properties() bc.IM {
@@ -114,7 +114,7 @@ func (sel *Select) SetProperty(propName string, propValue interface{}) interface
 		},
 	}
 	if _, found := pm[propName]; found {
-		return pm[propName]()
+		return sel.SetRequestValue(propName, pm[propName](), []string{})
 	}
 	if sel.BaseComponent.GetProperty(propName) != nil {
 		return sel.BaseComponent.SetProperty(propName, propValue)
@@ -135,14 +135,8 @@ func (sel *Select) OnRequest(te bc.TriggerEvent) (re bc.ResponseEvent) {
 	return evt
 }
 
-func (sel *Select) InitProps() {
-	for key, value := range sel.Properties() {
-		sel.SetProperty(key, value)
-	}
-}
-
 func (sel *Select) Render() (res string, err error) {
-	sel.InitProps()
+	sel.InitProps(sel)
 
 	funcMap := map[string]any{
 		"styleMap": func() bool {
@@ -165,19 +159,26 @@ func (sel *Select) Render() (res string, err error) {
 	</select>`
 
 	if res, err = bc.TemplateBuilder("button", tpl, funcMap, sel); err == nil && sel.EventURL != "" {
-		bc.SetCMValue(sel.RequestMap, sel.Id, sel)
+		sel.SetProperty("request_map", sel)
 	}
 	return res, nil
 }
 
-func DemoSelect(eventURL, parentID string) []bc.DemoComponent {
+func DemoSelect(demo bc.ClientComponent) []bc.DemoComponent {
+	id := bc.ToString(demo.GetProperty("id"), "")
+	eventURL := bc.ToString(demo.GetProperty("event_url"), "")
+	requestValue := demo.GetProperty("request_value").(map[string]bc.IM)
+	requestMap := demo.GetProperty("request_map").(map[string]bc.ClientComponent)
 	return []bc.DemoComponent{
 		{
 			Label:         "Default",
 			ComponentType: bc.ComponentTypeSelect,
 			Component: &Select{
 				BaseComponent: bc.BaseComponent{
-					EventURL: eventURL,
+					Id:           id + "_select_default",
+					EventURL:     eventURL,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
 				},
 				Value: "value1",
 				Options: []SelectOption{
@@ -192,7 +193,10 @@ func DemoSelect(eventURL, parentID string) []bc.DemoComponent {
 			ComponentType: bc.ComponentTypeSelect,
 			Component: &Select{
 				BaseComponent: bc.BaseComponent{
-					EventURL: eventURL,
+					Id:           id + "_select_not_null",
+					EventURL:     eventURL,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
 				},
 				Value: "value2",
 				Options: []SelectOption{

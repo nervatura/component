@@ -640,35 +640,6 @@ func TestSetSMValue(t *testing.T) {
 	}
 }
 
-func TestSetCMValue(t *testing.T) {
-	type args struct {
-		cmap  map[string]ClientComponent
-		key   string
-		value ClientComponent
-	}
-	tests := []struct {
-		name string
-		args args
-		want map[string]ClientComponent
-	}{
-		{
-			name: "ok",
-			args: args{
-				key:   "key",
-				value: nil,
-			},
-			want: map[string]ClientComponent{"key": nil},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := SetCMValue(tt.args.cmap, tt.args.key, tt.args.value); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("SetCMValue() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestMergeSM(t *testing.T) {
 	type args struct {
 		baseMap  SM
@@ -725,29 +696,53 @@ func TestMergeIM(t *testing.T) {
 	}
 }
 
-func TestMergeCM(t *testing.T) {
+func TestToIMA(t *testing.T) {
 	type args struct {
-		baseMap  map[string]ClientComponent
-		valueMap map[string]ClientComponent
+		value    interface{}
+		defValue []IM
 	}
 	tests := []struct {
 		name string
 		args args
-		want map[string]ClientComponent
+		want []IM
 	}{
 		{
-			name: "ok",
+			name: "valid",
 			args: args{
-				baseMap:  map[string]ClientComponent{"key1": nil},
-				valueMap: map[string]ClientComponent{"key2": nil},
+				value:    []IM{},
+				defValue: []IM{},
 			},
-			want: map[string]ClientComponent{"key1": nil, "key2": nil},
+			want: []IM{},
+		},
+		{
+			name: "sm",
+			args: args{
+				value:    []SM{{"field": "value"}},
+				defValue: []IM{},
+			},
+			want: []IM{{"field": "value"}},
+		},
+		{
+			name: "if",
+			args: args{
+				value:    []interface{}{SM{"field1": "value"}, IM{"field2": "value"}},
+				defValue: []IM{},
+			},
+			want: []IM{{"field1": "value"}, {"field2": "value"}},
+		},
+		{
+			name: "default",
+			args: args{
+				value:    nil,
+				defValue: []IM{},
+			},
+			want: []IM{},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := MergeCM(tt.args.baseMap, tt.args.valueMap); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("MergeCM() = %v, want %v", got, tt.want)
+			if got := ToIMA(tt.args.value, tt.args.defValue); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ToIMA() = %v, want %v", got, tt.want)
 			}
 		})
 	}
