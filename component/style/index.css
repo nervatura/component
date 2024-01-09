@@ -13,6 +13,5 @@
 @import "molecule/menubar.css";
 @import "molecule/table.css";
 
-@import "page/admin.css";
 @import "page/demo.css";
 @import "page/login.css";
