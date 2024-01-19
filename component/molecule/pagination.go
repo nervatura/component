@@ -118,11 +118,16 @@ func (pgn *Pagination) SetProperty(propName string, propValue interface{}) inter
 
 func (pgn *Pagination) response(evt bc.ResponseEvent) (re bc.ResponseEvent) {
 	pgnEvt := bc.ResponseEvent{Trigger: pgn, TriggerName: pgn.Name}
-	if evt.TriggerName == "pagination_page_size" {
+	switch evt.TriggerName {
+	case "pagination_page_size":
 		value := pgn.SetProperty("page_size", evt.Value).(int64)
 		pgnEvt.Name = PaginationEventPageSize
 		pgnEvt.Value = value
-	} else {
+	case "pagination_input_value":
+		value := pgn.SetProperty("value", evt.Value).(int64)
+		pgnEvt.Name = PaginationEventValue
+		pgnEvt.Value = value
+	default:
 		data := evt.Trigger.GetProperty("data").(bc.IM)
 		value := pgn.SetProperty("value", data["value"]).(int64)
 		pgnEvt.Name = PaginationEventValue
