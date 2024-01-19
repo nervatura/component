@@ -204,6 +204,7 @@ func TestPagination_response(t *testing.T) {
 			args: args{
 				evt: bc.ResponseEvent{
 					TriggerName: "pagination_btn_last",
+					Trigger:     &bc.BaseComponent{},
 				},
 			},
 		},

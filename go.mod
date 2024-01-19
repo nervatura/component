@@ -2,7 +2,7 @@ module github.com/nervatura/component
 
 go 1.21
 
-require golang.org/x/sync v0.5.0
+require golang.org/x/sync v0.6.0
 
 require github.com/gorilla/securecookie v1.1.2 // indirect
 

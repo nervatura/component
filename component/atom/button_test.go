@@ -21,7 +21,6 @@ func TestButton_GetProperty(t *testing.T) {
 		BaseComponent  bc.BaseComponent
 		Type           string
 		Align          string
-		Value          string
 		Label          string
 		LabelComponent bc.ClientComponent
 		Icon           string
@@ -57,7 +56,6 @@ func TestButton_GetProperty(t *testing.T) {
 				BaseComponent:  tt.fields.BaseComponent,
 				Type:           tt.fields.Type,
 				Align:          tt.fields.Align,
-				Value:          tt.fields.Value,
 				Label:          tt.fields.Label,
 				LabelComponent: tt.fields.LabelComponent,
 				Icon:           tt.fields.Icon,
@@ -82,7 +80,6 @@ func TestButton_Validation(t *testing.T) {
 		BaseComponent  bc.BaseComponent
 		Type           string
 		Align          string
-		Value          string
 		Label          string
 		LabelComponent bc.ClientComponent
 		Icon           string
@@ -128,7 +125,6 @@ func TestButton_Validation(t *testing.T) {
 				BaseComponent:  tt.fields.BaseComponent,
 				Type:           tt.fields.Type,
 				Align:          tt.fields.Align,
-				Value:          tt.fields.Value,
 				Label:          tt.fields.Label,
 				LabelComponent: tt.fields.LabelComponent,
 				Icon:           tt.fields.Icon,
@@ -153,7 +149,6 @@ func TestButton_SetProperty(t *testing.T) {
 		BaseComponent  bc.BaseComponent
 		Type           string
 		Align          string
-		Value          string
 		Label          string
 		LabelComponent bc.ClientComponent
 		Icon           string
@@ -199,7 +194,6 @@ func TestButton_SetProperty(t *testing.T) {
 				BaseComponent:  tt.fields.BaseComponent,
 				Type:           tt.fields.Type,
 				Align:          tt.fields.Align,
-				Value:          tt.fields.Value,
 				Label:          tt.fields.Label,
 				LabelComponent: tt.fields.LabelComponent,
 				Icon:           tt.fields.Icon,
@@ -224,7 +218,6 @@ func TestButton_OnRequest(t *testing.T) {
 		BaseComponent  bc.BaseComponent
 		Type           string
 		Align          string
-		Value          string
 		Label          string
 		LabelComponent bc.ClientComponent
 		Icon           string
@@ -287,7 +280,6 @@ func TestButton_OnRequest(t *testing.T) {
 				BaseComponent:  tt.fields.BaseComponent,
 				Type:           tt.fields.Type,
 				Align:          tt.fields.Align,
-				Value:          tt.fields.Value,
 				Label:          tt.fields.Label,
 				LabelComponent: tt.fields.LabelComponent,
 				Icon:           tt.fields.Icon,

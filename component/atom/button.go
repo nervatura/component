@@ -20,7 +20,6 @@ type Button struct {
 	bc.BaseComponent
 	Type           string             `json:"type"`
 	Align          string             `json:"align"`
-	Value          string             `json:"value"`
 	Label          string             `json:"label"`
 	LabelComponent bc.ClientComponent `json:"label_component"`
 	Icon           string             `json:"icon"`
@@ -40,7 +39,6 @@ func (btn *Button) Properties() bc.IM {
 		bc.IM{
 			"type":            btn.Type,
 			"align":           btn.Align,
-			"value":           btn.Value,
 			"label":           btn.Label,
 			"label_component": btn.LabelComponent,
 			"icon":            btn.Icon,
@@ -89,10 +87,6 @@ func (btn *Button) SetProperty(propName string, propValue interface{}) interface
 		"align": func() interface{} {
 			btn.Align = btn.Validation(propName, propValue).(string)
 			return btn.Align
-		},
-		"value": func() interface{} {
-			btn.Value = bc.ToString(propValue, "")
-			return btn.Value
 		},
 		"label": func() interface{} {
 			btn.Label = bc.ToString(propValue, "")
@@ -194,7 +188,6 @@ func (btn *Button) Render() (res string, err error) {
 		},
 	}
 	tpl := `<button id="{{ .Id }}" name="{{ .Name }}"
-	{{ if ne .Value "" }} hx-include="[name='{{ .Id }}_value']"{{ end }}
 	{{ if or (eq .Type "primary") (eq .Type "border") }} button-type="{{ .Type }}"{{ end }}
 	{{ if ne .EventURL "" }} hx-post="{{ .EventURL }}" hx-target="{{ .Target }}" hx-swap="{{ .Swap }}"{{ end }}
 	{{ if ne .Indicator "" }} hx-indicator="#{{ .Indicator }}"{{ end }}
@@ -203,8 +196,7 @@ func (btn *Button) Render() (res string, err error) {
 	{{ if ne .Label "" }} aria-label="{{ .Label }}" title="{{ .Label }}"{{ end }}
 	 class="{{ .Align }}{{ if .Small }} small-button{{ end }}{{ if .Full }} full{{ end }}{{ if .Selected }} selected{{ end }}{{ if .HideLabel }} hidelabel{{ end }} {{ customClass }}"
 	{{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}
-	>{{ if ne .Value "" }}<input type="hidden" name="{{ .Id }}_value" value="{{ .Value }}" >{{ end }}
-	{{ if and (ne .Icon "") (ne .Align "align-right") }}{{ buttonComponent "icon" }}{{ end }}
+	>{{ if and (ne .Icon "") (ne .Align "align-right") }}{{ buttonComponent "icon" }}{{ end }}
 	{{ if .LabelComponent }}{{ buttonComponent "label" }}{{ else }}<span>{{ .Label }}</span>{{ end }}
 	{{ if and (ne .Icon "") (eq .Align "align-right") }}{{ buttonComponent "icon" }}{{ end }}
 	{{ if .ShowBadge }}<span class="right" ><span class="badge{{ if .Selected }} selected-badge{{ end }}" >{{ .Badge }}</span></span>{{ end }}
@@ -243,7 +235,6 @@ func DemoButton(demo bc.ClientComponent) []bc.DemoComponent {
 				Type:  ButtonTypeDefault,
 				Align: bc.TextAlignCenter,
 				Label: "Default",
-				Value: "default",
 			}},
 		{
 			Label:         "Right icon",

@@ -123,7 +123,8 @@ func (pgn *Pagination) response(evt bc.ResponseEvent) (re bc.ResponseEvent) {
 		pgnEvt.Name = PaginationEventPageSize
 		pgnEvt.Value = value
 	} else {
-		value := pgn.SetProperty("value", evt.Value).(int64)
+		data := evt.Trigger.GetProperty("data").(bc.IM)
+		value := pgn.SetProperty("value", data["value"]).(int64)
 		pgnEvt.Name = PaginationEventValue
 		pgnEvt.Value = value
 		pgn.Value = value
@@ -139,6 +140,9 @@ func (pgn *Pagination) getComponent(name string) (res string, err error) {
 		return &fm.Button{
 			BaseComponent: bc.BaseComponent{
 				Id: pgn.Id + "_" + name, Name: name,
+				Data: bc.IM{
+					"value": value,
+				},
 				Style:        style,
 				EventURL:     pgn.EventURL,
 				Target:       pgn.Target,
@@ -147,7 +151,7 @@ func (pgn *Pagination) getComponent(name string) (res string, err error) {
 				RequestMap:   pgn.RequestMap,
 			},
 			Type:  fm.ButtonTypeBorder,
-			Label: label, Value: value, Disabled: disabled,
+			Label: label, Disabled: disabled,
 		}
 	}
 	ccMap := map[string]func() bc.ClientComponent{
