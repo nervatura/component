@@ -200,6 +200,15 @@ func TestPagination_response(t *testing.T) {
 			},
 		},
 		{
+			name: "pagination_input_value",
+			args: args{
+				evt: bc.ResponseEvent{
+					TriggerName: "pagination_input_value",
+					Trigger:     &bc.BaseComponent{},
+				},
+			},
+		},
+		{
 			name: "value",
 			args: args{
 				evt: bc.ResponseEvent{
