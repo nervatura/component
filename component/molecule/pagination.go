@@ -186,7 +186,7 @@ func (pgn *Pagination) getComponent(name string) (res string, err error) {
 			)
 		},
 		"pagination_input_value": func() bc.ClientComponent {
-			return &fm.NumberInput{
+			inp := &fm.NumberInput{
 				BaseComponent: bc.BaseComponent{
 					Id:           pgn.Id + "_" + name,
 					Name:         name,
@@ -197,13 +197,14 @@ func (pgn *Pagination) getComponent(name string) (res string, err error) {
 					RequestValue: pgn.RequestValue,
 					RequestMap:   pgn.RequestMap,
 				},
-				Value:    float64(pgn.Value),
 				Label:    "Page",
 				Integer:  true,
 				Disabled: (pgn.PageCount == 0),
 				SetMin:   true, MinValue: 1,
 				SetMax: true, MaxValue: float64(pgn.PageCount),
 			}
+			inp.SetProperty("value", pgn.Value)
+			return inp
 		},
 		"pagination_page_size": func() bc.ClientComponent {
 			sel := &fm.Select{

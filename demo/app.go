@@ -3,6 +3,7 @@ package demo
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"encoding/base64"
 	"encoding/json"
@@ -37,14 +38,14 @@ type App struct {
 	version    string
 	infoLog    *log.Logger
 	server     *http.Server
-	appSession map[string]*pg.Application
+	memSession map[string]*pg.Demo
 }
 
 func New(version string) (err error) {
 	app := &App{
 		version:    version,
 		infoLog:    log.New(os.Stdout, "INFO: ", log.LstdFlags),
-		appSession: make(map[string]*pg.Application),
+		memSession: make(map[string]*pg.Demo),
 	}
 
 	ctx := context.Background()
@@ -84,6 +85,7 @@ func (app *App) startHttpService() error {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/", app.HomeRoute)
+	r.HandleFunc("/save", app.HomeRoute)
 	r.HandleFunc("/event", app.AppEvent).Methods("POST")
 	var publicFS, _ = fs.Sub(ct.Style, "style")
 	r.PathPrefix("/style/").Handler(http.StripPrefix("/style/", http.FileServer(http.FS(publicFS))))
@@ -133,6 +135,7 @@ func (app *App) LoadSession(fileName string, data any) (err error) {
 func (app *App) HomeRoute(w http.ResponseWriter, r *http.Request) {
 	tokenID := csrf.Token(r)
 	sessionID := base64.StdEncoding.EncodeToString([]byte(tokenID))[:24]
+	dataSave := sessionSave || strings.Contains(r.URL.Path, "/save")
 	demo := pg.NewDemo("/event", "Nervatura components")
 	ccApp := &pg.Application{
 		Title:  "Nervatura components",
@@ -150,11 +153,11 @@ func (app *App) HomeRoute(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	if sessionSave {
+	if dataSave {
 		err = app.SaveSession(sessionID, demo)
 	}
-	if (err != nil) || !sessionSave {
-		app.appSession[sessionID] = ccApp
+	if (err != nil) || !dataSave {
+		app.memSession[sessionID] = demo
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -165,6 +168,7 @@ func (app *App) AppEvent(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	tokenID := r.Header.Get("X-CSRF-Token")
 	sessionID := base64.StdEncoding.EncodeToString([]byte(tokenID))[:24]
+	dataSave := sessionSave || strings.Contains(r.Header.Get("Hx-Current-Url"), "/save")
 	te := bc.TriggerEvent{
 		Id:     r.Header.Get("HX-Trigger"),
 		Name:   r.Header.Get("HX-Trigger-Name"),
@@ -174,9 +178,9 @@ func (app *App) AppEvent(w http.ResponseWriter, r *http.Request) {
 	var err error
 	var evt bc.ResponseEvent
 	var demo *pg.Demo
-	if ccApp, found := app.appSession[sessionID]; found {
-		evt = ccApp.MainComponent.OnRequest(te)
-	} else if sessionSave {
+	if mem, found := app.memSession[sessionID]; found {
+		evt = mem.OnRequest(te)
+	} else if dataSave {
 		if err = app.LoadSession(sessionID, &demo); err == nil {
 			demo.DemoMap = pg.DemoMap
 			demo.RequestMap = map[string]bc.ClientComponent{}
@@ -197,7 +201,7 @@ func (app *App) AppEvent(w http.ResponseWriter, r *http.Request) {
 			Type: fm.ToastTypeError, Value: err.Error(),
 		}).Render()
 	}
-	if sessionSave {
+	if dataSave {
 		app.SaveSession(sessionID, demo)
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
