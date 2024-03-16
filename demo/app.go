@@ -16,8 +16,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gorilla/csrf"
-	"github.com/gorilla/mux"
 	ct "github.com/nervatura/component/component"
 	fm "github.com/nervatura/component/component/atom"
 	bc "github.com/nervatura/component/component/base"
@@ -82,19 +80,17 @@ func New(version string) (err error) {
 }
 
 func (app *App) startHttpService() error {
-	r := mux.NewRouter()
+	mux := http.NewServeMux()
 
-	r.HandleFunc("/", app.HomeRoute)
-	r.HandleFunc("/save", app.HomeRoute)
-	r.HandleFunc("/event", app.AppEvent).Methods("POST")
+	mux.HandleFunc("/", app.HomeRoute)
+	mux.HandleFunc("/save", app.HomeRoute)
+	mux.HandleFunc("POST /event", app.AppEvent)
+
 	var publicFS, _ = fs.Sub(ct.Style, "style")
-	r.PathPrefix("/style/").Handler(http.StripPrefix("/style/", http.FileServer(http.FS(publicFS))))
+	mux.Handle("/style/", http.StripPrefix("/style/", http.FileServer(http.FS(publicFS))))
 
 	app.server = &http.Server{
-		Handler: csrf.Protect(
-			[]byte(bc.RandString(32)),
-			csrf.Secure(app.version != "dev"),
-		)(r),
+		Handler:      mux,
 		Addr:         fmt.Sprintf(":%d", httpPort),
 		ReadTimeout:  time.Duration(httpReadTimeout) * time.Second,
 		WriteTimeout: time.Duration(httpWriteTimeout) * time.Second,
@@ -133,7 +129,7 @@ func (app *App) LoadSession(fileName string, data any) (err error) {
 }
 
 func (app *App) HomeRoute(w http.ResponseWriter, r *http.Request) {
-	tokenID := csrf.Token(r)
+	tokenID := bc.RandString(32)
 	sessionID := base64.StdEncoding.EncodeToString([]byte(tokenID))[:24]
 	dataSave := sessionSave || strings.Contains(r.URL.Path, "/save")
 	demo := pg.NewDemo("/event", "Nervatura components")
