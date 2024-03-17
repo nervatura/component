@@ -8,6 +8,7 @@ import (
 	bc "github.com/nervatura/component/component/base"
 	md "github.com/nervatura/component/component/modal"
 	mc "github.com/nervatura/component/component/molecule"
+	tp "github.com/nervatura/component/component/template"
 )
 
 const (
@@ -18,6 +19,7 @@ const (
 	ComponentGroupAtom     = "atom"
 	ComponentGroupMolecule = "molecule"
 	ComponentGroupModal    = "modal"
+	ComponentGroupTemplate = "template"
 	ComponentGroupPage     = "page"
 
 	ViewSizeCentered = "centered"
@@ -47,7 +49,7 @@ type DemoView struct {
 }
 
 var ComponentGroup []string = []string{
-	ComponentGroupAtom, ComponentGroupMolecule, ComponentGroupModal,
+	ComponentGroupAtom, ComponentGroupMolecule, ComponentGroupModal, ComponentGroupTemplate,
 }
 var ViewSize []string = []string{ViewSizeCentered, ViewSizeFull}
 
@@ -69,6 +71,9 @@ var DemoMap map[string][]DemoView = map[string][]DemoView{
 	},
 	ComponentGroupModal: {
 		{ComponentType: bc.ComponentTypeLogin, Stories: md.DemoLogin},
+	},
+	ComponentGroupTemplate: {
+		{ComponentType: bc.ComponentTypeLocale, Stories: tp.DemoLocale},
 	},
 }
 

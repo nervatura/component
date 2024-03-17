@@ -20,6 +20,8 @@ const (
 
 	ComponentTypeLogin = "login"
 
+	ComponentTypeLocale = "locale"
+
 	TextAlignLeft   = "align-left"
 	TextAlignCenter = "center"
 	TextAlignRight  = "align-right"
