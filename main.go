@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/nervatura/component/demo"
+	"github.com/nervatura/component/pkg/demo"
 )
 
 var (
