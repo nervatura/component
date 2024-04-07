@@ -7,7 +7,10 @@ import (
 	ut "github.com/nervatura/component/pkg/util"
 )
 
+// [Login] constants
 const (
+	ComponentTypeLogin = "login"
+
 	LoginEventChange = "change"
 	LoginEventLogin  = "login"
 	LoginEventTheme  = "theme"
@@ -28,15 +31,56 @@ var loginThemeMap map[string][]string = map[string][]string{
 	ThemeDark: {ThemeLight, "Sun"}, ThemeLight: {ThemeDark, "Moon"},
 }
 
+/*
+Creates an application login control
+
+Example component with the following main features:
+  - server-side state management
+  - selectable label languages
+  - light and dark theme
+  - modal appearance
+  - [Input], [Select], [Label] and [Button] components
+
+For example:
+
+	&Login{
+	  BaseComponent: BaseComponent{
+	    Id:           "id_login_default",
+	    EventURL:     "/event",
+	    OnResponse:   func(evt ResponseEvent) (re ResponseEvent) {
+	      // return parent_component response
+	      return evt
+	    },
+	    RequestValue: parent_component.GetProperty("request_value").(map[string]ut.IM),
+	    RequestMap:   parent_component.GetProperty("request_map").(map[string]ClientComponent),
+	    Data: ut.IM{ "username": "admin", "database": "demo" },
+	  },
+	  Version: "6.0.0",
+	  Lang:    "en",
+	  Locales: []SelectOption{{Value: "en", Text: "English"}},
+	  Theme:  ThemeLight,
+	}
+*/
 type Login struct {
 	BaseComponent
-	Version string         `json:"version"`
-	Lang    string         `json:"lang"`
-	Theme   string         `json:"theme"`
-	Labels  ut.SM          `json:"labels"`
+	// Application version value
+	Version string `json:"version"`
+	// Current ui language
+	Lang string `json:"lang"`
+	/*
+		The theme of the control.
+		[Theme] variable constants: [ThemeLight], [ThemeDark]. Default value: [ThemeLight]
+	*/
+	Theme string `json:"theme"`
+	// The texts of the labels of the controls
+	Labels ut.SM `json:"labels"`
+	// Selectable languages
 	Locales []SelectOption `json:"locales"`
 }
 
+/*
+Returns all properties of the [Login]
+*/
 func (lgn *Login) Properties() ut.IM {
 	return ut.MergeIM(
 		lgn.BaseComponent.Properties(),
@@ -49,10 +93,16 @@ func (lgn *Login) Properties() ut.IM {
 		})
 }
 
+/*
+Returns the value of the property of the [Login] with the specified name.
+*/
 func (lgn *Login) GetProperty(propName string) interface{} {
 	return lgn.Properties()[propName]
 }
 
+/*
+It checks the value given to the property of the [Login] and always returns a valid value
+*/
 func (lgn *Login) Validation(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"theme": func() interface{} {
@@ -97,6 +147,10 @@ func (lgn *Login) Validation(propName string, propValue interface{}) interface{}
 	return propValue
 }
 
+/*
+Setting a property of the [Login] value safely. Checks the entered value.
+In case of an invalid value, the default value will be set.
+*/
 func (lgn *Login) SetProperty(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"version": func() interface{} {
@@ -265,6 +319,9 @@ func (lgn *Login) msg(labelID string) string {
 	return labelID
 }
 
+/*
+Based on the values, it will generate the html code of the [Login] or return with an error message.
+*/
 func (lgn *Login) Render() (res string, err error) {
 	lgn.InitProps(lgn)
 
@@ -351,7 +408,7 @@ var demoLoginResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt Resp
 			Name:        evt.Name,
 			Header: ut.SM{
 				HeaderRetarget: "#toast-msg",
-				HeaderReswap:   "innerHTML",
+				HeaderReswap:   SwapInnerHTML,
 			},
 		}
 		return re
@@ -364,6 +421,7 @@ var demoLoginResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt Resp
 	return evt
 }
 
+// [Login] test and demo data
 func TestLogin(cc ClientComponent) []TestComponent {
 	id := ut.ToString(cc.GetProperty("id"), "")
 	eventURL := ut.ToString(cc.GetProperty("event_url"), "")

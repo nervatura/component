@@ -10,7 +10,10 @@ import (
 	ut "github.com/nervatura/component/pkg/util"
 )
 
+// [Table] constants
 const (
+	ComponentTypeTable = "table"
+
 	TableEventCurrentPage  = "current_page"
 	TableEventFilterChange = "filter_change"
 	TableEventAddItem      = "add_item"
@@ -27,51 +30,121 @@ const (
 	TableFieldTypeCustom   = "custom"
 )
 
+// [Table] TableFieldType values
 var TableFieldType []string = []string{TableFieldTypeString, TableFieldTypeNumber, TableFieldTypeDateTime,
 	TableFieldTypeDate, TableFieldTypeTime, TableFieldTypeBool, TableFieldTypeDeffield, TableFieldTypeCustom}
 
+/*
+Creates an interactive and customizable table control
+
+For example:
+
+	&Table{
+	  BaseComponent: BaseComponent{
+	    Id: "id_table_string_row_selected",
+	  },
+	  Rows: []ut.IM{
+	    {"name": "Fluffy", "age": 9, "breed": "calico", "gender": "male"},
+	    {"name": "Luna", "age": 10, "breed": "long hair", "gender": "female"},
+	    {"name": "Cracker", "age": 8, "breed": "fat", "gender": "male"},
+	    {"name": "Pig", "age": 6, "breed": "calico", "gender": "female"},
+	  },
+	  Pagination:  PaginationTypeTop,
+	  PageSize:    5,
+	  RowSelected: true,
+	  SortCol:     "name",
+	}
+*/
 type Table struct {
 	BaseComponent
-	RowKey            string       `json:"row_key"`
-	Rows              []ut.IM      `json:"rows"`
-	Fields            []TableField `json:"fields"`
-	Pagination        string       `json:"pagination"`
-	CurrentPage       int64        `json:"current_page"`
-	PageSize          int64        `json:"page_size"`
-	HidePaginatonSize bool         `json:"hide_paginaton_size"`
-	TableFilter       bool         `json:"table_filter"`
-	AddItem           bool         `json:"add_item"`
-	FilterPlaceholder string       `json:"filter_placeholder"`
-	FilterValue       string       `json:"filter_value"`
-	LabelYes          string       `json:"label_yes"`
-	LabelNo           string       `json:"label_no"`
-	LabelAdd          string       `json:"label_add"`
-	AddIcon           string       `json:"add_icon"`
-	TablePadding      string       `json:"table_padding"`
-	SortCol           string       `json:"sort_col"`
-	SortAsc           bool         `json:"sort_asc"`
-	RowSelected       bool         `json:"row_selected"`
+	/* The field name containing the row ID of the data source. If not specified,
+	the row index will be used
+	*/
+	RowKey string `json:"row_key"`
+	// Data source of the table
+	Rows []ut.IM `json:"rows"`
+	// Table column definitions
+	Fields []TableField `json:"fields"`
+	/* [PaginationType] variable constants:
+	[PaginationTypeTop], [PaginationTypeBottom], [PaginationTypeAll], [PaginationTypeNone].
+	Default value: [PaginationTypeTop] */
+	Pagination string `json:"pagination"`
+	// Pagination start value
+	CurrentPage int64 `json:"current_page"`
+	// Pagination component [PageSize] variable constants: 5, 10, 20, 50, 100. Default value: 10
+	PageSize int64 `json:"page_size"`
+	// [Pagination] component show/hide page size selector
+	HidePaginatonSize bool `json:"hide_paginaton_size"`
+	// Show/hide table value filter input row
+	TableFilter bool `json:"table_filter"`
+	// Show/hide table add item button
+	AddItem bool `json:"add_item"`
+	// Specifies a short hint that describes the expected value of the input element
+	FilterPlaceholder string `json:"filter_placeholder"`
+	// Filter input value
+	FilterValue string `json:"filter_value"`
+	// A true value caption in the table cell. Default value: YES
+	LabelYes string `json:"label_yes"`
+	// A false value caption in the table cell. Default value: NO
+	LabelNo string `json:"label_no"`
+	// Add item button caption Default empty string
+	LabelAdd string `json:"label_add"`
+	// Valid [Icon] component value. See more [IconKey] variable values.
+	AddIcon string `json:"add_icon"`
+	// Table cell padding style value. Example: 8px
+	TablePadding string `json:"table_padding"`
+	// The order of the table is based on the field name
+	SortCol string `json:"sort_col"`
+	// Sort in ascending or descending order
+	SortAsc bool `json:"sort_asc"`
+	// Select an entire row or cell
+	RowSelected bool `json:"row_selected"`
 }
 
+// [Table] column definitions
 type TableField struct {
-	Name          string       `json:"name"`
-	FieldType     string       `json:"field_type"`
-	Label         string       `json:"label"`
-	TextAlign     string       `json:"text_align"`
-	VerticalAlign string       `json:"vertical_align"`
-	Format        bool         `json:"format"`
-	Column        *TableColumn `json:"column"`
+	// The field name of the data source
+	Name string `json:"name"`
+	/* [TableFieldType] variable constants:
+	[TableFieldTypeString], [TableFieldTypeNumber], [TableFieldTypeDateTime],[TableFieldTypeDate],
+	[TableFieldTypeTime], [TableFieldTypeBool], [TableFieldTypeDeffield], [TableFieldTypeCustom].
+	Default value: [TableFieldTypeString] */
+	FieldType string `json:"field_type"`
+	// The label of the column
+	Label string `json:"label"`
+	/* [TextAlign] variable constants: [TextAlignLeft], [TextAlignCenter], [TextAlignRight].
+	Default value: [TextAlignLeft] */
+	TextAlign string `json:"text_align"`
+	/* [VerticalAlign] variable constants:
+	[VerticalAlignTop], [VerticalAlignMiddle], [VerticalAlignBottom].
+	Default value: [VerticalAlignMiddle] */
+	VerticalAlign string `json:"vertical_align"`
+	/* Formatting of negative (red), positive (green) and zero (line-through) values
+	in the case of a number field */
+	Format bool `json:"format"`
+	// Custom column definition
+	Column *TableColumn `json:"column"`
 }
 
+// [Table] column
 type TableColumn struct {
-	Id          string                                                     `json:"id"`
-	Header      string                                                     `json:"header"`
-	HeaderStyle ut.SM                                                      `json:"header_style"`
-	CellStyle   ut.SM                                                      `json:"cell_style"`
-	Field       TableField                                                 `json:"field"`
-	Cell        func(row ut.IM, col TableColumn, value interface{}) string `json:"-"`
+	// The field name of the data source
+	Id string `json:"id"`
+	// The label of the column
+	Header string `json:"header"`
+	// Header cell style settings. Example: ut.SM{"padding": "4px"}
+	HeaderStyle ut.SM `json:"header_style"`
+	// Data cell style settings. Example: ut.SM{"color": "red"}
+	CellStyle ut.SM `json:"cell_style"`
+	// Original field definition
+	Field TableField `json:"field"`
+	// The cell generator function of the table
+	Cell func(row ut.IM, col TableColumn, value interface{}) string `json:"-"`
 }
 
+/*
+Returns all properties of the [Table]
+*/
 func (tbl *Table) Properties() ut.IM {
 	return ut.MergeIM(
 		tbl.BaseComponent.Properties(),
@@ -97,10 +170,16 @@ func (tbl *Table) Properties() ut.IM {
 		})
 }
 
+/*
+Returns the value of the property of the [Table] with the specified name.
+*/
 func (tbl *Table) GetProperty(propName string) interface{} {
 	return tbl.Properties()[propName]
 }
 
+/*
+It checks the value given to the property of the [Table] and always returns a valid value
+*/
 func (tbl *Table) Validation(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"row_key": func() interface{} {
@@ -168,6 +247,10 @@ func (tbl *Table) Validation(propName string, propValue interface{}) interface{}
 	return propValue
 }
 
+/*
+Setting a property of the [Table] value safely. Checks the entered value.
+In case of an invalid value, the default value will be set.
+*/
 func (tbl *Table) SetProperty(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"row_key": func() interface{} {
@@ -595,6 +678,9 @@ func (tbl *Table) filterRows() (rows []ut.IM) {
 	return rows
 }
 
+/*
+Based on the values, it will generate the html code of the [Table] or return with an error message.
+*/
 func (tbl *Table) Render() (res string, err error) {
 	tbl.InitProps(tbl)
 
@@ -782,7 +868,7 @@ var demoTableResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt Resp
 			Name:        evt.Name,
 			Header: ut.SM{
 				HeaderRetarget: "#toast-msg",
-				HeaderReswap:   "innerHTML",
+				HeaderReswap:   SwapInnerHTML,
 			},
 		}
 		return re
@@ -790,6 +876,7 @@ var demoTableResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt Resp
 	return evt
 }
 
+// [Table] test and demo data
 func TestTable(cc ClientComponent) []TestComponent {
 	id := ut.ToString(cc.GetProperty("id"), "")
 	eventURL := ut.ToString(cc.GetProperty("event_url"), "")

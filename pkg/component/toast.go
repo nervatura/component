@@ -6,21 +6,44 @@ import (
 	ut "github.com/nervatura/component/pkg/util"
 )
 
+// [Toast] constants
 const (
+	ComponentTypeToast = "toast"
+
 	ToastTypeInfo    = "info"
 	ToastTypeError   = "error"
 	ToastTypeSuccess = "success"
 )
 
+// [Toast] ToastType values
 var ToastType []string = []string{ToastTypeInfo, ToastTypeError, ToastTypeSuccess}
 
+/*
+Creates a toast message control
+
+For example:
+
+	&Toast{
+	  Type:    ToastTypeInfo,
+	  Value:   "Info text",
+	  Timeout: 4,
+	}
+*/
 type Toast struct {
 	BaseComponent
-	Type    string `json:"type"`
-	Value   string `json:"value"`
-	Timeout int64  `json:"timeout"`
+	/* [ToastType] variable constants: [ToastTypeInfo], [ToastTypeError], [ToastTypeSuccess].
+	Default value: [ToastTypeInfo] */
+	Type string `json:"type"`
+	// Message text value
+	Value string `json:"value"`
+	/* Allows you to remove the element after a specified interval
+	Its value must be given in seconds. Default value: 0*/
+	Timeout int64 `json:"timeout"`
 }
 
+/*
+Returns all properties of the [Toast]
+*/
 func (tst *Toast) Properties() ut.IM {
 	return ut.MergeIM(
 		tst.BaseComponent.Properties(),
@@ -31,10 +54,16 @@ func (tst *Toast) Properties() ut.IM {
 		})
 }
 
+/*
+Returns the value of the property of the [Toast] with the specified name.
+*/
 func (tst *Toast) GetProperty(propName string) interface{} {
 	return tst.Properties()[propName]
 }
 
+/*
+It checks the value given to the property of the [Toast] and always returns a valid value
+*/
 func (tst *Toast) Validation(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"type": func() interface{} {
@@ -50,6 +79,10 @@ func (tst *Toast) Validation(propName string, propValue interface{}) interface{}
 	return propValue
 }
 
+/*
+Setting a property of the [Toast] value safely. Checks the entered value.
+In case of an invalid value, the default value will be set.
+*/
 func (tst *Toast) SetProperty(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"type": func() interface{} {
@@ -93,6 +126,9 @@ func (tst *Toast) getComponent(name string) (string, error) {
 	return ccMap[name]().Render()
 }
 
+/*
+Based on the values, it will generate the html code of the [Toast] or return with an error message.
+*/
 func (tst *Toast) Render() (res string, err error) {
 	tst.InitProps(tst)
 
@@ -130,12 +166,13 @@ var demoToastResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt Resp
 		Name:        ButtonEventClick,
 		Header: ut.SM{
 			HeaderRetarget: "#toast-msg",
-			HeaderReswap:   "innerHTML",
+			HeaderReswap:   SwapInnerHTML,
 		},
 	}
 	return re
 }
 
+// [Toast] test and demo data
 func TestToast(cc ClientComponent) []TestComponent {
 	id := ut.ToString(cc.GetProperty("id"), "")
 	eventURL := ut.ToString(cc.GetProperty("event_url"), "")

@@ -6,26 +6,61 @@ import (
 	ut "github.com/nervatura/component/pkg/util"
 )
 
+// [Select] constants
 const (
+	ComponentTypeSelect = "select"
+
 	SelectEventChange = "change"
 )
 
+// [Select] control item
 type SelectOption struct {
 	Value string `json:"value"`
 	Text  string `json:"text"`
 }
 
+/*
+Creates an HTML select control
+
+For example:
+
+	&Select{
+	  BaseComponent: BaseComponent{
+	    Id:           "id_select_default",
+	    EventURL:     "/event",
+	    RequestValue: parent_component.GetProperty("request_value").(map[string]ut.IM),
+	    RequestMap:   parent_component.GetProperty("request_map").(map[string]ClientComponent),
+	  },
+	  Value: "value1",
+	  Options: []SelectOption{
+	    {Value: "value1", Text: "Text 1"},
+	    {Value: "value2", Text: "Text 2"},
+	    {Value: "value3", Text: "Text 3"},
+	  },
+	  IsNull: true,
+	}
+*/
 type Select struct {
 	BaseComponent
-	Value     string         `json:"value"`
-	Options   []SelectOption `json:"options"`
-	IsNull    bool           `json:"is_null"`
-	Label     string         `json:"label"`
-	Disabled  bool           `json:"disabled"`
-	AutoFocus bool           `json:"auto_focus"`
-	Full      bool           `json:"full"`
+	// Value of the selected item in options
+	Value string `json:"value"`
+	// Items of optional values
+	Options []SelectOption `json:"options"`
+	// An empty value can also be selected
+	IsNull bool `json:"is_null"`
+	// The HTML aria-label attribute of the component
+	Label string `json:"label"`
+	// Specifies that the input should be disabled
+	Disabled bool `json:"disabled"`
+	// Specifies that the input element should automatically get focus when the page loads
+	AutoFocus bool `json:"auto_focus"`
+	// Full width input (100%)
+	Full bool `json:"full"`
 }
 
+/*
+Returns all properties of the [Select]
+*/
 func (sel *Select) Properties() ut.IM {
 	return ut.MergeIM(
 		sel.BaseComponent.Properties(),
@@ -40,10 +75,16 @@ func (sel *Select) Properties() ut.IM {
 		})
 }
 
+/*
+Returns the value of the property of the [Select] with the specified name.
+*/
 func (sel *Select) GetProperty(propName string) interface{} {
 	return sel.Properties()[propName]
 }
 
+/*
+It checks the value given to the property of the [Select] and always returns a valid value
+*/
 func (sel *Select) Validation(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"options": func() interface{} {
@@ -82,6 +123,10 @@ func (sel *Select) Validation(propName string, propValue interface{}) interface{
 	return propValue
 }
 
+/*
+Setting a property of the [Select] value safely. Checks the entered value.
+In case of an invalid value, the default value will be set.
+*/
 func (sel *Select) SetProperty(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"value": func() interface{} {
@@ -122,6 +167,10 @@ func (sel *Select) SetProperty(propName string, propValue interface{}) interface
 	return propValue
 }
 
+/*
+If the OnResponse function of the [Select] is implemented, the function calls it after the [TriggerEvent]
+is processed, otherwise the function's return [ResponseEvent] is the processed [TriggerEvent].
+*/
 func (sel *Select) OnRequest(te TriggerEvent) (re ResponseEvent) {
 	value := sel.SetProperty("value", te.Values.Get(te.Name))
 	evt := ResponseEvent{
@@ -135,6 +184,9 @@ func (sel *Select) OnRequest(te TriggerEvent) (re ResponseEvent) {
 	return evt
 }
 
+/*
+Based on the values, it will generate the html code of the [Select] or return with an error message.
+*/
 func (sel *Select) Render() (res string, err error) {
 	sel.InitProps(sel)
 
@@ -164,6 +216,7 @@ func (sel *Select) Render() (res string, err error) {
 	return res, nil
 }
 
+// [Select] test and demo data
 func TestSelect(cc ClientComponent) []TestComponent {
 	id := ut.ToString(cc.GetProperty("id"), "")
 	eventURL := ut.ToString(cc.GetProperty("event_url"), "")

@@ -1,3 +1,5 @@
+/* Component static files
+ */
 package component
 
 import "embed"

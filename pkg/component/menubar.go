@@ -6,27 +6,74 @@ import (
 	ut "github.com/nervatura/component/pkg/util"
 )
 
+// [MenuBar] constants
 const (
+	ComponentTypeMenuBar = "menubar"
+
 	MenuBarEventSide  = "side"
 	MenuBarEventValue = "value"
+
+	SideVisibilityAuto = "auto"
+	SideVisibilityShow = "show"
+	SideVisibilityHide = "hide"
 )
 
+// [MenuBar] SideVisibility values
+var SideVisibility []string = []string{SideVisibilityAuto, SideVisibilityShow, SideVisibilityHide}
+
+// [MenuBar] item data
 type MenuBarItem struct {
+	// Menu key/id value
 	Value string `json:"value"`
+	// Menu caption
 	Label string `json:"label"`
-	Icon  string `json:"icon"`
+	// Valid [Icon] component value. See more [IconKey] variable values.
+	Icon string `json:"icon"`
 }
 
+/*
+Creates a clickable menu control
+
+For example:
+
+	&MenuBar{
+	  BaseComponent: BaseComponent{
+	    Id:           "id_menubar_default",
+	    EventURL:     "/event",
+	    RequestValue: parent_component.GetProperty("request_value").(map[string]ut.IM),
+	    RequestMap:   parent_component.GetProperty("request_map").(map[string]ClientComponent),
+	  },
+	  Items: []MenuBarItem{
+	    {Value: "search", Label: "Search", Icon: "Search"},
+	    {Value: "edit", Label: "Edit", Icon: "Edit"},
+	    {Value: "setting", Label: "Setting", Icon: "Cog"},
+	  },
+	  Value:          "search",
+	  SideBar:        true,
+	  SideVisibility: SideVisibilityAuto,
+	}
+*/
 type MenuBar struct {
 	BaseComponent
-	Value          string        `json:"value"`
-	SideBar        bool          `json:"side_bar"`
-	SideVisibility string        `json:"side_visibility"`
-	LabelHide      string        `json:"label_hide"`
-	LabelMenu      string        `json:"label_menu"`
-	Items          []MenuBarItem `json:"items"`
+	// Value of a selected/active menu item
+	Value string `json:"value"`
+	// Show/hide sidebar button in mobile view
+	SideBar bool `json:"side_bar"`
+	/* [SideVisibility] variable constants:
+	[SideVisibilityAuto], [SideVisibilityShow], [SideVisibilityHide].
+	Default value: [SideVisibilityAuto] */
+	SideVisibility string `json:"side_visibility"`
+	// Sidebar button caption. Default: Hide
+	LabelHide string `json:"label_hide"`
+	// Sidebar button caption. Default: Menu
+	LabelMenu string `json:"label_menu"`
+	// Menu items data
+	Items []MenuBarItem `json:"items"`
 }
 
+/*
+Returns all properties of the [MenuBar]
+*/
 func (mnb *MenuBar) Properties() ut.IM {
 	return ut.MergeIM(
 		mnb.BaseComponent.Properties(),
@@ -40,10 +87,16 @@ func (mnb *MenuBar) Properties() ut.IM {
 		})
 }
 
+/*
+Returns the value of the property of the [MenuBar] with the specified name.
+*/
 func (mnb *MenuBar) GetProperty(propName string) interface{} {
 	return mnb.Properties()[propName]
 }
 
+/*
+It checks the value given to the property of the [MenuBar] and always returns a valid value
+*/
 func (mnb *MenuBar) Validation(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"side_visibility": func() interface{} {
@@ -74,6 +127,10 @@ func (mnb *MenuBar) Validation(propName string, propValue interface{}) interface
 	return propValue
 }
 
+/*
+Setting a property of the [MenuBar] value safely. Checks the entered value.
+In case of an invalid value, the default value will be set.
+*/
 func (mnb *MenuBar) SetProperty(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"value": func() interface{} {
@@ -215,6 +272,9 @@ func (mnb *MenuBar) getComponent(name string, item MenuBarItem) (res string, err
 	return res, err
 }
 
+/*
+Based on the values, it will generate the html code of the [MenuBar] or return with an error message.
+*/
 func (mnb *MenuBar) Render() (res string, err error) {
 	mnb.InitProps(mnb)
 
@@ -260,6 +320,7 @@ func (mnb *MenuBar) Render() (res string, err error) {
 	return ut.TemplateBuilder("menubar", tpl, funcMap, mnb)
 }
 
+// [MenuBar] test and demo data
 func TestMenuBar(cc ClientComponent) []TestComponent {
 	id := ut.ToString(cc.GetProperty("id"), "")
 	eventURL := ut.ToString(cc.GetProperty("event_url"), "")

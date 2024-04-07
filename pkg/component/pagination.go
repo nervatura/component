@@ -6,27 +6,50 @@ import (
 	ut "github.com/nervatura/component/pkg/util"
 )
 
+// [Pagination] constants
 const (
+	ComponentTypePagination = "pagination"
+
 	PaginationEventValue    = "value"
 	PaginationEventPageSize = "page_size"
-
-	PaginationTypeTop    = "top"
-	PaginationTypeBottom = "bottom"
-	PaginationTypeAll    = "all"
-	PaginationTypeNone   = "none"
 )
 
-var PaginationType []string = []string{PaginationTypeTop, PaginationTypeBottom, PaginationTypeAll, PaginationTypeNone}
+// [Pagination] PageSize values
 var ValidPageSize []int64 = []int64{5, 10, 20, 50, 100}
 
+/*
+Creates a pagination control
+
+For example:
+
+	&Pagination{
+	  BaseComponent: BaseComponent{
+	    Id:           "id_table_page_size",
+	    EventURL:     "/event",
+	    RequestValue: parent_component.GetProperty("request_value").(map[string]ut.IM),
+	    RequestMap:   parent_component.GetProperty("request_map").(map[string]ClientComponent),
+	  },
+	  Value:        2,
+	  PageSize:     10,
+	  PageCount:    3,
+	  HidePageSize: false,
+	}
+*/
 type Pagination struct {
 	BaseComponent
-	Value        int64 `json:"value"`
-	PageSize     int64 `json:"page_size"`
-	PageCount    int64 `json:"page_count"`
-	HidePageSize bool  `json:"hide_pageSize"`
+	// Current page value
+	Value int64 `json:"value"`
+	// [PageSize] variable constants: 5, 10, 20, 50, 100. Default value: 10
+	PageSize int64 `json:"page_size"`
+	// The maximum value of the pagination
+	PageCount int64 `json:"page_count"`
+	// Show/hide page size selector
+	HidePageSize bool `json:"hide_pageSize"`
 }
 
+/*
+Returns all properties of the [Pagination]
+*/
 func (pgn *Pagination) Properties() ut.IM {
 	return ut.MergeIM(
 		pgn.BaseComponent.Properties(),
@@ -38,10 +61,16 @@ func (pgn *Pagination) Properties() ut.IM {
 		})
 }
 
+/*
+Returns the value of the property of the [Pagination] with the specified name.
+*/
 func (pgn *Pagination) GetProperty(propName string) interface{} {
 	return pgn.Properties()[propName]
 }
 
+/*
+It checks the value given to the property of the [Pagination] and always returns a valid value
+*/
 func (pgn *Pagination) Validation(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"value": func() interface{} {
@@ -83,6 +112,10 @@ func (pgn *Pagination) Validation(propName string, propValue interface{}) interf
 	return propValue
 }
 
+/*
+Setting a property of the [Pagination] value safely. Checks the entered value.
+In case of an invalid value, the default value will be set.
+*/
 func (pgn *Pagination) SetProperty(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"value": func() interface{} {
@@ -234,6 +267,9 @@ func (pgn *Pagination) getComponent(name string) (res string, err error) {
 	return res, err
 }
 
+/*
+Based on the values, it will generate the html code of the [Pagination] or return with an error message.
+*/
 func (pgn *Pagination) Render() (res string, err error) {
 	pgn.InitProps(pgn)
 
@@ -259,6 +295,7 @@ func (pgn *Pagination) Render() (res string, err error) {
 	return ut.TemplateBuilder("pagination", tpl, funcMap, pgn)
 }
 
+// [Pagination] test and demo data
 func TestPagination(cc ClientComponent) []TestComponent {
 	id := ut.ToString(cc.GetProperty("id"), "")
 	eventURL := ut.ToString(cc.GetProperty("event_url"), "")

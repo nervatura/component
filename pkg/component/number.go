@@ -7,25 +7,62 @@ import (
 	ut "github.com/nervatura/component/pkg/util"
 )
 
+// [NumberInput] constants
 const (
+	ComponentTypeNumberInput = "number"
+
 	NumberEventChange = "change"
 )
 
+/*
+Creates an HTML number input control
+
+For example:
+
+	&NumberInput{
+	  BaseComponent: BaseComponent{
+	    Id:           "id_number_min_max",
+	    EventURL:     "/event",
+	    RequestValue: parent_component.GetProperty("request_value").(map[string]ut.IM),
+	    RequestMap:   parent_component.GetProperty("request_map").(map[string]ClientComponent),
+	  },
+	  Value:    150,
+	  SetMax:   true,
+	  MaxValue: 100,
+	  SetMin:   true,
+	  MinValue: 50,
+	  Full:     true,
+	}
+*/
 type NumberInput struct {
 	BaseComponent
-	Value     float64 `json:"value"`
-	Integer   bool    `json:"integer"`
-	Label     string  `json:"label"`
-	SetMax    bool    `json:"set_max"`
-	MaxValue  float64 `json:"max_value"`
-	SetMin    bool    `json:"set_min"`
-	MinValue  float64 `json:"min_value"`
-	Disabled  bool    `json:"disabled"`
-	ReadOnly  bool    `json:"read_only"`
-	AutoFocus bool    `json:"auto_focus"`
-	Full      bool    `json:"full"`
+	// Any valid value based on control type (float64 or integer)
+	Value float64 `json:"value"`
+	// Integer type input
+	Integer bool `json:"integer"`
+	// The HTML aria-label attribute of the component
+	Label string `json:"label"`
+	// Enable maximum value monitoring
+	SetMax bool `json:"set_max"`
+	// Maximum value that can be entered
+	MaxValue float64 `json:"max_value"`
+	// Enable minimum value monitoring
+	SetMin bool `json:"set_min"`
+	// Minimum value that can be entered
+	MinValue float64 `json:"min_value"`
+	// Specifies that the input should be disabled
+	Disabled bool `json:"disabled"`
+	// Specifies that the input field is read-only
+	ReadOnly bool `json:"read_only"`
+	// Specifies that the input element should automatically get focus when the page loads
+	AutoFocus bool `json:"auto_focus"`
+	// Full width input (100%)
+	Full bool `json:"full"`
 }
 
+/*
+Returns all properties of the [NumberInput]
+*/
 func (inp *NumberInput) Properties() ut.IM {
 	return ut.MergeIM(
 		inp.BaseComponent.Properties(),
@@ -44,10 +81,16 @@ func (inp *NumberInput) Properties() ut.IM {
 		})
 }
 
+/*
+Returns the value of the property of the [NumberInput] with the specified name.
+*/
 func (inp *NumberInput) GetProperty(propName string) interface{} {
 	return inp.Properties()[propName]
 }
 
+/*
+It checks the value given to the property of the [NumberInput] and always returns a valid value
+*/
 func (inp *NumberInput) Validation(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"value": func() interface{} {
@@ -73,6 +116,10 @@ func (inp *NumberInput) Validation(propName string, propValue interface{}) inter
 	return propValue
 }
 
+/*
+Setting a property of the [NumberInput] value safely. Checks the entered value.
+In case of an invalid value, the default value will be set.
+*/
 func (inp *NumberInput) SetProperty(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"value": func() interface{} {
@@ -129,6 +176,10 @@ func (inp *NumberInput) SetProperty(propName string, propValue interface{}) inte
 	return propValue
 }
 
+/*
+If the OnResponse function of the [NumberInput] is implemented, the function calls it after the [TriggerEvent]
+is processed, otherwise the function's return [ResponseEvent] is the processed [TriggerEvent].
+*/
 func (inp *NumberInput) OnRequest(te TriggerEvent) (re ResponseEvent) {
 	value := inp.SetProperty("value", te.Values.Get(te.Name))
 	evt := ResponseEvent{
@@ -143,6 +194,9 @@ func (inp *NumberInput) OnRequest(te TriggerEvent) (re ResponseEvent) {
 	return evt
 }
 
+/*
+Based on the values, it will generate the html code of the [NumberInput] or return with an error message.
+*/
 func (inp *NumberInput) Render() (res string, err error) {
 	inp.InitProps(inp)
 
@@ -171,6 +225,7 @@ func (inp *NumberInput) Render() (res string, err error) {
 	return res, nil
 }
 
+// [NumberInput] test and demo data
 func TestNumberInput(cc ClientComponent) []TestComponent {
 	id := ut.ToString(cc.GetProperty("id"), "")
 	eventURL := ut.ToString(cc.GetProperty("event_url"), "")

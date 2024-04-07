@@ -8,6 +8,7 @@ import (
 	ut "github.com/nervatura/component/pkg/util"
 )
 
+// [Demo] constants
 const (
 	DemoEventChange   = "change"
 	DemoEventTheme    = "theme"
@@ -15,7 +16,6 @@ const (
 
 	ComponentGroupAtom     = "atom"
 	ComponentGroupMolecule = "molecule"
-	ComponentGroupModal    = "modal"
 	ComponentGroupTemplate = "template"
 	ComponentGroupPage     = "page"
 
@@ -25,52 +25,73 @@ const (
 
 type Demo struct {
 	ct.BaseComponent
-	Title         string                `json:"title"`
-	Theme         string                `json:"theme"`
-	ViewSize      string                `json:"view_size"`
-	SelectedGroup string                `json:"selected_group"`
-	SelectedType  int64                 `json:"selected_type"`
-	SelectedDemo  int64                 `json:"selected_demo"`
-	DemoMap       map[string][]DemoView `json:"-"`
+	// Application title
+	Title string `json:"title"`
+	/*
+		The theme of the application.
+		[Theme] variable constants: [ThemeLight], [ThemeDark].
+		Default value: [ThemeLight]
+	*/
+	Theme string `json:"theme"`
+	/*
+		[ViewSize] variable constants: [ViewSizeCentered], [ViewSizeFull].
+		Default value: [ViewSizeCentered]
+	*/
+	ViewSize string `json:"view_size"`
+	/*
+		[ComponentGroup] variable constants: [ComponentGroupAtom], [ComponentGroupMolecule], [ComponentGroupTemplate].
+		Default value: [ComponentGroupAtom]
+	*/
+	SelectedGroup string `json:"selected_group"`
+	// Selected [DemoView] ComponentType
+	SelectedType int64 `json:"selected_type"`
+	// Selected component with example data
+	SelectedDemo int64 `json:"selected_demo"`
+	// Component map with example data
+	DemoMap map[string][]DemoView `json:"-"`
 }
 
+// [DemoView] Session data
 type DemoSession struct {
 	Label     string             `json:"label"`
 	Component ct.ClientComponent `json:"component"`
 }
 
+// [DemoMap] data item
 type DemoView struct {
 	ComponentType string                                           `json:"component_type"`
 	Session       []DemoSession                                    `json:"session"`
-	Stories       func(demo ct.ClientComponent) []ct.TestComponent `json:"-"`
+	TestData      func(demo ct.ClientComponent) []ct.TestComponent `json:"-"`
 }
 
+// Component ComponentGroup values
 var ComponentGroup []string = []string{
-	ComponentGroupAtom, ComponentGroupMolecule, ComponentGroupModal, ComponentGroupTemplate,
+	ComponentGroupAtom, ComponentGroupMolecule, ComponentGroupTemplate,
 }
+
+// Component ViewSize values
 var ViewSize []string = []string{ViewSizeCentered, ViewSizeFull}
 
+// Component map with example data
 var DemoMap map[string][]DemoView = map[string][]DemoView{
 	ComponentGroupAtom: {
-		{ComponentType: ct.ComponentTypeButton, Stories: ct.TestButton},
-		{ComponentType: ct.ComponentTypeDateTime, Stories: ct.TestDateTime},
-		{ComponentType: ct.ComponentTypeIcon, Stories: ct.TestIcon},
-		{ComponentType: ct.ComponentTypeInput, Stories: ct.TestInput},
-		{ComponentType: ct.ComponentTypeLabel, Stories: ct.TestLabel},
-		{ComponentType: ct.ComponentTypeNumberInput, Stories: ct.TestNumberInput},
-		{ComponentType: ct.ComponentTypeSelect, Stories: ct.TestSelect},
-		{ComponentType: ct.ComponentTypeToast, Stories: ct.TestToast},
+		{ComponentType: ct.ComponentTypeButton, TestData: ct.TestButton},
+		{ComponentType: ct.ComponentTypeDateTime, TestData: ct.TestDateTime},
+		{ComponentType: ct.ComponentTypeIcon, TestData: ct.TestIcon},
+		{ComponentType: ct.ComponentTypeInput, TestData: ct.TestInput},
+		{ComponentType: ct.ComponentTypeLabel, TestData: ct.TestLabel},
+		{ComponentType: ct.ComponentTypeNumberInput, TestData: ct.TestNumberInput},
+		{ComponentType: ct.ComponentTypeSelect, TestData: ct.TestSelect},
+		{ComponentType: ct.ComponentTypeToast, TestData: ct.TestToast},
 	},
 	ComponentGroupMolecule: {
-		{ComponentType: ct.ComponentTypeTable, Stories: ct.TestTable},
-		{ComponentType: ct.ComponentTypeMenuBar, Stories: ct.TestMenuBar},
-		{ComponentType: ct.ComponentTypePagination, Stories: ct.TestPagination},
-	},
-	ComponentGroupModal: {
-		{ComponentType: ct.ComponentTypeLogin, Stories: ct.TestLogin},
+		{ComponentType: ct.ComponentTypeTable, TestData: ct.TestTable},
+		{ComponentType: ct.ComponentTypeMenuBar, TestData: ct.TestMenuBar},
+		{ComponentType: ct.ComponentTypePagination, TestData: ct.TestPagination},
 	},
 	ComponentGroupTemplate: {
-		{ComponentType: ct.ComponentTypeLocale, Stories: ct.TestLocale},
+		{ComponentType: ct.ComponentTypeLogin, TestData: ct.TestLogin},
+		{ComponentType: ct.ComponentTypeLocale, TestData: ct.TestLocale},
 	},
 }
 
@@ -79,6 +100,7 @@ var demoIcoMap map[string][]string = map[string][]string{
 	ViewSizeCentered: {ViewSizeFull, "Desktop"}, ViewSizeFull: {ViewSizeCentered, "Mobile"},
 }
 
+// Creates and loads a new demo application with component example data
 func NewDemo(eventURL, title string) *Demo {
 	sto := &Demo{
 		BaseComponent: ct.BaseComponent{
@@ -98,7 +120,7 @@ func (sto *Demo) InitDemoMap() {
 	for group, sg := range sto.DemoMap {
 		for index, sv := range sg {
 			sto.DemoMap[group][index].Session = make([]DemoSession, 0)
-			for _, sc := range sv.Stories(sto) {
+			for _, sc := range sv.TestData(sto) {
 				sto.DemoMap[group][index].Session = append(
 					sto.DemoMap[group][index].Session, DemoSession{Label: sc.Label, Component: sc.Component})
 			}
@@ -106,6 +128,9 @@ func (sto *Demo) InitDemoMap() {
 	}
 }
 
+/*
+Returns all properties of the [Demo]
+*/
 func (sto *Demo) Properties() ut.IM {
 	return ut.MergeIM(
 		sto.BaseComponent.Properties(),
@@ -119,10 +144,16 @@ func (sto *Demo) Properties() ut.IM {
 		})
 }
 
+/*
+Returns the value of the property of the [Demo] with the specified name.
+*/
 func (sto *Demo) GetProperty(propName string) interface{} {
 	return sto.Properties()[propName]
 }
 
+/*
+It checks the value given to the property of the [Demo] and always returns a valid value
+*/
 func (sto *Demo) Validation(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"theme": func() interface{} {
@@ -158,6 +189,10 @@ func (sto *Demo) Validation(propName string, propValue interface{}) interface{} 
 	return propValue
 }
 
+/*
+Setting a property of the [Demo] value safely. Checks the entered value.
+In case of an invalid value, the default value will be set.
+*/
 func (sto *Demo) SetProperty(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"title": func() interface{} {
@@ -206,6 +241,12 @@ func (sto *Demo) SetProperty(propName string, propValue interface{}) interface{}
 	return propValue
 }
 
+/*
+The [TriggerEvent] event of the user interface is forwarded to the child component registered in the
+RequestMap based on the component id. If there is no component associated with the received component ID,
+or the processing of the component returns an error, it returns the error message by creating a [Toast]
+component.
+*/
 func (sto *Demo) OnRequest(te ct.TriggerEvent) (re ct.ResponseEvent) {
 	if cc, found := sto.RequestMap[te.Id]; found {
 		return cc.OnRequest(te)
@@ -219,7 +260,7 @@ func (sto *Demo) OnRequest(te ct.TriggerEvent) (re ct.ResponseEvent) {
 		Name:        te.Name,
 		Header: ut.SM{
 			ct.HeaderRetarget: "#toast-msg",
-			ct.HeaderReswap:   "innerHTML",
+			ct.HeaderReswap:   ct.SwapInnerHTML,
 		},
 	}
 	return re
@@ -318,6 +359,9 @@ func (sto *Demo) getComponent(name string) (res string, err error) {
 	return res, err
 }
 
+/*
+Based on the values, it will generate the html code of the [Demo] or return with an error message.
+*/
 func (sto *Demo) Render() (res string, err error) {
 	sto.InitProps(sto)
 

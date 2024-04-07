@@ -6,26 +6,65 @@ import (
 	ut "github.com/nervatura/component/pkg/util"
 )
 
+// [Icon] constants
 const (
+	ComponentTypeIcon = "icon"
+
 	IconDefaultIcon = "ExclamationTriangle"
 	IconEventClick  = "click"
 )
 
+// [Icon] Value values
+var IconKey []string = []string{
+	"ArrowDown", "ArrowLeft", "ArrowRight", "ArrowUp", "Barcode", "Bars", "Bold", "Bolt", "Book", "Briefcase",
+	"Calendar", "CaretRight", "ChartBar", "Check", "CheckCircle", "CheckSquare", "CheckSquareEmpty", "Clock",
+	"Close", "Code", "Cog", "Columns", "Comment", "Copy", "Database", "Desktop", "Dollar", "Download", "Edit",
+	"Envelop", "ExclamationTriangle", "Exit", "Eye", "FileText", "Filter", "Flask", "Globe", "HandUp", "Hidemo",
+	"Home", "Inbox", "InfoCircle", "Italic", "Key", "Keyboard", "Link", "ListOl", "ListUl", "Lock", "Magic",
+	"Male", "Map", "Mobile", "Money", "Moon", "Phone", "Plus", "Print", "QuestionCircle", "Reply", "Retweet",
+	"Search", "Share", "ShoppingCart", "Sitemap", "Square", "SquareEmpty", "Star", "Strikethrough", "Sun",
+	"Tag", "Tags", "TextHeight", "Th", "Ticket", "Times", "ToggleOff", "ToggleOn", "Truck", "Underline", "Undo",
+	"Upload", "User", "UserLock", "Wrench",
+}
+
+/*
+Creates an HTML clickable container for SVG graphics
+
+For example:
+
+	&Icon{
+	  BaseComponent: BaseComponent{
+	    Id: "id_icon_custom",
+	    Style: ut.SM{
+	      "cursor": "pointer",
+	    },
+	  },
+	  Value:  "Copy",
+	  Width:  42,
+	  Height: 48,
+	  Color:  "red",
+	}
+*/
 type Icon struct {
 	BaseComponent
+	// See more [IconKey] variable values.
 	Value  string  `json:"value"`
 	Width  float64 `json:"width"`
 	Height float64 `json:"height"`
-	Color  string  `json:"color"`
+	// The HTML fill attribute of the component
+	Color string `json:"color"`
 }
 
-type IconData struct {
+type iconData struct {
 	ViewBox string  `json:"view_box"`
 	Width   float64 `json:"width"`
 	Height  float64 `json:"height"`
 	Path    string  `json:"path"`
 }
 
+/*
+Returns all properties of the [Icon]
+*/
 func (ico *Icon) Properties() ut.IM {
 	return ut.MergeIM(
 		ico.BaseComponent.Properties(),
@@ -37,27 +76,33 @@ func (ico *Icon) Properties() ut.IM {
 		})
 }
 
+/*
+Returns the value of the property of the [Icon] with the specified name.
+*/
 func (ico *Icon) GetProperty(propName string) interface{} {
 	return ico.Properties()[propName]
 }
 
+/*
+It checks the value given to the property of the [Icon] and always returns a valid value
+*/
 func (ico *Icon) Validation(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"value": func() interface{} {
 			value := ut.ToString(propValue, IconDefaultIcon)
-			if _, found := IconMap[value]; !found {
+			if _, found := iconMap[value]; !found {
 				value = IconDefaultIcon
 			}
 			return value
 		},
 		"width": func() interface{} {
 			ikey := ico.Validation("value", ico.Value).(string)
-			value := ut.ToFloat(propValue, IconMap[ikey].Width)
+			value := ut.ToFloat(propValue, iconMap[ikey].Width)
 			return value
 		},
 		"height": func() interface{} {
 			ikey := ico.Validation("value", ico.Value).(string)
-			value := ut.ToFloat(propValue, IconMap[ikey].Height)
+			value := ut.ToFloat(propValue, iconMap[ikey].Height)
 			return value
 		},
 	}
@@ -70,6 +115,10 @@ func (ico *Icon) Validation(propName string, propValue interface{}) interface{} 
 	return propValue
 }
 
+/*
+Setting a property of the [Icon] value safely. Checks the entered value.
+In case of an invalid value, the default value will be set.
+*/
 func (ico *Icon) SetProperty(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"value": func() interface{} {
@@ -98,6 +147,10 @@ func (ico *Icon) SetProperty(propName string, propValue interface{}) interface{}
 	return propValue
 }
 
+/*
+If the OnResponse function of the [Icon] is implemented, the function calls it after the [TriggerEvent]
+is processed, otherwise the function's return [ResponseEvent] is the processed [TriggerEvent].
+*/
 func (ico *Icon) OnRequest(te TriggerEvent) (re ResponseEvent) {
 	evt := ResponseEvent{
 		Trigger:     ico,
@@ -111,9 +164,12 @@ func (ico *Icon) OnRequest(te TriggerEvent) (re ResponseEvent) {
 	return evt
 }
 
+/*
+Based on the values, it will generate the html code of the [Icon] or return with an error message.
+*/
 func (ico *Icon) Render() (res string, err error) {
 	ico.InitProps(ico)
-	idata := IconMap[ico.Value]
+	idata := iconMap[ico.Value]
 
 	funcMap := map[string]any{
 		"styleMap": func() bool {
@@ -154,12 +210,13 @@ var demoIcoResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt Respon
 		Name:        IconEventClick,
 		Header: ut.SM{
 			HeaderRetarget: "#toast-msg",
-			HeaderReswap:   "innerHTML",
+			HeaderReswap:   SwapInnerHTML,
 		},
 	}
 	return re
 }
 
+// [Icon] test and demo data
 func TestIcon(cc ClientComponent) []TestComponent {
 	id := ut.ToString(cc.GetProperty("id"), "")
 	eventURL := ut.ToString(cc.GetProperty("event_url"), "")
@@ -218,7 +275,7 @@ func TestIcon(cc ClientComponent) []TestComponent {
 	}
 }
 
-var IconMap map[string]IconData = map[string]IconData{
+var iconMap map[string]iconData = map[string]iconData{
 	"UserLock": {
 		ViewBox: "0 0 640 512",
 		Width:   20, Height: 16,

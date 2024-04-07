@@ -6,19 +6,45 @@ import (
 	ut "github.com/nervatura/component/pkg/util"
 )
 
+// [Label] constants
 const (
+	ComponentTypeLabel = "label"
+
 	LabelEventClick = "click"
 )
 
+/*
+Creates an HTML clickable static text control
+
+For example:
+
+	&Label{
+	  BaseComponent: BaseComponent{
+	    Id:    "id_label_style",
+	    Style: ut.SM{"color": "red"},
+	  },
+	  Value:     "Label",
+	  LeftIcon:  "InfoCircle",
+	  IconStyle: ut.SM{"fill": "orange"},
+	}
+*/
 type Label struct {
 	BaseComponent
-	Value     string `json:"value"`
-	Centered  bool   `json:"centered"`
-	LeftIcon  string `json:"left_icon"`
+	// Any text value
+	Value string `json:"value"`
+	// If the entire space is filled, the text is centered or aligned to the left
+	Centered bool `json:"centered"`
+	// Valid [Icon] component value. See more [IconKey] variable values.
+	LeftIcon string `json:"left_icon"`
+	// Valid [Icon] component value. See more [IconKey] variable values.
 	RightIcon string `json:"right_icon"`
-	IconStyle ut.SM  `json:"icon_style"`
+	// Icon component style settings. Example: ut.SM{"fill": "orange"}
+	IconStyle ut.SM `json:"icon_style"`
 }
 
+/*
+Returns all properties of the [Label]
+*/
 func (lbl *Label) Properties() ut.IM {
 	return ut.MergeIM(
 		lbl.BaseComponent.Properties(),
@@ -31,10 +57,16 @@ func (lbl *Label) Properties() ut.IM {
 		})
 }
 
+/*
+Returns the value of the property of the [Label] with the specified name.
+*/
 func (lbl *Label) GetProperty(propName string) interface{} {
 	return lbl.Properties()[propName]
 }
 
+/*
+It checks the value given to the property of the [Label] and always returns a valid value
+*/
 func (lbl *Label) Validation(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"icon_style": func() interface{} {
@@ -54,6 +86,10 @@ func (lbl *Label) Validation(propName string, propValue interface{}) interface{}
 	return propValue
 }
 
+/*
+Setting a property of the [Label] value safely. Checks the entered value.
+In case of an invalid value, the default value will be set.
+*/
 func (lbl *Label) SetProperty(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"value": func() interface{} {
@@ -86,6 +122,10 @@ func (lbl *Label) SetProperty(propName string, propValue interface{}) interface{
 	return propValue
 }
 
+/*
+If the OnResponse function of the [Label] is implemented, the function calls it after the [TriggerEvent]
+is processed, otherwise the function's return [ResponseEvent] is the processed [TriggerEvent].
+*/
 func (lbl *Label) OnRequest(te TriggerEvent) (re ResponseEvent) {
 	evt := ResponseEvent{
 		Trigger:     lbl,
@@ -121,6 +161,9 @@ func (lbl *Label) getComponent(name string) (string, error) {
 	return ccMap[name]().Render()
 }
 
+/*
+Based on the values, it will generate the html code of the [Label] or return with an error message.
+*/
 func (lbl *Label) Render() (res string, err error) {
 	lbl.InitProps(lbl)
 
@@ -175,12 +218,13 @@ var demoLblResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt Respon
 		Name:        LabelEventClick,
 		Header: ut.SM{
 			HeaderRetarget: "#toast-msg",
-			HeaderReswap:   "innerHTML",
+			HeaderReswap:   SwapInnerHTML,
 		},
 	}
 	return re
 }
 
+// [Label] test and demo data
 func TestLabel(cc ClientComponent) []TestComponent {
 	id := ut.ToString(cc.GetProperty("id"), "")
 	eventURL := ut.ToString(cc.GetProperty("event_url"), "")

@@ -25,7 +25,7 @@ func TestApplication_Render(t *testing.T) {
 		{
 			name: "header",
 			fields: fields{
-				Header: ut.SM{"X-CSRF-Token": "TOKEN1234"},
+				Header: ut.SM{"X-Session-Token": "TOKEN1234"},
 			},
 			wantErr: false,
 		},

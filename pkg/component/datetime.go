@@ -7,7 +7,10 @@ import (
 	ut "github.com/nervatura/component/pkg/util"
 )
 
+// [DateTime] constants
 const (
+	ComponentTypeDateTime = "datetime"
+
 	DateTimeEventChange = "change"
 
 	DateTimeTypeDate     = "date"
@@ -15,21 +18,48 @@ const (
 	DateTimeTypeDateTime = "datetime-local"
 )
 
+// [DateTime] Type values
 var DateTimeType []string = []string{DateTimeTypeDate, DateTimeTypeTime, DateTimeTypeDateTime}
 
+/*
+Creates an HTML date, datetime or time input control
+
+For example:
+
+	&DateTime{
+	  BaseComponent: BaseComponent{
+	    Id: "id_datetime_picker",
+	  },
+	  Type:   DateTimeTypeDateTime,
+	  Picker: true,
+	}
+*/
 type DateTime struct {
 	BaseComponent
-	Type      string `json:"type"`
-	Value     string `json:"value"`
-	Label     string `json:"label"`
-	IsNull    bool   `json:"is_null"`
-	Picker    bool   `json:"picker"`
-	Disabled  bool   `json:"disabled"`
-	ReadOnly  bool   `json:"read_only"`
-	AutoFocus bool   `json:"auto_focus"`
-	Full      bool   `json:"full"`
+	/* [DateTimeType] variable constants: [DateTimeTypeDate], [DateTimeTypeTime], [DateTimeTypeDateTime].
+	Default value: [DateTimeTypeDate] */
+	Type string `json:"type"`
+	// Any valid value based on control type
+	Value string `json:"value"`
+	// The HTML aria-label attribute of the component
+	Label string `json:"label"`
+	// Allows entry of an empty value
+	IsNull bool `json:"is_null"`
+	// Show value picker when input
+	Picker bool `json:"picker"`
+	// Specifies that the input should be disabled
+	Disabled bool `json:"disabled"`
+	// Specifies that the input field is read-only
+	ReadOnly bool `json:"read_only"`
+	// Specifies that the input element should automatically get focus when the page loads
+	AutoFocus bool `json:"auto_focus"`
+	// Full width input (100%)
+	Full bool `json:"full"`
 }
 
+/*
+Returns all properties of the [DateTime]
+*/
 func (dti *DateTime) Properties() ut.IM {
 	return ut.MergeIM(
 		dti.BaseComponent.Properties(),
@@ -46,6 +76,9 @@ func (dti *DateTime) Properties() ut.IM {
 		})
 }
 
+/*
+Returns the value of the property of the [DateTime] with the specified name.
+*/
 func (dti *DateTime) GetProperty(propName string) interface{} {
 	return dti.Properties()[propName]
 }
@@ -65,6 +98,9 @@ func (dti *DateTime) defaultValue(dtype string) (value string) {
 	return value
 }
 
+/*
+It checks the value given to the property of the [DateTime] and always returns a valid value
+*/
 func (dti *DateTime) Validation(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"type": func() interface{} {
@@ -91,6 +127,10 @@ func (dti *DateTime) Validation(propName string, propValue interface{}) interfac
 	return propValue
 }
 
+/*
+Setting a property of the [DateTime] value safely. Checks the entered value.
+In case of an invalid value, the default value will be set.
+*/
 func (dti *DateTime) SetProperty(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"type": func() interface{} {
@@ -139,6 +179,10 @@ func (dti *DateTime) SetProperty(propName string, propValue interface{}) interfa
 	return propValue
 }
 
+/*
+If the OnResponse function of the [DateTime] is implemented, the function calls it after the [TriggerEvent]
+is processed, otherwise the function's return [ResponseEvent] is the processed [TriggerEvent].
+*/
 func (dti *DateTime) OnRequest(te TriggerEvent) (re ResponseEvent) {
 	value := dti.SetProperty("value", te.Values.Get(te.Name))
 	evt := ResponseEvent{
@@ -152,6 +196,9 @@ func (dti *DateTime) OnRequest(te TriggerEvent) (re ResponseEvent) {
 	return evt
 }
 
+/*
+Based on the values, it will generate the html code of the [DateTime] or return with an error message.
+*/
 func (dti *DateTime) Render() (res string, err error) {
 	dti.InitProps(dti)
 
@@ -181,6 +228,7 @@ func (dti *DateTime) Render() (res string, err error) {
 	return res, nil
 }
 
+// [DateTime] test and demo data
 func TestDateTime(cc ClientComponent) []TestComponent {
 	id := ut.ToString(cc.GetProperty("id"), "")
 	eventURL := ut.ToString(cc.GetProperty("event_url"), "")
@@ -189,7 +237,7 @@ func TestDateTime(cc ClientComponent) []TestComponent {
 	return []TestComponent{
 		{
 			Label:         "Default, focus, null",
-			ComponentType: ComponentTypeInput,
+			ComponentType: ComponentTypeDateTime,
 			Component: &DateTime{
 				BaseComponent: BaseComponent{
 					Id: id + "_datetime_default",
@@ -201,7 +249,7 @@ func TestDateTime(cc ClientComponent) []TestComponent {
 			}},
 		{
 			Label:         "DateTime, picker, full",
-			ComponentType: ComponentTypeInput,
+			ComponentType: ComponentTypeDateTime,
 			Component: &DateTime{
 				BaseComponent: BaseComponent{
 					Id: id + "_datetime_picker",
@@ -211,7 +259,7 @@ func TestDateTime(cc ClientComponent) []TestComponent {
 			}},
 		{
 			Label:         "Time",
-			ComponentType: ComponentTypeInput,
+			ComponentType: ComponentTypeDateTime,
 			Component: &DateTime{
 				BaseComponent: BaseComponent{
 					Id:           id + "_datetime_time",

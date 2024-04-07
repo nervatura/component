@@ -6,7 +6,10 @@ import (
 	ut "github.com/nervatura/component/pkg/util"
 )
 
+// [Input] constants
 const (
+	ComponentTypeInput = "input"
+
 	InputEventChange = "change"
 
 	InputTypeText     = "text"
@@ -15,24 +18,57 @@ const (
 	InputTypePassword = "password"
 )
 
+// [Input] Type values
 var InputType []string = []string{InputTypeText, InputTypeColor, InputTypeFile, InputTypePassword}
 
+/*
+Creates an HTML text, color, file or password type input control
+
+For example:
+
+	&Input{
+	  BaseComponent: BaseComponent{
+	    Id: "id_input_default",
+	  },
+	  Type:        InputTypeText,
+	  Placeholder: "placeholder text",
+	  AutoFocus:   true,
+	}
+*/
 type Input struct {
 	BaseComponent
-	Type        string `json:"type"`
-	Value       string `json:"value"`
+	/* [InputType] variable constants:
+	[InputTypeText], [InputTypeColor], [InputTypeFile], [InputTypePassword].
+	Default value: [InputTypeText] */
+	Type string `json:"type"`
+	// Any valid value based on control type
+	Value string `json:"value"`
+	// Specifies a short hint that describes the expected value of the input element
 	Placeholder string `json:"placeholder"`
-	Label       string `json:"label"`
-	Disabled    bool   `json:"disabled"`
-	ReadOnly    bool   `json:"read_only"`
-	AutoFocus   bool   `json:"auto_focus"`
-	Invalid     bool   `json:"invalid"`
-	Accept      string `json:"accept"`
-	MaxLength   int64  `json:"max_length"`
-	Size        int64  `json:"size"`
-	Full        bool   `json:"full"`
+	// The HTML aria-label attribute of the component
+	Label string `json:"label"`
+	// Specifies that the input should be disabled
+	Disabled bool `json:"disabled"`
+	// Specifies that the input field is read-only
+	ReadOnly bool `json:"read_only"`
+	// Specifies that the input element should automatically get focus when the page loads
+	AutoFocus bool `json:"auto_focus"`
+	// Sets the values of the invalid class style
+	Invalid bool `json:"invalid"`
+	/* Specifies a filter for what file types the user can pick from the file input dialog box
+	(only for type=[InputTypeFile]) */
+	Accept string `json:"accept"`
+	// Specifies the maximum number of characters allowed in the input element
+	MaxLength int64 `json:"max_length"`
+	// Specifies the width, in characters, of the input element
+	Size int64 `json:"size"`
+	// Full width input (100%)
+	Full bool `json:"full"`
 }
 
+/*
+Returns all properties of the [Input]
+*/
 func (inp *Input) Properties() ut.IM {
 	return ut.MergeIM(
 		inp.BaseComponent.Properties(),
@@ -52,10 +88,16 @@ func (inp *Input) Properties() ut.IM {
 		})
 }
 
+/*
+Returns the value of the property of the [Input] with the specified name.
+*/
 func (inp *Input) GetProperty(propName string) interface{} {
 	return inp.Properties()[propName]
 }
 
+/*
+It checks the value given to the property of the [Input] and always returns a valid value
+*/
 func (inp *Input) Validation(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"type": func() interface{} {
@@ -71,6 +113,10 @@ func (inp *Input) Validation(propName string, propValue interface{}) interface{}
 	return propValue
 }
 
+/*
+Setting a property of the [Input] value safely. Checks the entered value.
+In case of an invalid value, the default value will be set.
+*/
 func (inp *Input) SetProperty(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"type": func() interface{} {
@@ -131,6 +177,10 @@ func (inp *Input) SetProperty(propName string, propValue interface{}) interface{
 	return propValue
 }
 
+/*
+If the OnResponse function of the [Input] is implemented, the function calls it after the [TriggerEvent]
+is processed, otherwise the function's return [ResponseEvent] is the processed [TriggerEvent].
+*/
 func (inp *Input) OnRequest(te TriggerEvent) (re ResponseEvent) {
 	value := inp.SetProperty("value", te.Values.Get(te.Name))
 	evt := ResponseEvent{
@@ -144,6 +194,9 @@ func (inp *Input) OnRequest(te TriggerEvent) (re ResponseEvent) {
 	return evt
 }
 
+/*
+Based on the values, it will generate the html code of the [Input] or return with an error message.
+*/
 func (inp *Input) Render() (res string, err error) {
 	inp.InitProps(inp)
 
@@ -184,6 +237,7 @@ var demoInputResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt Resp
 	return evt
 }
 
+// [Input] test and demo data
 func TestInput(cc ClientComponent) []TestComponent {
 	id := ut.ToString(cc.GetProperty("id"), "")
 	eventURL := ut.ToString(cc.GetProperty("event_url"), "")

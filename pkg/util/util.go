@@ -1,3 +1,5 @@
+/* Component helper functions
+ */
 package component
 
 import (

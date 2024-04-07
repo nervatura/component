@@ -6,7 +6,10 @@ import (
 	ut "github.com/nervatura/component/pkg/util"
 )
 
+// [Button] constants
 const (
+	ComponentTypeButton = "button"
+
 	ButtonEventClick = "click"
 
 	ButtonTypeDefault = ""
@@ -14,25 +17,67 @@ const (
 	ButtonTypeBorder  = "border"
 )
 
+// [Button] Type values
 var ButtonType []string = []string{ButtonTypeDefault, ButtonTypePrimary, ButtonTypeBorder}
 
+/*
+Creates an HTML button control
+
+For example:
+
+	&Button{
+	  BaseComponent: BaseComponent{
+	    Id:           "id_button_primary",
+	    EventURL:     "/event",
+	    OnResponse:   func(evt ResponseEvent) (re ResponseEvent) {
+	      // return parent_component response
+	      return evt
+	    },
+	    RequestValue: parent_component.GetProperty("request_value").(map[string]ut.IM),
+	    RequestMap:   parent_component.GetProperty("request_map").(map[string]ClientComponent)
+	  },
+	  Type:     ButtonTypePrimary,
+	  Align:    TextAlignCenter,
+	  Label:    "Primary",
+	  Icon:     "Check",
+	  Selected: true
+	}
+*/
 type Button struct {
 	BaseComponent
-	Type           string          `json:"type"`
-	Align          string          `json:"align"`
-	Label          string          `json:"label"`
+	/* [ButtonType] variable constants: [ButtonTypeDefault], [ButtonTypePrimary], [ButtonTypeBorder].
+	Default value: [ButtonTypeDefault] */
+	Type string `json:"type"`
+	/* [TextAlign] variable constants: [TextAlignLeft], [TextAlignCenter], [TextAlignRight].
+	Default value: [TextAlignCenter] */
+	Align string `json:"align"`
+	// The HTML title, aria-label attribute and button caption of the component
+	Label string `json:"label"`
+	// Any component to be displayed (e.g. [Label] component) instead of the label text
 	LabelComponent ClientComponent `json:"label_component"`
-	Icon           string          `json:"icon"`
-	Disabled       bool            `json:"disabled"`
-	AutoFocus      bool            `json:"auto_focus"`
-	Full           bool            `json:"full"`
-	Small          bool            `json:"small"`
-	Selected       bool            `json:"selected"`
-	HideLabel      bool            `json:"hide_label"`
-	Badge          int64           `json:"badge"`
-	ShowBadge      bool            `json:"show_badge"`
+	// Valid [Icon] component value. See more [IconKey] variable values.
+	Icon string `json:"icon"`
+	// Specifies that the button should be disabled
+	Disabled bool `json:"disabled"`
+	// Specifies that the button should automatically get focus when the page loads
+	AutoFocus bool `json:"auto_focus"`
+	// Full width button (100%)
+	Full bool `json:"full"`
+	// Sets the values of the small-button class style
+	Small bool `json:"small"`
+	// Sets the values of the selected class style
+	Selected bool `json:"selected"`
+	// The button label is visible or invisible
+	HideLabel bool `json:"hide_label"`
+	// The badge value of the button
+	Badge int64 `json:"badge"`
+	// The button badge is visible or invisible
+	ShowBadge bool `json:"show_badge"`
 }
 
+/*
+Returns all properties of the [Button]
+*/
 func (btn *Button) Properties() ut.IM {
 	return ut.MergeIM(
 		btn.BaseComponent.Properties(),
@@ -53,10 +98,16 @@ func (btn *Button) Properties() ut.IM {
 		})
 }
 
+/*
+Returns the value of the property of the [Button] with the specified name.
+*/
 func (btn *Button) GetProperty(propName string) interface{} {
 	return btn.Properties()[propName]
 }
 
+/*
+It checks the value given to the property of the [Button] and always returns a valid value
+*/
 func (btn *Button) Validation(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"type": func() interface{} {
@@ -78,6 +129,10 @@ func (btn *Button) Validation(propName string, propValue interface{}) interface{
 	return propValue
 }
 
+/*
+Setting a property of the [Button] value safely. Checks the entered value.
+In case of an invalid value, the default value will be set.
+*/
 func (btn *Button) SetProperty(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"type": func() interface{} {
@@ -148,6 +203,10 @@ func (btn *Button) SetProperty(propName string, propValue interface{}) interface
 	return propValue
 }
 
+/*
+If the OnResponse function of the [Button] is implemented, the function calls it after the [TriggerEvent]
+is processed, otherwise the function's return [ResponseEvent] is the processed [TriggerEvent].
+*/
 func (btn *Button) OnRequest(te TriggerEvent) (re ResponseEvent) {
 	value := btn.SetProperty("value", te.Values.Get(te.Id+"_value"))
 	evt := ResponseEvent{
@@ -173,6 +232,9 @@ func (btn *Button) getComponent(name string) (string, error) {
 	return ccMap[name]().Render()
 }
 
+/*
+Based on the values, it will generate the html code of the [Button] or return with an error message.
+*/
 func (btn *Button) Render() (res string, err error) {
 	btn.InitProps(btn)
 
@@ -215,6 +277,7 @@ var demoBtnResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt Respon
 	return evt
 }
 
+// [Button] test and demo data
 func TestButton(cc ClientComponent) []TestComponent {
 	id := ut.ToString(cc.GetProperty("id"), "")
 	eventURL := ut.ToString(cc.GetProperty("event_url"), "")

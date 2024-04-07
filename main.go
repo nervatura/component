@@ -2,9 +2,13 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/nervatura/component/pkg/demo"
+	ut "github.com/nervatura/component/pkg/util"
 )
+
+const httpPort = int64(5000)
 
 var (
 	version = "dev"
@@ -12,8 +16,11 @@ var (
 
 func main() {
 	fmt.Printf("Version: %s\n", version)
-	err := demo.New(version)
-	if err != nil {
+	port := httpPort
+	if len(os.Args) > 1 {
+		port = ut.ToInteger(os.Args[1], httpPort)
+	}
+	if err := demo.New(version, port); err != nil {
 		fmt.Println(err.Error())
 	}
 

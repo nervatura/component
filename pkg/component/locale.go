@@ -8,7 +8,10 @@ import (
 	ut "github.com/nervatura/component/pkg/util"
 )
 
+// [Locale] constants
 const (
+	ComponentTypeLocale = "locale"
+
 	LocalesEventChange = "change"
 	LocalesEventUndo   = "undo"
 	LocalesEventSave   = "save"
@@ -30,16 +33,73 @@ var localeDefaultLabel ut.SM = ut.SM{
 	"locale_value":         "Value",
 }
 
+/*
+Creates an translation helper tool
+
+Example component with the following main features:
+  - server-side state management
+  - [Input], [Select], [Label], [Button] and [Table] components
+  - customized table cells: link field and input control
+  - data filtering
+  - state-bound control visibility
+  - dynamic data sources for the [Select] and [Table] controls
+
+For example:
+
+	&Locale{
+	  BaseComponent: BaseComponent{
+	    Id:           "id_locale_default",
+	    EventURL:     "/event",
+	    OnResponse:   func(evt ResponseEvent) (re ResponseEvent) {
+	      // return parent_component response
+	      return evt
+	    },
+	    RequestValue: parent_component.GetProperty("request_value").(map[string]ut.IM),
+	    RequestMap:   parent_component.GetProperty("request_map").(map[string]ClientComponent),
+	    Data: ut.IM{
+	      "deflang": ut.IM{
+	        "key": "en", "en": "English", "address_view": "Address Data",
+	      },
+	      "locales":  "default",
+	      "tag_keys": "address",
+	      "tag_values": map[string][]string{
+	        "address": { "address_view", "address_country" },
+	        "login": { "login_username", "login_password", "login_database" },
+	      },
+	      "locfile": ut.IM{
+	        "locales": ut.IM{
+	          "de": ut.IM{ "de": "Deutsche", "key": "de", "login_database": "Datenbank" }
+	        },
+	      },
+	    },
+	  },
+	  Locales: []SelectOption{
+	    {Value: "default", Text: "Default"}, {Value: "de", Text: "Deutsch"},
+	  },
+	  TagKeys: []SelectOption{
+	    {Value: "address", Text: "address"}, {Value: "login", Text: "login"},
+	  },
+	}
+*/
 type Locale struct {
 	BaseComponent
-	Locales     []SelectOption `json:"locales"`
-	TagKeys     []SelectOption `json:"tag_keys"`
-	FilterValue string         `json:"filter_value"`
-	Dirty       bool           `json:"dirty"`
-	AddItem     bool           `json:"add_item"`
-	Labels      ut.SM          `json:"labels"`
+	// The languages that can be selected from the data source
+	Locales []SelectOption `json:"locales"`
+	// The groups of localization texts
+	TagKeys []SelectOption `json:"tag_keys"`
+	// The filter condition of the displayed data
+	FilterValue string `json:"filter_value"`
+	// Data changed from user input
+	Dirty bool `json:"dirty"`
+	// Show/hide Add a new language section
+	AddItem bool `json:"add_item"`
+	// The texts of the labels of the controls
+	Labels ut.SM `json:"labels"`
 }
 
+/*
+Returns all properties of the [Locale]
+*/
 func (loc *Locale) Properties() ut.IM {
 	return ut.MergeIM(
 		loc.BaseComponent.Properties(),
@@ -53,10 +113,16 @@ func (loc *Locale) Properties() ut.IM {
 		})
 }
 
+/*
+Returns the value of the property of the [Locale] with the specified name.
+*/
 func (loc *Locale) GetProperty(propName string) interface{} {
 	return loc.Properties()[propName]
 }
 
+/*
+It checks the value given to the property of the [Locale] and always returns a valid value
+*/
 func (loc *Locale) Validation(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"labels": func() interface{} {
@@ -105,6 +171,10 @@ func (loc *Locale) Validation(propName string, propValue interface{}) interface{
 	return propValue
 }
 
+/*
+Setting a property of the [Locale] value safely. Checks the entered value.
+In case of an invalid value, the default value will be set.
+*/
 func (loc *Locale) SetProperty(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"locales": func() interface{} {
@@ -455,6 +525,9 @@ func (loc *Locale) msg(labelID string) string {
 	return labelID
 }
 
+/*
+Based on the values, it will generate the html code of the [Locale] or return with an error message.
+*/
 func (loc *Locale) Render() (res string, err error) {
 	loc.InitProps(loc)
 
@@ -543,7 +616,7 @@ var demoLocaleResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt Res
 			Name:        evt.Name,
 			Header: ut.SM{
 				HeaderRetarget: "#toast-msg",
-				HeaderReswap:   "innerHTML",
+				HeaderReswap:   SwapInnerHTML,
 			},
 		}
 		return re
@@ -568,6 +641,7 @@ var demoLocaleResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt Res
 	return evt
 }
 
+// [Locale] test and demo data
 func TestLocale(cc ClientComponent) []TestComponent {
 	id := ut.ToString(cc.GetProperty("id"), "")
 	eventURL := ut.ToString(cc.GetProperty("event_url"), "")
