@@ -14,11 +14,11 @@ https://golang.org/doc/install.
 
 4. 🔨 Build the demo project:
 
-	go build -ldflags="-w -s -X main.version=demo" -o ./demo_app main.go
+	go build -ldflags="-w -s -X main.version=demo" -o ./component main.go
 
 5. 🌍 Run the demo application:
 
-	./demo_app 5000
+	./component 5000
 
 The demo application can store session data in memory and as
 session files:

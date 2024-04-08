@@ -43,31 +43,47 @@ anyone can easily create a server-side component in any program language.
 
 ### Quick start (demo application)
 
-1. 💻 Ensure that you have Golang installed on your system. If not, please follow the [official installation guide](https://golang.org/doc/install).
-    
-2. 📦 Clone the repository:
-    
-```bash
-git clone https://github.com/nervatura/component.git
-```
+**1. Prebuild binaries**
+- [Linux x64](https://github.com/nervatura/component/releases/latest/download/component_linux_x86_64.tar.gz), 
+[Linux arm](https://github.com/nervatura/component/releases/latest/download/component_linux_arm64.tar.gz)
+- [Windows x64](https://github.com/nervatura/component/releases/latest/download/component_windows_x86_64.zip)
+- [MacOS x64](https://github.com/nervatura/component/releases/latest/download/component_darwin_x86_64.tar.gz), 
+[MacOS arm](https://github.com/nervatura/component/releases/latest/download/component_darwin_arm64.tar.gz)
 
-3. 📂 Change into the project directory:
+**2. Docker file**
+- Clone the repository: 
+  ```bash
+  git clone https://github.com/nervatura/component.git
+  ```
+  ```bash
+  cd component
+  ```
+- Docker build
+  ```bash
+  docker build -t component .
+  ```
+- Run the demo application
+  ```bash
+  docker run -i -t --rm --name component -p 5000:5000 -v $(pwd)/session:/session component:latest
+  ```
 
-```bash
-cd component
-```
-
-4. 🔨 Build the project:
-
-```bash
-go build -ldflags="-w -s -X main.version=demo" -o ./demo_app main.go
-```
-
-5. 🌍 Run the demo application:
-
-```bash
-./demo_app 5000
-```
+**3. Build the project**
+- Clone the repository: 
+  ```bash
+  git clone https://github.com/nervatura/component.git
+  ```
+  ```bash
+  cd component
+  ```
+- Ensure that you have Golang installed on your system. If not, please follow the [official installation guide](https://golang.org/doc/install).
+- Build the project:
+  ```bash
+  go build -ldflags="-w -s -X main.version=demo" -o ./component main.go
+  ```
+- Run the demo application
+  ```bash
+  ./component 5000
+  ```
 
 The demo application can store session data in memory and as
 session files:

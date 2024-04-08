@@ -1,6 +1,6 @@
-FROM golang:1.21.5-alpine AS builder
+FROM golang:1.22.0-alpine AS builder
 
-ARG APP_VNUM=dev
+ARG APP_VNUM=demo
 ARG APP_NAME=component
 
 # Move to working directory (/build).
