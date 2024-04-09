@@ -20,8 +20,5 @@ func main() {
 	if len(os.Args) > 1 {
 		port = ut.ToInteger(os.Args[1], httpPort)
 	}
-	if err := demo.New(version, port); err != nil {
-		fmt.Println(err.Error())
-	}
-
+	demo.New(version, port)
 }

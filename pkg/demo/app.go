@@ -28,7 +28,6 @@ session files:
 package demo
 
 import (
-	"context"
 	"errors"
 	"strings"
 
@@ -39,14 +38,11 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	ct "github.com/nervatura/component/pkg/component"
 	st "github.com/nervatura/component/pkg/static"
 	ut "github.com/nervatura/component/pkg/util"
-	"golang.org/x/sync/errgroup"
 )
 
 // Demo [App] constants
@@ -62,7 +58,6 @@ const (
 type App struct {
 	version    string
 	infoLog    *log.Logger
-	server     *http.Server
 	memSession map[string]*Demo
 	osStat     func(name string) (fs.FileInfo, error)
 	osMkdir    func(name string, perm fs.FileMode) error
@@ -71,7 +66,7 @@ type App struct {
 }
 
 // It creates a new application and starts an http server.
-func New(version string, httpPort int64) (err error) {
+func New(version string, httpPort int64) {
 	app := &App{
 		version:    version,
 		infoLog:    log.New(os.Stdout, "INFO: ", log.LstdFlags),
@@ -82,41 +77,6 @@ func New(version string, httpPort int64) (err error) {
 		osReadFile: os.ReadFile,
 	}
 
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
-	defer signal.Stop(interrupt)
-
-	g, ctx := errgroup.WithContext(ctx)
-	g.Go(func() error {
-		return app.startHttpService(httpPort)
-	})
-
-	select {
-	case <-interrupt:
-		break
-	case <-ctx.Done():
-		break
-	}
-	app.infoLog.Println("received shut down signal")
-
-	cancel()
-
-	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer shutdownCancel()
-	if app.server != nil {
-		app.infoLog.Println("stopping HTTP server")
-		_ = app.server.Shutdown(shutdownCtx)
-	}
-
-	return g.Wait()
-}
-
-// It sets the http routes and starts the server.
-func (app *App) startHttpService(httpPort int64) error {
 	mux := http.NewServeMux()
 	// Register API routes.
 	mux.HandleFunc("/", app.HomeRoute)
@@ -127,7 +87,7 @@ func (app *App) startHttpService(httpPort int64) error {
 	var publicFS, _ = fs.Sub(st.Static, ".")
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(publicFS))))
 
-	app.server = &http.Server{
+	server := &http.Server{
 		Handler:      mux,
 		Addr:         fmt.Sprintf(":%d", httpPort),
 		ReadTimeout:  time.Duration(httpReadTimeout) * time.Second,
@@ -135,7 +95,9 @@ func (app *App) startHttpService(httpPort int64) error {
 	}
 
 	app.infoLog.Printf("HTTP server serving at: %d. \n", httpPort)
-	return app.server.ListenAndServe()
+	if err := server.ListenAndServe(); err != nil {
+		app.infoLog.Printf("server error: %s\n", err)
+	}
 }
 
 // Saving component state in a session json file.
@@ -168,6 +130,15 @@ func (app *App) LoadSession(fileName string, data any) (err error) {
 	return err
 }
 
+func (app *App) respondMessage(w http.ResponseWriter, res string, err error) {
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Write([]byte(res))
+}
+
 // Creates and returns an Application/[Demo] component.
 // It stores the state of the component in memory or in a session file
 func (app *App) HomeRoute(w http.ResponseWriter, r *http.Request) {
@@ -186,20 +157,14 @@ func (app *App) HomeRoute(w http.ResponseWriter, r *http.Request) {
 	}
 	var err error
 	var res string
-	res, err = ccApp.Render()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	if res, err = ccApp.Render(); err == nil {
+		if dataSave {
+			err = app.SaveSession(sessionID, demo)
+		} else {
+			app.memSession[sessionID] = demo
+		}
 	}
-	if dataSave {
-		err = app.SaveSession(sessionID, demo)
-	}
-	if (err != nil) || !dataSave {
-		app.memSession[sessionID] = demo
-	}
-
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.Write([]byte(res))
+	app.respondMessage(w, res, err)
 }
 
 // Receive the component event request.
@@ -248,6 +213,5 @@ func (app *App) AppEvent(w http.ResponseWriter, r *http.Request) {
 	if dataSave && (err == nil) {
 		app.SaveSession(sessionID, demo)
 	}
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.Write([]byte(res))
+	app.respondMessage(w, res, nil)
 }

@@ -12,39 +12,10 @@ import (
 	"testing"
 )
 
-func TestNew(t *testing.T) {
-	type args struct {
-		version  string
-		httpPort int64
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		{
-			name: "start",
-			args: args{
-				version:  "test",
-				httpPort: -1,
-			},
-			wantErr: true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := New(tt.args.version, tt.args.httpPort); (err != nil) != tt.wantErr {
-				t.Errorf("New() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
 func TestApp_SaveSession(t *testing.T) {
 	type fields struct {
 		version    string
 		infoLog    *log.Logger
-		server     *http.Server
 		memSession map[string]*Demo
 		osStat     func(name string) (fs.FileInfo, error)
 		osMkdir    func(name string, perm fs.FileMode) error
@@ -104,7 +75,6 @@ func TestApp_SaveSession(t *testing.T) {
 			app := &App{
 				version:    tt.fields.version,
 				infoLog:    tt.fields.infoLog,
-				server:     tt.fields.server,
 				memSession: tt.fields.memSession,
 				osStat:     tt.fields.osStat,
 				osMkdir:    tt.fields.osMkdir,
@@ -122,7 +92,6 @@ func TestApp_LoadSession(t *testing.T) {
 	type fields struct {
 		version    string
 		infoLog    *log.Logger
-		server     *http.Server
 		memSession map[string]*Demo
 		osStat     func(name string) (fs.FileInfo, error)
 		osMkdir    func(name string, perm fs.FileMode) error
@@ -158,7 +127,6 @@ func TestApp_LoadSession(t *testing.T) {
 			app := &App{
 				version:    tt.fields.version,
 				infoLog:    tt.fields.infoLog,
-				server:     tt.fields.server,
 				memSession: tt.fields.memSession,
 				osStat:     tt.fields.osStat,
 				osMkdir:    tt.fields.osMkdir,
@@ -176,7 +144,6 @@ func TestApp_HomeRoute(t *testing.T) {
 	type fields struct {
 		version    string
 		infoLog    *log.Logger
-		server     *http.Server
 		memSession map[string]*Demo
 		osStat     func(name string) (fs.FileInfo, error)
 		osMkdir    func(name string, perm fs.FileMode) error
@@ -227,7 +194,6 @@ func TestApp_HomeRoute(t *testing.T) {
 			app := &App{
 				version:    tt.fields.version,
 				infoLog:    tt.fields.infoLog,
-				server:     tt.fields.server,
 				memSession: tt.fields.memSession,
 				osStat:     tt.fields.osStat,
 				osMkdir:    tt.fields.osMkdir,
@@ -243,7 +209,6 @@ func TestApp_AppEvent(t *testing.T) {
 	type fields struct {
 		version    string
 		infoLog    *log.Logger
-		server     *http.Server
 		memSession map[string]*Demo
 		osStat     func(name string) (fs.FileInfo, error)
 		osMkdir    func(name string, perm fs.FileMode) error
@@ -333,7 +298,6 @@ func TestApp_AppEvent(t *testing.T) {
 			app := &App{
 				version:    tt.fields.version,
 				infoLog:    tt.fields.infoLog,
-				server:     tt.fields.server,
 				memSession: tt.fields.memSession,
 				osStat:     tt.fields.osStat,
 				osMkdir:    tt.fields.osMkdir,
@@ -343,6 +307,74 @@ func TestApp_AppEvent(t *testing.T) {
 			tt.args.r.Header.Set("X-Session-Token", "SessionID")
 			tt.args.r.Header.Set("Hx-Current-Url", "/session")
 			app.AppEvent(tt.args.w, tt.args.r)
+		})
+	}
+}
+
+func TestNew(t *testing.T) {
+	type args struct {
+		version  string
+		httpPort int64
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			name: "start",
+			args: args{
+				version:  "test",
+				httpPort: -1,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			New(tt.args.version, tt.args.httpPort)
+		})
+	}
+}
+
+func TestApp_respondMessage(t *testing.T) {
+	type fields struct {
+		version    string
+		infoLog    *log.Logger
+		memSession map[string]*Demo
+		osStat     func(name string) (fs.FileInfo, error)
+		osMkdir    func(name string, perm fs.FileMode) error
+		osCreate   func(name string) (*os.File, error)
+		osReadFile func(name string) ([]byte, error)
+	}
+	type args struct {
+		w   http.ResponseWriter
+		res string
+		err error
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+	}{
+		{
+			name: "error",
+			args: args{
+				w:   httptest.NewRecorder(),
+				err: errors.New("error"),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			app := &App{
+				version:    tt.fields.version,
+				infoLog:    tt.fields.infoLog,
+				memSession: tt.fields.memSession,
+				osStat:     tt.fields.osStat,
+				osMkdir:    tt.fields.osMkdir,
+				osCreate:   tt.fields.osCreate,
+				osReadFile: tt.fields.osReadFile,
+			}
+			app.respondMessage(tt.args.w, tt.args.res, tt.args.err)
 		})
 	}
 }
