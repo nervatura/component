@@ -12,7 +12,7 @@ import (
 	"testing"
 )
 
-func TestApp_SaveSession(t *testing.T) {
+func TestApp_SaveFileSession(t *testing.T) {
 	type fields struct {
 		version    string
 		infoLog    *log.Logger
@@ -81,14 +81,14 @@ func TestApp_SaveSession(t *testing.T) {
 				osCreate:   tt.fields.osCreate,
 				osReadFile: tt.fields.osReadFile,
 			}
-			if err := app.SaveSession(tt.args.fileName, tt.args.data); (err != nil) != tt.wantErr {
+			if err := app.SaveFileSession(tt.args.fileName, tt.args.data); (err != nil) != tt.wantErr {
 				t.Errorf("App.SaveSession() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
 }
 
-func TestApp_LoadSession(t *testing.T) {
+func TestApp_LoadFileSession(t *testing.T) {
 	type fields struct {
 		version    string
 		infoLog    *log.Logger
@@ -133,7 +133,7 @@ func TestApp_LoadSession(t *testing.T) {
 				osCreate:   tt.fields.osCreate,
 				osReadFile: tt.fields.osReadFile,
 			}
-			if err := app.LoadSession(tt.args.fileName, tt.args.data); (err != nil) != tt.wantErr {
+			if err := app.LoadFileSession(tt.args.fileName, tt.args.data); (err != nil) != tt.wantErr {
 				t.Errorf("App.LoadSession() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

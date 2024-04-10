@@ -22,5 +22,6 @@ go.work
 Makefile
 .vscode
 session/*
+session.db
 dist
 .goreleaser.yaml
