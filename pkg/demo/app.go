@@ -255,15 +255,11 @@ func (app *App) checkSessionTable(sessionDb string) (db *sql.DB, err error) {
 }
 
 func (app *App) getSessionValue(db *sql.DB, sessionID string) (value string, err error) {
-	var rows *sql.Rows
 	sqlString := fmt.Sprintf("SELECT value FROM %s WHERE id=?", sessionTable)
-	rows, err = db.Query(sqlString, sessionID)
-	if err == nil {
-		for rows.Next() {
-			err = rows.Scan(&value)
-		}
+	row := db.QueryRow(sqlString, sessionID)
+	if err = row.Scan(&value); err == sql.ErrNoRows {
+		value = ""
 	}
-	defer rows.Close()
 	return value, err
 }
 

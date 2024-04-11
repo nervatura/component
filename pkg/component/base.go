@@ -110,10 +110,15 @@ The logic of the components can be understood most easily from the code of the e
     [ClientComponent], they also have their own functions (for example, getComponent, response, msg) with which
     they initialize their own child components and handle the [ResponseEvent] events of the components.
 
-The [pkg/github.com/nervatura/component/pkg/demo] package contains a sample application that displays all the
-server-side components of the this package with sample data. Applications can store component data in
-memory, but they can save it anywhere in json format and load it back. The demo application can store session
-data in memory and as session files.
+  - The css files of the components are included in the component/pkg/static package. The index.css
+    contains the reference to the style sheets of all components, so it is sufficient to specify this in the
+    [Application] HeadLink property. The styles of the new components can be specified in additional css files and
+    the styles of the existing components can also be overwritten.
+
+The [pkg/github.com/nervatura/component/pkg/demo] package includes an example application that displays all
+components with sample data. Applications can store component data in memory, but they can save it anywhere in json
+format and load it back. The demo application can store session data in memory and as session files. The source code
+of the example application also contains an example of using a session database.
 
 The Admin interface of the application https://github.com/nervatura/nervatura is another example of
 the use of server-side components (session and JWT token, database session and more).

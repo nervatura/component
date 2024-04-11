@@ -40,6 +40,7 @@ type Application struct {
 		pkg/static/css package must be specified.
 		Example: []ct.HeadLink{
 			{Rel: "icon", Href: "/static/favicon.svg", Type: "image/svg+xml"},
+			{Rel: "stylesheet", Href: "/public/demo.css"},
 			{Rel: "stylesheet", Href: "/static/css/index.css"}}
 	*/
 	HeadLink []HeadLink `json:"head_link"`
