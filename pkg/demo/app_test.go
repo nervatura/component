@@ -10,145 +10,21 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+
+	_ "github.com/nervatura/component/pkg/demo/sqltest"
 )
-
-func TestApp_SaveFileSession(t *testing.T) {
-	type fields struct {
-		version    string
-		infoLog    *log.Logger
-		memSession map[string]*Demo
-		osStat     func(name string) (fs.FileInfo, error)
-		osMkdir    func(name string, perm fs.FileMode) error
-		osCreate   func(name string) (*os.File, error)
-		osReadFile func(name string) ([]byte, error)
-	}
-	type args struct {
-		fileName string
-		data     any
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
-	}{
-		{
-			name: "mk_error",
-			fields: fields{
-				version: "1.0.0",
-				osStat: func(name string) (fs.FileInfo, error) {
-					return nil, os.ErrNotExist
-				},
-				osMkdir: func(name string, perm fs.FileMode) error {
-					return errors.New("error")
-				},
-			},
-			args: args{
-				fileName: "filename",
-				data:     &Demo{},
-			},
-			wantErr: true,
-		},
-		{
-			name: "ok",
-			fields: fields{
-				version: "1.0.0",
-				osStat: func(name string) (fs.FileInfo, error) {
-					return nil, nil
-				},
-				osMkdir: func(name string, perm fs.FileMode) error {
-					return nil
-				},
-				osCreate: func(name string) (*os.File, error) {
-					return os.NewFile(0, name), nil
-				},
-			},
-			args: args{
-				fileName: "filename",
-				data:     &Demo{},
-			},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			app := &App{
-				version:    tt.fields.version,
-				infoLog:    tt.fields.infoLog,
-				memSession: tt.fields.memSession,
-				osStat:     tt.fields.osStat,
-				osMkdir:    tt.fields.osMkdir,
-				osCreate:   tt.fields.osCreate,
-				osReadFile: tt.fields.osReadFile,
-			}
-			if err := app.SaveFileSession(tt.args.fileName, tt.args.data); (err != nil) != tt.wantErr {
-				t.Errorf("App.SaveSession() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
-func TestApp_LoadFileSession(t *testing.T) {
-	type fields struct {
-		version    string
-		infoLog    *log.Logger
-		memSession map[string]*Demo
-		osStat     func(name string) (fs.FileInfo, error)
-		osMkdir    func(name string, perm fs.FileMode) error
-		osCreate   func(name string) (*os.File, error)
-		osReadFile func(name string) ([]byte, error)
-	}
-	type args struct {
-		fileName string
-		data     any
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
-	}{
-		{
-			name: "ok",
-			fields: fields{
-				osReadFile: func(name string) ([]byte, error) {
-					return []byte{}, nil
-				},
-			},
-			args: args{
-				fileName: "filename",
-				data:     map[string]interface{}{},
-			},
-			wantErr: true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			app := &App{
-				version:    tt.fields.version,
-				infoLog:    tt.fields.infoLog,
-				memSession: tt.fields.memSession,
-				osStat:     tt.fields.osStat,
-				osMkdir:    tt.fields.osMkdir,
-				osCreate:   tt.fields.osCreate,
-				osReadFile: tt.fields.osReadFile,
-			}
-			if err := app.LoadFileSession(tt.args.fileName, tt.args.data); (err != nil) != tt.wantErr {
-				t.Errorf("App.LoadSession() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
 
 func TestApp_HomeRoute(t *testing.T) {
 	type fields struct {
-		version    string
-		infoLog    *log.Logger
-		memSession map[string]*Demo
-		osStat     func(name string) (fs.FileInfo, error)
-		osMkdir    func(name string, perm fs.FileMode) error
-		osCreate   func(name string) (*os.File, error)
-		osReadFile func(name string) ([]byte, error)
+		version     string
+		infoLog     *log.Logger
+		memSession  map[string]*Demo
+		saveSession func(name string, data any) (err error)
+		loadSession func(name string, data any) (err error)
+		osStat      func(name string) (fs.FileInfo, error)
+		osMkdir     func(name string, perm fs.FileMode) error
+		osCreate    func(name string) (*os.File, error)
+		osReadFile  func(name string) ([]byte, error)
 	}
 	type args struct {
 		w http.ResponseWriter
@@ -172,6 +48,12 @@ func TestApp_HomeRoute(t *testing.T) {
 				osCreate: func(name string) (*os.File, error) {
 					return os.NewFile(0, name), nil
 				},
+				loadSession: func(name string, data any) (err error) {
+					return nil
+				},
+				saveSession: func(name string, data any) (err error) {
+					return nil
+				},
 			},
 			args: args{
 				w: httptest.NewRecorder(),
@@ -192,13 +74,15 @@ func TestApp_HomeRoute(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			app := &App{
-				version:    tt.fields.version,
-				infoLog:    tt.fields.infoLog,
-				memSession: tt.fields.memSession,
-				osStat:     tt.fields.osStat,
-				osMkdir:    tt.fields.osMkdir,
-				osCreate:   tt.fields.osCreate,
-				osReadFile: tt.fields.osReadFile,
+				version:     tt.fields.version,
+				infoLog:     tt.fields.infoLog,
+				memSession:  tt.fields.memSession,
+				loadSession: tt.fields.loadSession,
+				saveSession: tt.fields.saveSession,
+				osStat:      tt.fields.osStat,
+				osMkdir:     tt.fields.osMkdir,
+				osCreate:    tt.fields.osCreate,
+				osReadFile:  tt.fields.osReadFile,
 			}
 			app.HomeRoute(tt.args.w, tt.args.r)
 		})
@@ -207,13 +91,15 @@ func TestApp_HomeRoute(t *testing.T) {
 
 func TestApp_AppEvent(t *testing.T) {
 	type fields struct {
-		version    string
-		infoLog    *log.Logger
-		memSession map[string]*Demo
-		osStat     func(name string) (fs.FileInfo, error)
-		osMkdir    func(name string, perm fs.FileMode) error
-		osCreate   func(name string) (*os.File, error)
-		osReadFile func(name string) ([]byte, error)
+		version     string
+		infoLog     *log.Logger
+		memSession  map[string]*Demo
+		saveSession func(name string, data any) (err error)
+		loadSession func(name string, data any) (err error)
+		osStat      func(name string) (fs.FileInfo, error)
+		osMkdir     func(name string, perm fs.FileMode) error
+		osCreate    func(name string) (*os.File, error)
+		osReadFile  func(name string) ([]byte, error)
 	}
 	type args struct {
 		w http.ResponseWriter
@@ -241,6 +127,12 @@ func TestApp_AppEvent(t *testing.T) {
 				osCreate: func(name string) (*os.File, error) {
 					return os.NewFile(0, name), nil
 				},
+				loadSession: func(name string, data any) (err error) {
+					return nil
+				},
+				saveSession: func(name string, data any) (err error) {
+					return nil
+				},
 			},
 			args: args{
 				w: httptest.NewRecorder(),
@@ -264,6 +156,12 @@ func TestApp_AppEvent(t *testing.T) {
 					app, _ := json.Marshal(demoApp)
 					return []byte(app), nil
 				},
+				loadSession: func(name string, data any) (err error) {
+					return nil
+				},
+				saveSession: func(name string, data any) (err error) {
+					return nil
+				},
 			},
 			args: args{
 				w: httptest.NewRecorder(),
@@ -286,6 +184,12 @@ func TestApp_AppEvent(t *testing.T) {
 				osReadFile: func(name string) ([]byte, error) {
 					return nil, errors.New("error")
 				},
+				loadSession: func(name string, data any) (err error) {
+					return nil
+				},
+				saveSession: func(name string, data any) (err error) {
+					return nil
+				},
 			},
 			args: args{
 				w: httptest.NewRecorder(),
@@ -296,14 +200,18 @@ func TestApp_AppEvent(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			app := &App{
-				version:    tt.fields.version,
-				infoLog:    tt.fields.infoLog,
-				memSession: tt.fields.memSession,
-				osStat:     tt.fields.osStat,
-				osMkdir:    tt.fields.osMkdir,
-				osCreate:   tt.fields.osCreate,
-				osReadFile: tt.fields.osReadFile,
+				version:     tt.fields.version,
+				infoLog:     tt.fields.infoLog,
+				memSession:  tt.fields.memSession,
+				loadSession: tt.fields.loadSession,
+				saveSession: tt.fields.saveSession,
+				osStat:      tt.fields.osStat,
+				osMkdir:     tt.fields.osMkdir,
+				osCreate:    tt.fields.osCreate,
+				osReadFile:  tt.fields.osReadFile,
 			}
+			app.loadSession = app.LoadFileSession
+			app.saveSession = app.SaveFileSession
 			tt.args.r.Header.Set("X-Session-Token", "SessionID")
 			tt.args.r.Header.Set("Hx-Current-Url", "/session")
 			app.AppEvent(tt.args.w, tt.args.r)

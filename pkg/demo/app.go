@@ -28,12 +28,12 @@ session files:
 package demo
 
 import (
+	"database/sql"
 	"embed"
 	"errors"
 	"strings"
 
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"io/fs"
 	"log"
@@ -41,19 +41,30 @@ import (
 	"os"
 	"time"
 
+	// _ "github.com/mattn/go-sqlite3"
+	// _ "github.com/lib/pq"
+	// _ "github.com/go-sql-driver/mysql"
+	// _ "github.com/denisenkom/go-mssqldb"
+
 	ct "github.com/nervatura/component/pkg/component"
 	st "github.com/nervatura/component/pkg/static"
 	ut "github.com/nervatura/component/pkg/util"
-	// _ "github.com/mattn/go-sqlite3"
 )
 
 // Demo [App] constants
 const (
 	httpReadTimeout  = 30
 	httpWriteTimeout = 30
-
-	sessionPath  = "session"
-	sessionTable = "session"
+	sessionPath      = "session"
+	sessionTable     = "session"
+	// sqlite3
+	sessionSource = "file:./session.db?cache=shared&mode=rwc"
+	// postgres
+	// sessionSource = "postgres://postgres:password@172.18.0.1:5432/session?sslmode=disable"
+	// mysql
+	// sessionSource = "mysql://root:password@tcp(localhost:3306)/session"
+	// mssql
+	// sessionSource = "mssql://sa:Password1234_1@localhost:1433?database=session"
 )
 
 //go:embed static
@@ -61,13 +72,17 @@ var Public embed.FS
 
 // Demo application
 type App struct {
-	version    string
-	infoLog    *log.Logger
-	memSession map[string]*Demo
-	osStat     func(name string) (fs.FileInfo, error)
-	osMkdir    func(name string, perm fs.FileMode) error
-	osCreate   func(name string) (*os.File, error)
-	osReadFile func(name string) ([]byte, error)
+	version     string
+	infoLog     *log.Logger
+	memSession  map[string]*Demo
+	driverName  string
+	dataSource  string
+	saveSession func(name string, data any) (err error)
+	loadSession func(name string, data any) (err error)
+	osStat      func(name string) (fs.FileInfo, error)
+	osMkdir     func(name string, perm fs.FileMode) error
+	osCreate    func(name string) (*os.File, error)
+	osReadFile  func(name string) ([]byte, error)
 }
 
 // It creates a new application and starts an http server.
@@ -76,12 +91,19 @@ func New(version string, httpPort int64) {
 		version:    version,
 		infoLog:    log.New(os.Stdout, "INFO: ", log.LstdFlags),
 		memSession: make(map[string]*Demo),
+		dataSource: sessionSource,
 		osStat:     os.Stat,
 		osMkdir:    os.Mkdir,
 		osCreate:   os.Create,
 		osReadFile: os.ReadFile,
 	}
-
+	app.saveSession = app.SaveFileSession
+	app.loadSession = app.LoadFileSession
+	if len(sql.Drivers()) > 0 {
+		app.driverName = sql.Drivers()[0]
+		app.saveSession = app.SaveDbSession
+		app.loadSession = app.LoadDbSession
+	}
 	mux := http.NewServeMux()
 	// Register API routes.
 	mux.HandleFunc("/", app.HomeRoute)
@@ -139,8 +161,7 @@ func (app *App) HomeRoute(w http.ResponseWriter, r *http.Request) {
 	var res string
 	if res, err = ccApp.Render(); err == nil {
 		if dataSave {
-			err = app.SaveFileSession(sessionID, demo)
-			//err = app.SaveDbSession(sessionID, demo)
+			err = app.saveSession(sessionID, demo)
 		} else {
 			app.memSession[sessionID] = demo
 		}
@@ -167,8 +188,7 @@ func (app *App) AppEvent(w http.ResponseWriter, r *http.Request) {
 	if mem, found := app.memSession[sessionID]; found {
 		evt = mem.OnRequest(te)
 	} else if dataSave {
-		if err = app.LoadFileSession(sessionID, &demo); err == nil {
-			//if err = app.LoadDbSession(sessionID, &demo); err == nil {
+		if err = app.loadSession(sessionID, &demo); err == nil {
 			demo.DemoMap = DemoMap
 			demo.RequestMap = map[string]ct.ClientComponent{}
 			demo.InitDemoMap()
@@ -193,109 +213,7 @@ func (app *App) AppEvent(w http.ResponseWriter, r *http.Request) {
 		}).Render()
 	}
 	if dataSave && (err == nil) {
-		app.SaveFileSession(sessionID, demo)
-		//app.SaveDbSession(sessionID, demo)
+		app.saveSession(sessionID, demo)
 	}
 	app.respondMessage(w, res, nil)
 }
-
-// Saving component state in a session json file.
-func (app *App) SaveFileSession(fileName string, data any) (err error) {
-	if _, err = app.osStat(sessionPath); errors.Is(err, os.ErrNotExist) {
-		if err = app.osMkdir(sessionPath, os.ModePerm); err != nil {
-			return err
-		}
-	}
-	filePath := fmt.Sprintf(`%s/%s.json`, sessionPath, fileName)
-	sessionFile, err := app.osCreate(filePath)
-	if err == nil {
-		bin, err := json.Marshal(data)
-		if err == nil {
-			sessionFile.Write(bin)
-		}
-	}
-	defer sessionFile.Close()
-	return err
-}
-
-// Loading the state of a component from a session json file.
-func (app *App) LoadFileSession(fileName string, data any) (err error) {
-	filePath := fmt.Sprintf(`%s/%s.json`, sessionPath, fileName)
-	sessionFile, err := app.osReadFile(filePath)
-	if err == nil {
-		err = json.Unmarshal(sessionFile, &data)
-	}
-	return err
-}
-
-/*
-func (app *App) checkSessionTable(sessionDb string) (db *sql.DB, err error) {
-	if db, err = sql.Open("sqlite3", sessionDb); err != nil {
-		return db, err
-	}
-
-	var found bool
-	var rows *sql.Rows
-	sqlString := "SELECT name FROM sqlite_master WHERE name = ?"
-	if rows, err = db.Query(sqlString, sessionTable); err != nil {
-		return db, err
-	}
-	defer rows.Close()
-	for rows.Next() {
-		found = true
-	}
-	if !found {
-		sqlString = fmt.Sprintf(
-			"CREATE TABLE %s ( id VARCHAR(255) NOT NULL PRIMARY KEY, value JSON, stamp VARCHAR(255) );",
-			sessionTable)
-		_, err = db.Exec(sqlString)
-	}
-
-	return db, err
-}
-
-func (app *App) getSessionValue(db *sql.DB, sessionID string) (value string, err error) {
-	sqlString := fmt.Sprintf("SELECT value FROM %s WHERE id=?", sessionTable)
-	row := db.QueryRow(sqlString, sessionID)
-	if err = row.Scan(&value); err == sql.ErrNoRows {
-		value = ""
-	}
-	return value, err
-}
-
-// Saving component state in a database.
-func (app *App) SaveDbSession(sessionID string, data any) (err error) {
-	var db *sql.DB
-	sessionDb := fmt.Sprintf("./%s.db", sessionTable)
-	if db, err = app.checkSessionTable(sessionDb); err == nil {
-		var bin []byte
-		if bin, err = json.Marshal(data); err == nil {
-			var sqlString string = fmt.Sprintf(
-				"INSERT INTO %s(id, value, stamp) VALUES('%s', '%s', '%s')",
-				sessionTable, sessionID, bin, time.Now().Format("2006-01-02T15:04:05-0700"))
-			value, _ := app.getSessionValue(db, sessionID)
-			if value != "" {
-				sqlString = fmt.Sprintf(
-					"UPDATE %s SET value='%s' WHERE id='%s'", sessionTable, bin, sessionID)
-			}
-			_, err = db.Exec(sqlString)
-		}
-	}
-	defer db.Close()
-	return err
-}
-
-// Loading the state of a component from a database.
-func (app *App) LoadDbSession(sessionID string, data any) (err error) {
-	var db *sql.DB
-	sessionDb := fmt.Sprintf("./%s.db", sessionTable)
-	if db, err = app.checkSessionTable(sessionDb); err == nil {
-		var value string
-		if value, err = app.getSessionValue(db, sessionID); value != "" {
-			err = json.Unmarshal([]byte(value), &data)
-		}
-	}
-	defer db.Close()
-	return err
-}
-*/
