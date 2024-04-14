@@ -82,6 +82,9 @@ func (stmt *testStmt) Exec(args []driver.Value) (driver.Result, error) {
 }
 
 func (stmt *testStmt) ExecContext(ctx context.Context, args []driver.NamedValue) (driver.Result, error) {
+	if stmt.dns == "exec_error" {
+		return &testResult{}, errors.New(stmt.dns)
+	}
 	return &testResult{dns: stmt.dns}, nil
 }
 

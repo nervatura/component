@@ -118,7 +118,8 @@ The logic of the components can be understood most easily from the code of the e
 The [pkg/github.com/nervatura/component/pkg/demo] package includes an example application that displays all
 components with sample data. Applications can store component data in memory, but they can save it anywhere in json
 format and load it back. The demo application can store session data in memory and as session files. The source code
-of the example application also contains an example of using a session database.
+of the example application also contains an example of using a session database (sqlite3, postgres, mysql, mssql).
+If you want to use a database session, uncomment before importing the database driver you want to use.
 
 The Admin interface of the application https://github.com/nervatura/nervatura is another example of
 the use of server-side components (session and JWT token, database session and more).

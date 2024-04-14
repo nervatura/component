@@ -43,10 +43,10 @@ func (app *App) LoadFileSession(fileName string, data any) (err error) {
 func (app *App) getSessionTableSql(driverName, query string) (sqlString string) {
 	if query == "open" {
 		if driverName == "sqlite3" {
-			return fmt.Sprintf("select name from sqlite_master where name = '%s' ", sessionTable)
+			return fmt.Sprintf("SELECT name FROM sqlite_master WHERE name = '%s' ", sessionTable)
 		}
 		// postgres, mysql, mssql
-		return fmt.Sprintf("select table_name from information_schema.tables where table_name = '%s' ", sessionTable)
+		return fmt.Sprintf("SELECT table_name FROM information_schema.tables WHERE table_name = '%s' ", sessionTable)
 	}
 	if driverName == "mysql" {
 		return fmt.Sprintf(

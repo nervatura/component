@@ -43,7 +43,7 @@ anyone can easily create a server-side component in any program language`**.
 
 ### Quick start (demo application)
 
-The demo application displays all components with their sample data. Applications can store component data in memory, but they can save it anywhere in json format and load it back. The demo application can store session data in memory and as session files. The source code of the example application also contains an example of using a session database.
+The demo application displays all components with their sample data. Applications can store component data in memory, but they can save it anywhere in json format and load it back. The demo application can store session data in memory and as session files. The source code of the example application also contains an example of using a session database (sqlite3, postgres, mysql, mssql). If you want to use a database session, uncomment before importing the database driver you want to use.
 
 **1. Prebuild binaries**
 - [Linux x64](https://github.com/nervatura/component/releases/latest/download/component_linux_x86_64.tar.gz), 
@@ -88,6 +88,6 @@ The demo application displays all components with their sample data. Application
   ```
 
 The demo application can store session data in memory and as
-session files:
+session files or session database:
 - open the http://localhost:5000/ (memory session) 
-- or http://localhost:5000/session (file session)
+- or http://localhost:5000/session (file or database session)

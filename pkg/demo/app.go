@@ -41,6 +41,11 @@ import (
 	"os"
 	"time"
 
+	/*
+		Remove the comment mark before importing the database driver you want to use!
+		Set sessionSource map database connection information!
+	*/
+
 	// _ "github.com/mattn/go-sqlite3"
 	// _ "github.com/lib/pq"
 	// _ "github.com/go-sql-driver/mysql"
@@ -57,18 +62,19 @@ const (
 	httpWriteTimeout = 30
 	sessionPath      = "session"
 	sessionTable     = "session"
-	// sqlite3
-	sessionSource = "file:./session.db?cache=shared&mode=rwc"
-	// postgres
-	// sessionSource = "postgres://postgres:password@172.18.0.1:5432/session?sslmode=disable"
-	// mysql
-	// sessionSource = "mysql://root:password@tcp(localhost:3306)/session"
-	// mssql
-	// sessionSource = "mssql://sa:Password1234_1@localhost:1433?database=session"
 )
 
 //go:embed static
 var Public embed.FS
+
+// Database connections
+var sessionSource ut.SM = ut.SM{
+	"sqltest":  "test",
+	"sqlite3":  "file:./session.db?cache=shared&mode=rwc",
+	"postgres": "postgres://postgres:password@172.18.0.1:5432/session?sslmode=disable",
+	"mysql":    "mysql://root:password@tcp(localhost:3306)/session",
+	"mssql":    "mssql://sa:Password1234_1@localhost:1433?database=session",
+}
 
 // Demo application
 type App struct {
@@ -91,7 +97,6 @@ func New(version string, httpPort int64) {
 		version:    version,
 		infoLog:    log.New(os.Stdout, "INFO: ", log.LstdFlags),
 		memSession: make(map[string]*Demo),
-		dataSource: sessionSource,
 		osStat:     os.Stat,
 		osMkdir:    os.Mkdir,
 		osCreate:   os.Create,
@@ -101,6 +106,9 @@ func New(version string, httpPort int64) {
 	app.loadSession = app.LoadFileSession
 	if len(sql.Drivers()) > 0 {
 		app.driverName = sql.Drivers()[0]
+		if source, found := sessionSource[app.driverName]; found {
+			app.dataSource = source
+		}
 		app.saveSession = app.SaveDbSession
 		app.loadSession = app.LoadDbSession
 	}

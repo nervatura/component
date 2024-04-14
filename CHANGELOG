@@ -1,2 +1,6 @@
+## 1.0.1
+- modifying the structure of the demo application
+- demo application database session support (default file session)
+
 ## 1.0.0
 - initial release
