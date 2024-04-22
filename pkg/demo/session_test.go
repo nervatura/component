@@ -401,7 +401,7 @@ func TestApp_getSessionTableSql(t *testing.T) {
 				driverName: "sqlite3",
 				query:      "open",
 			},
-			wantSqlString: "select name from sqlite_master where name = 'session' ",
+			wantSqlString: "SELECT name FROM sqlite_master WHERE name = 'session' ",
 		},
 		{
 			name: "open_postgres",
@@ -409,7 +409,7 @@ func TestApp_getSessionTableSql(t *testing.T) {
 				driverName: "postgres",
 				query:      "open",
 			},
-			wantSqlString: "select table_name from information_schema.tables where table_name = 'session' ",
+			wantSqlString: "SELECT table_name FROM information_schema.tables WHERE table_name = 'session' ",
 		},
 		{
 			name: "create_mysql",
