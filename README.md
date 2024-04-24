@@ -1,46 +1,15 @@
 # Nervatura server-side Go components
 
-### Benefits of server-side components
+An easy way to create a server-side component in any programming language
 
-Component based development is an approach to software development that focuses on the design and development
-of reusable components. Server components are also reusable bits of code, but are compiled into HTML before
-the browser sees them. The server-side components tend to perform better. When the page that a browser receives
-contains everything it needs for presentation, it’s going to be able to deliver that presentation to the user
-much quicker.
+### Documentation
 
-- The development of a client-side application and component takes place in a very complex ecosystem. An average node_modules size can be hundreds of MB and contain hundreds or even over a thousand different packages. Each of these also means external dependencies of varying quality and reliability, which is also a big security risk. In addition, the constant updating and tracking of these different packages and the dozens of frameworks and technologies based on them requires a lot of resources.
-Server-side components have little or **`no external dependencies`**. The components can be easily created within the technical capabilities of a specific server-side language. Their maintenance needs are limited to their actual code, which is very small and much safer due to the lack of large external dependencies.
-
-- The language of client-side components is basically Javascript, but most server-side languages are much more efficient and safer programming languages. JavaScript is originally an add-on to html code and browsers, which was originally created to increase the efficiency of the user interface and not to develop the codebase of complex programs. 
-During development, it is possible to partially replace it with, for example, the Typescript language, but this also means additional dependencies and an increase in the complexity of the development ecosystem, the end result of which will still be a Javascript codebase. This practically means that a code written in a programming language is translated into the code of another language, and the content to be displayed is created during its execution. In the process, there are many intermediate steps, used resources, error possibilities, security risks and uncertainties. 
-With the server-side components, it is possible to simply **`write the program code in an easy-to-use and safe language`**, the end result of which is the html content to be displayed.
-
-- Client-side components usually communicate with the server using a JSON-based REST API and receive the data to be displayed. This also means that the data retrieval must adapt to the data structure of the REST API. In other words, the database data must first be converted to this structure, and then reprocessed on the client side for final display. In addition to possible changes to the data structure, this also means JSON encoding and decoding in all cases. The server-side components **`can directly access the database`** and use the data immediately in the data structure to be displayed. This also means **`faster rendering and better resource management`** for the server-side components.
-
-### Nervatura components
-
-Server components can be written in any server-side language. This enables you to write your client in the
-same language as your server application’s logic.
-On the user side, an application that is loaded in the browser in html syntax is a set of components
-that are hierarchically related to each other. Any component of the application may be able to send a
-request to the server, and depending on the processing of the request, any part of the application may
-change. The entire page is not replaced or reloaded in the browser, only the required parts of the application.
-The components do not use json data format to send data, all data is sent in URL-encoded form. All data of the
-application is stored on the server, and the components do not contain javascript code.
-
-- Nervatura components use the htmx library for direct communication with the server. Htmx is small (~14k),
-dependency-free, browser-oriented javascript library that allows you to access modern browser
-features directly from HTML, rather than using javascript. The server-side components use only a small part
-of the possibilities of htmx. More information about htmx can be found on the https://htmx.org link.
-The *Application* component contains and automatically loads the appropriate version of htmx when used.
-
-- **`Nervatura components are not a framework, they use only the built-in packages of go and have no external
-dependencies.`** It is a library of components whose elements can be freely combined with each other and can
-be easily further developed. A Nervatura component is actually just **`a code implementation proposal that
-anyone can easily create a server-side component in any program language`**.
-
-### Documentation and examples
-
+- [Benefits of server-side components](https://nervatura.github.io/component/#benefits)
+- [HTTP request management](https://nervatura.github.io/component/#request_management)
+- [Server-side component events](https://nervatura.github.io/component/#events)
+- [Creating a server-side component](https://nervatura.github.io/component/#creating)
+- [Examples and demo application](https://nervatura.github.io/component/#examples)
+- Go package documentation:  
 [![GoDoc](https://godoc.org/github.com/nervatura/component?status.svg)](https://pkg.go.dev/github.com/nervatura/component/pkg/component)
 
 ### Quick start (demo application)
@@ -93,3 +62,5 @@ The demo application can store session data in memory and as
 session files or session database:
 - open the http://localhost:5000/ (memory session) 
 - or http://localhost:5000/session (file or database session)
+
+The [Nervatura Admin](https://github.com/nervatura/nervatura) interface of the application is another example of the use of server-side components (session and JWT token, database session and more).
