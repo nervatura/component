@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
+<svg width="49cm" height="21cm" viewBox="0 0 963 416" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs/>
+  <g id="Háttér"/>
+  <g id="Háttér"/>
+  <g id="Háttér"/>
+  <g id="Háttér">
+    <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #7f7f7f" x="1.2" y="1.6" width="960.8" height="413.4" rx="0" ry="0"/>
+    <g>
+      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #008000" x="418.2" y="46.6" width="239.8" height="28"/>
+      <text font-size="16" style="fill: #008000; fill-opacity: 1; stroke: none;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="538.1" y="68.6">TriggerEvent</text>
+      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #008000" x="418.2" y="74.6" width="239.8" height="68"/>
+      <text font-size="12.8" style="fill: #008000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="421.2" y="88.6">+Id: string</text>
+      <text font-size="12.8" style="fill: #008000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="421.2" y="104.6">+Name: string</text>
+      <text font-size="12.8" style="fill: #008000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="421.2" y="120.6">+Target: string</text>
+      <text font-size="12.8" style="fill: #008000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="421.2" y="136.6">+Values: map[string][]string</text>
+    </g>
+    <g>
+      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #8b6914" x="423.2" y="174.6" width="239.8" height="28"/>
+      <text font-size="16" style="fill: #8b6914; fill-opacity: 1; stroke: none;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="543.1" y="196.6">ResponseEvent</text>
+      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #8b6914" x="423.2" y="202.6" width="239.8" height="84"/>
+      <text font-size="12.8" style="fill: #8b6914; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="426.2" y="216.6">+Trigger: ClientComponent</text>
+      <text font-size="12.8" style="fill: #8b6914; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="426.2" y="232.6">+TriggerName: string</text>
+      <text font-size="12.8" style="fill: #8b6914; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="426.2" y="248.6">+Name: string</text>
+      <text font-size="12.8" style="fill: #8b6914; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="426.2" y="264.6">+Value: interface{}</text>
+      <text font-size="12.8" style="fill: #8b6914; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="426.2" y="280.6">+Header: map[string]string</text>
+    </g>
+    <polygon style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #008000" fill-rule="evenodd" points="189.2,87.4022 219.7,87.4022 219.7,78.1522 250.2,96.6522 219.7,115.152 219.7,105.902 189.2,105.902 "/>
+    <g>
+      <rect style="fill: #f3f3ff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #7f7f7f" x="274" y="41" width="54.2" height="156"/>
+      <rect style="fill: #f3f3ff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #7f7f7f" x="274" y="21" width="50.2" height="20"/>
+      <text font-size="12.8" style="fill: #7f7f7f; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:700" x="276" y="35.8">Server</text>
+    </g>
+    <g>
+      <polygon style="fill: #f3f3ff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #7f7f7f" fill-rule="evenodd" points="31,26 206.4,26 218.4,38 218.4,60 31,60 "/>
+      <polyline style="fill: none; stroke-opacity: 1; stroke-width: 1; stroke: #7f7f7f" points="206.4,26 206.4,38 218.4,38 "/>
+      <text font-size="12.8" style="fill: #7f7f7f; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:italic;font-weight:700" x="38" y="50.9">
+        <tspan x="38" y="50.9">&lt;TRIGGER HTML ELEMENT&gt;</tspan>
+      </text>
+    </g>
+    <g>
+      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #008000" x="777" y="36" width="152.55" height="70"/>
+      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #008000" x="757" y="50" width="40" height="14"/>
+      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #008000" x="757" y="78" width="40" height="14"/>
+      <text font-size="12.8" style="fill: #008000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:italic;font-weight:700" x="805" y="63.7">
+        <tspan x="805" y="63.7">APPLICATION</tspan>
+        <tspan x="805" y="79.7">MAIN COMPONENT</tspan>
+      </text>
+    </g>
+    <g>
+      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #008000" x="59" y="76" width="108.55" height="36" rx="20" ry="20"/>
+      <text font-size="12.8" style="fill: #008000; fill-opacity: 1; stroke: none;text-anchor:middle;font-family:sans-serif;font-style:italic;font-weight:700" x="113.275" y="99.7">
+        <tspan x="113.275" y="99.7">POST REQUEST</tspan>
+      </text>
+    </g>
+    <polygon style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #8b6914" fill-rule="evenodd" points="223.2,237.402 192.7,237.402 192.7,228.152 162.2,246.652 192.7,265.152 192.7,255.902 223.2,255.902 "/>
+    <g>
+      <polygon style="fill: #f3f3ff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #7f7f7f" fill-rule="evenodd" points="248.2,216.6 323.65,216.6 335.65,228.6 335.65,282.6 248.2,282.6 "/>
+      <polyline style="fill: none; stroke-opacity: 1; stroke-width: 1; stroke: #7f7f7f" points="323.65,216.6 323.65,228.6 335.65,228.6 "/>
+      <text font-size="12.8" style="fill: #7f7f7f; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:italic;font-weight:700" x="255.2" y="241.5">
+        <tspan x="255.2" y="241.5">&lt;RESPONSE</tspan>
+        <tspan x="255.2" y="257.5">HTML</tspan>
+        <tspan x="255.2" y="273.5">ELEMENT&gt;</tspan>
+      </text>
+    </g>
+    <g>
+      <path style="fill: #c9c9b6; fill-opacity: 1; stroke: none" fill-rule="evenodd" d="M 62.9697 298.949 L 126.184,298.949 L 99.6051,325.618 L 36.3904,325.618 L 62.9697,298.949z"/>
+      <path style="fill: none; stroke-opacity: 1; stroke-width: 0.02; stroke: #494936" d="M 62.9697 298.949 L 126.184,298.949 L 99.6051,325.618 L 36.3904,325.618 L 62.9697,298.949"/>
+      <path style="fill: none; stroke-opacity: 1; stroke-width: 0.02; stroke: #dbdbce" d="M 65.3966 321.113 L 65.3966,321.255 L 65.4224,321.371 L 65.4611,321.526 L 65.5128,321.681 L 65.5902,321.797 L 65.6806,321.939 L 65.7968,322.068 L 65.9129,322.185 L 66.0291,322.327 L 66.184,322.469 L 66.3389,322.585 L 66.5068,322.688 L 66.7004,322.791 L 66.8811,322.907 L 67.1135,322.998 L 67.32,323.114 L 67.5524,323.204 L 67.8106,323.295 L 68.0687,323.372 L 68.314,323.45 L 68.5851,323.527 L 68.8562,323.605 L 69.1402,323.643 L 69.45,323.695 L 69.7469,323.721 L 70.0567,323.772 L 70.3407,323.811 L 70.6634,323.85 L 70.9861,323.863 L 71.2959,323.876 L 71.6058,323.876"/>
+      <path style="fill: none; stroke-opacity: 1; stroke-width: 0.02; stroke: #dbdbce" d="M 70.9216 323.876 L 71.2314,323.876 L 71.5283,323.863 L 71.8252,323.837 L 72.135,323.798 L 72.4448,323.772 L 72.7288,323.721 L 73.0128,323.695 L 73.3097,323.63 L 73.5808,323.566 L 73.8648,323.488 L 74.1101,323.411 L 74.3682,323.333 L 74.6135,323.243 L 74.8459,323.153 L 75.0524,323.062 L 75.2719,322.959 L 75.4784,322.843 L 75.6591,322.74 L 75.8399,322.611 L 75.9948,322.481 L 76.1368,322.352 L 76.2529,322.236 L 76.382,322.094 L 76.4853,321.952 L 76.5628,321.836 L 76.6531,321.694 L 76.6918,321.526 L 76.7306,321.384 L 76.7693,321.255 L 76.7822,321.113"/>
+      <path style="fill: none; stroke-opacity: 1; stroke-width: 0.02; stroke: #dbdbce" d="M 72.2899 315.937 L 71.9672,315.937 L 71.6574,315.95 L 71.3347,315.95 L 71.0507,315.975 L 70.7409,316.014 L 70.431,316.04 L 70.1341,316.066 L 69.8243,316.13 L 69.5532,316.182 L 69.2822,316.221 L 69.0111,316.285 L 68.74,316.363 L 68.4947,316.427 L 68.2624,316.505 L 68.03,316.608 L 67.7718,316.685 L 67.5911,316.776 L 67.3846,316.853 L 67.1909,316.956 L 67.036,317.073 L 66.8682,317.176 L 66.7262,317.266 L 66.5842,317.382 L 66.4809,317.499 L 66.3777,317.628 L 66.2744,317.744 L 66.2228,317.847 L 66.1582,317.976 L 66.1195,318.08 L 66.1066,318.222 L 66.0937,318.325"/>
+      <path style="fill: none; stroke-opacity: 1; stroke-width: 0.02; stroke: #dbdbce" d="M 77.4535 318.325 L 77.4535,318.209 L 77.4406,318.08 L 77.3889,317.963 L 77.3373,317.821 L 77.2727,317.718 L 77.1695,317.576 L 77.0662,317.473 L 76.9629,317.344 L 76.808,317.253 L 76.6918,317.124 L 76.5369,317.021 L 76.3304,316.931 L 76.1626,316.802 L 75.9689,316.737 L 75.7624,316.634 L 75.53,316.53 L 75.2848,316.453 L 75.0395,316.376 L 74.7942,316.311 L 74.5361,316.259 L 74.265,316.195 L 73.981,316.13 L 73.7099,316.092 L 73.4259,316.04 L 73.1419,316.014 L 72.845,315.975 L 72.5352,315.95 L 72.2125,315.95 L 71.9027,315.937 L 71.6058,315.937"/>
+      <path style="fill: #a5a585; fill-opacity: 1; stroke: none" fill-rule="evenodd" d="M 36.3904 328.381 L 99.6051,328.381 L 99.6051,325.618 L 36.3904,325.618 L 36.3904,328.381z"/>
+      <path style="fill: none; stroke-opacity: 1; stroke-width: 0.02; stroke: #494936" d="M 36.3904 328.381 L 99.6051,328.381 L 99.6051,325.618 L 36.3904,325.618 L 36.3904,328.381"/>
+      <path style="fill: #a5a585; fill-opacity: 1; stroke: none" fill-rule="evenodd" d="M 62.9697 298.949 L 126.184,298.949 L 126.184,255.704 L 62.9697,255.704 L 62.9697,298.949z"/>
+      <path style="fill: none; stroke-opacity: 1; stroke-width: 0.02; stroke: #494936" d="M 62.9697 298.949 L 126.184,298.949 L 126.184,255.704 L 62.9697,255.704 L 62.9697,298.949"/>
+      <path style="fill: #7a7a5a; fill-opacity: 1; stroke: none" fill-rule="evenodd" d="M 127.914 297.245 L 127.914,254 L 126.184,255.704 L 126.184,298.949 L 127.914,297.245z"/>
+      <path style="fill: none; stroke-opacity: 1; stroke-width: 0.02; stroke: #494936" d="M 127.914 297.245 L 127.914,254 L 126.184,255.704 L 126.184,298.949 L 127.914,297.245"/>
+      <path style="fill: #ffffff; fill-opacity: 1; stroke: none" fill-rule="evenodd" d="M 66.0937 296.199 L 123.086,296.199 L 123.086,259.176 L 66.0937,259.176 L 66.0937,296.199z"/>
+      <path style="fill: none; stroke-opacity: 1; stroke-width: 0.02; stroke: #494936" d="M 66.0937 296.199 L 123.086,296.199 L 123.086,259.176 L 66.0937,259.176 L 66.0937,296.199"/>
+      <path style="fill: #93936c; fill-opacity: 1; stroke: none" fill-rule="evenodd" d="M 66.0937 301.04 L 119.265,301.04 L 105.453,314.891 L 52.2812,314.891 L 66.0937,301.04z"/>
+      <path style="fill: none; stroke-opacity: 1; stroke-width: 0.02; stroke: #494936" d="M 66.0937 301.04 L 119.265,301.04 L 105.453,314.891 L 52.2812,314.891 L 66.0937,301.04"/>
+      <path style="fill: #7a7a5a; fill-opacity: 1; stroke: none" fill-rule="evenodd" d="M 74.3682 320.235 L 74.3682,320.158 L 74.3553,320.08 L 74.3424,320.003 L 74.3037,319.913 L 74.2908,319.835 L 74.2392,319.771 L 74.2133,319.693 L 74.1488,319.642 L 74.0843,319.564 L 74.0455,319.487 L 73.981,319.422 L 73.9035,319.358 L 73.8261,319.28 L 73.7357,319.216 L 73.6583,319.177 L 73.5679,319.112 L 73.4646,319.061 L 73.3484,319.022 L 73.2581,318.957 L 73.1419,318.932 L 73.0257,318.88 L 72.9225,318.854 L 72.7934,318.815 L 72.6772,318.79 L 72.5352,318.764 L 72.419,318.725 L 72.2899,318.712 L 72.1737,318.712 L 72.0447,318.699 L 71.8897,318.699 L 71.7865,318.699 L 71.7865,318.699 L 71.6445,318.699 L 71.5025,318.699 L 71.3863,318.712 L 71.2572,318.712 L 71.141,318.725 L 70.999,318.764 L 70.8829,318.79 L 70.7538,318.815 L 70.6376,318.854 L 70.5214,318.88 L 70.4181,318.932 L 70.2891,318.957 L 70.1987,319.022 L 70.0954,319.061 L 69.9921,319.112 L 69.9018,319.177 L 69.8243,319.216 L 69.734,319.28 L 69.6565,319.358 L 69.592,319.422 L 69.5016,319.487 L 69.4629,319.564 L 69.3854,319.642 L 69.3467,319.693 L 69.308,319.771 L 69.2693,319.835 L 69.2434,319.913 L 69.2305,320.003 L 69.2047,320.08 L 69.1789,320.158 L 69.1789,320.235 L 69.1789,320.235 L 69.1789,320.326 L 69.2047,320.403 L 69.2305,320.481 L 69.2434,320.558 L 69.2693,320.636 L 69.308,320.7 L 69.3467,320.79 L 69.3854,320.855 L 69.4629,320.932 L 69.5016,320.984 L 69.592,321.061 L 69.6565,321.126 L 69.734,321.203 L 69.8243,321.255 L 69.9018,321.307 L 69.9921,321.371 L 70.0954,321.423 L 70.1987,321.462 L 70.2891,321.526 L 70.4181,321.552 L 70.5214,321.604 L 70.6376,321.629 L 70.7538,321.668 L 70.8829,321.694 L 70.999,321.72 L 71.141,321.746 L 71.2572,321.771 L 71.3863,321.771 L 71.5025,321.771 L 71.6445,321.784 L 71.7865,321.784 L 71.7865,321.784 L 71.8897,321.784 L 72.0447,321.771 L 72.1737,321.771 L 72.2899,321.771 L 72.419,321.746 L 72.5352,321.72 L 72.6772,321.694 L 72.7934,321.668 L 72.9225,321.629 L 73.0257,321.604 L 73.1419,321.552 L 73.2581,321.526 L 73.3484,321.462 L 73.4646,321.423 L 73.5679,321.371 L 73.6583,321.307 L 73.7357,321.255 L 73.8261,321.203 L 73.9035,321.126 L 73.981,321.061 L 74.0455,320.984 L 74.0843,320.932 L 74.1488,320.855 L 74.2133,320.79 L 74.2392,320.7 L 74.2908,320.636 L 74.3037,320.558 L 74.3424,320.481 L 74.3553,320.403 L 74.3682,320.326 L 74.3682,320.235z"/>
+      <path style="fill: none; stroke-opacity: 1; stroke-width: 0.02; stroke: #dbdbce" d="M 74.0326 320.08 L 74.0326,320.003 L 74.0197,319.926 L 74.0197,319.861 L 73.981,319.809 L 73.9552,319.706 L 73.9423,319.667 L 73.8777,319.59 L 73.8261,319.512 L 73.7874,319.461 L 73.7357,319.409 L 73.6583,319.358 L 73.5937,319.267 L 73.5163,319.216 L 73.4388,319.177 L 73.3743,319.112 L 73.271,319.061 L 73.1935,319.035 L 73.1032,318.97 L 73.0128,318.944 L 72.8966,318.893 L 72.7934,318.867 L 72.6772,318.841 L 72.5739,318.802 L 72.4577,318.777 L 72.3416,318.764 L 72.2125,318.725 L 72.1092,318.712 L 71.9672,318.699 L 71.8639,318.699 L 71.7348,318.699 L 71.6187,318.699 L 71.6187,318.699 L 71.4896,318.699 L 71.3734,318.699 L 71.2443,318.699 L 71.141,318.712 L 71.0119,318.725 L 70.9087,318.764 L 70.7667,318.777 L 70.6634,318.802 L 70.573,318.841 L 70.444,318.867 L 70.3407,318.893 L 70.2116,318.944 L 70.1471,318.97 L 70.0309,319.035 L 69.9534,319.061 L 69.8631,319.112 L 69.7856,319.177 L 69.7082,319.216 L 69.6307,319.267 L 69.5662,319.358 L 69.5016,319.409 L 69.45,319.461 L 69.3854,319.512 L 69.3596,319.59 L 69.308,319.667 L 69.2822,319.706 L 69.2563,319.809 L 69.2305,319.861 L 69.2176,319.926 L 69.2047,320.003 L 69.2047,320.08 L 69.2047,320.08 L 69.2047,320.145 L 69.2176,320.222 L 69.2305,320.3 L 69.2563,320.339 L 69.2822,320.416 L 69.308,320.494 L 69.3596,320.558 L 69.3854,320.623 L 69.45,320.7 L 69.5016,320.739 L 69.5662,320.803 L 69.6307,320.868 L 69.7082,320.932 L 69.7856,320.971 L 69.8631,321.036 L 69.9534,321.074 L 70.0309,321.126 L 70.1471,321.178 L 70.2116,321.203 L 70.3407,321.255 L 70.444,321.294 L 70.573,321.307 L 70.6634,321.345 L 70.7667,321.371 L 70.9087,321.384 L 71.0119,321.423 L 71.141,321.449 L 71.2443,321.449 L 71.3734,321.449 L 71.4896,321.449 L 71.6187,321.449 L 71.6187,321.449 L 71.7348,321.449 L 71.8639,321.449 L 71.9672,321.449 L 72.1092,321.449 L 72.2125,321.423 L 72.3416,321.384 L 72.4577,321.371 L 72.5739,321.345 L 72.6772,321.307 L 72.7934,321.294 L 72.8966,321.255 L 73.0128,321.203 L 73.1032,321.178 L 73.1935,321.126 L 73.271,321.074 L 73.3743,321.036 L 73.4388,320.971 L 73.5163,320.932 L 73.5937,320.868 L 73.6583,320.803 L 73.7357,320.739 L 73.7874,320.7 L 73.8261,320.623 L 73.8777,320.558 L 73.9423,320.494 L 73.9552,320.416 L 73.981,320.339 L 74.0197,320.3 L 74.0197,320.222 L 74.0326,320.145 L 74.0326,320.08"/>
+      <path style="fill: none; stroke-opacity: 1; stroke-width: 0.02; stroke: #626248" d="M 65.758 321.449 L 65.758,321.604 L 65.7839,321.72 L 65.8355,321.862 L 65.8742,322.017 L 65.9517,322.146 L 66.0291,322.262 L 66.1453,322.404 L 66.2615,322.546 L 66.3906,322.662 L 66.5197,322.791 L 66.6875,322.907 L 66.8424,323.037 L 67.0489,323.14 L 67.2426,323.243 L 67.4491,323.333 L 67.6686,323.45 L 67.9138,323.54 L 68.1333,323.63 L 68.4173,323.708 L 68.6754,323.785 L 68.9465,323.876 L 69.2176,323.94 L 69.5016,323.979 L 69.7856,324.031 L 70.0954,324.082 L 70.3923,324.108 L 70.6892,324.16 L 70.999,324.185 L 71.3218,324.198 L 71.6316,324.198 L 71.9414,324.198"/>
+      <path style="fill: none; stroke-opacity: 1; stroke-width: 0.02; stroke: #626248" d="M 71.2443 324.198 L 71.567,324.198 L 71.8639,324.198 L 72.1867,324.173 L 72.4706,324.134 L 72.7676,324.108 L 73.0774,324.082 L 73.3484,324.031 L 73.6454,323.966 L 73.9035,323.901 L 74.1875,323.85 L 74.4586,323.772 L 74.7039,323.695 L 74.9491,323.605 L 75.1815,323.488 L 75.4139,323.398 L 75.6075,323.295 L 75.814,323.191 L 75.9948,323.062 L 76.1626,322.959 L 76.3304,322.817 L 76.4724,322.714 L 76.6144,322.585 L 76.7306,322.43 L 76.808,322.288 L 76.9242,322.172 L 76.9758,322.017 L 77.0404,321.875 L 77.092,321.72 L 77.092,321.604 L 77.1178,321.449"/>
+      <path style="fill: none; stroke-opacity: 1; stroke-width: 0.02; stroke: #626248" d="M 72.6256 316.272 L 72.3287,316.272 L 72.0188,316.285 L 71.709,316.285 L 71.3992,316.311 L 71.0765,316.35 L 70.7667,316.363 L 70.4956,316.414 L 70.1858,316.453 L 69.9018,316.53 L 69.6307,316.556 L 69.3596,316.634 L 69.1014,316.685 L 68.8433,316.776 L 68.6109,316.853 L 68.3785,316.931 L 68.1333,317.008 L 67.9396,317.098 L 67.7331,317.189 L 67.5524,317.305 L 67.3846,317.408 L 67.2297,317.499 L 67.0747,317.628 L 66.9198,317.718 L 66.8295,317.821 L 66.7262,317.963 L 66.6358,318.067 L 66.5584,318.196 L 66.5068,318.299 L 66.468,318.415 L 66.4551,318.557 L 66.4422,318.686"/>
+      <path style="fill: none; stroke-opacity: 1; stroke-width: 0.02; stroke: #626248" d="M 77.8149 318.686 L 77.7891,318.544 L 77.7762,318.415 L 77.7504,318.299 L 77.6858,318.17 L 77.6084,318.054 L 77.518,317.925 L 77.4147,317.821 L 77.2986,317.705 L 77.1695,317.576 L 77.0146,317.473 L 76.8597,317.357 L 76.6918,317.253 L 76.4853,317.163 L 76.3046,317.073 L 76.0851,316.982 L 75.8786,316.879 L 75.6462,316.802 L 75.401,316.737 L 75.1299,316.66 L 74.8717,316.608 L 74.6135,316.53 L 74.3424,316.479 L 74.0584,316.427 L 73.7486,316.376 L 73.4775,316.35 L 73.1806,316.311 L 72.8708,316.285 L 72.5481,316.285 L 72.2641,316.272 L 71.9414,316.272"/>
+      <path style="fill: #7a7a5a; fill-opacity: 1; stroke: none" fill-rule="evenodd" d="M 126.184 301.375 L 99.6051,328.045 L 99.6051,325.618 L 126.184,298.949 L 126.184,301.375z"/>
+      <path style="fill: none; stroke-opacity: 1; stroke-width: 0.02; stroke: #494936" d="M 126.184 301.375 L 99.6051,328.045 L 99.6051,325.618 L 126.184,298.949 L 126.184,301.375"/>
+      <path style="fill: #7a7a5a; fill-opacity: 1; stroke: none" fill-rule="evenodd" d="M 117.213 296.909 L 117.213,297.567 L 122.389,297.567 L 122.389,296.909 L 117.213,296.909z"/>
+      <path style="fill: none; stroke-opacity: 1; stroke-width: 0.02; stroke: #494936" d="M 117.213 296.909 L 117.213,297.567 L 122.389,297.567 L 122.389,296.909 L 117.213,296.909"/>
+      <path style="fill: none; stroke-opacity: 1; stroke-width: 0.02; stroke: #000000" d="M 115.793 304.499 L 62.9697,304.499"/>
+      <path style="fill: none; stroke-opacity: 1; stroke-width: 0.02; stroke: #000000" d="M 112.359 307.972 L 59.536,307.972"/>
+      <path style="fill: none; stroke-opacity: 1; stroke-width: 0.02; stroke: #000000" d="M 108.912 311.431 L 56.0764,311.431"/>
+      <path style="fill: #c9c9b6; fill-opacity: 1; stroke: none" fill-rule="evenodd" d="M 64.6995 254 L 127.914,254 L 126.184,255.704 L 62.9697,255.704 L 64.6995,254z"/>
+      <path style="fill: none; stroke-opacity: 1; stroke-width: 0.02; stroke: #494936" d="M 64.6995 254 L 127.914,254 L 126.184,255.704 L 62.9697,255.704 L 64.6995,254"/>
+    </g>
+    <polygon style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #008000" fill-rule="evenodd" points="340.2,83.4022 370.7,83.4022 370.7,74.1522 401.2,92.6522 370.7,111.152 370.7,101.902 340.2,101.902 "/>
+    <polygon style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #008000" fill-rule="evenodd" points="682.2,56.4022 712.7,56.4022 712.7,47.1522 743.2,65.6522 712.7,84.1522 712.7,74.9022 682.2,74.9022 "/>
+    <polygon style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #008000" fill-rule="evenodd" points="837.375,119 837.375,139.75 827,139.75 847.75,160.5 868.5,139.75 858.125,139.75 858.125,119 "/>
+    <g>
+      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #008000" x="798.2" y="173.6" width="115.35" height="70"/>
+      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #008000" x="778.2" y="187.6" width="40" height="14"/>
+      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #008000" x="778.2" y="215.6" width="40" height="14"/>
+      <text font-size="12.8" style="fill: #008000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:italic;font-weight:700" x="826.2" y="201.3">
+        <tspan x="826.2" y="201.3">TRIGGER</tspan>
+        <tspan x="826.2" y="217.3">COMPONENT</tspan>
+      </text>
+    </g>
+    <g>
+      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #8b6914" x="646.2" y="310.6" width="115.35" height="70"/>
+      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #8b6914" x="626.2" y="324.6" width="40" height="14"/>
+      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #8b6914" x="626.2" y="352.6" width="40" height="14"/>
+      <text font-size="12.8" style="fill: #8b6914; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:italic;font-weight:700" x="674.2" y="338.3">
+        <tspan x="674.2" y="338.3">PARENT</tspan>
+        <tspan x="674.2" y="354.3">COMPONENT</tspan>
+      </text>
+    </g>
+    <polygon style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #8b6914" fill-rule="evenodd" points="752.056,198.402 721.556,198.402 721.556,189.152 691.056,207.652 721.556,226.152 721.556,216.902 752.056,216.902 "/>
+    <polygon style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #8b6914" fill-rule="evenodd" points="565.571,329.143 558,329.143 573.143,314 588.286,329.143 580.714,329.143 580.714,344.286 595.857,344.286 595.857,336.714 611,351.857 595.857,367 595.857,359.429 565.571,359.429 "/>
+    <g>
+      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #8b6914" x="369.2" y="310.6" width="152.55" height="70"/>
+      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #8b6914" x="349.2" y="324.6" width="40" height="14"/>
+      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #8b6914" x="349.2" y="352.6" width="40" height="14"/>
+      <text font-size="12.8" style="fill: #8b6914; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:italic;font-weight:700" x="397.2" y="338.3">
+        <tspan x="397.2" y="338.3">APPLICATION</tspan>
+        <tspan x="397.2" y="354.3">MAIN COMPONENT</tspan>
+      </text>
+    </g>
+    <polygon style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #8b6914" fill-rule="evenodd" points="375.201,268.467 367.334,268.467 383.067,284.2 398.801,268.467 390.934,268.467 390.934,252.733 406.667,252.733 406.667,237 375.201,237 "/>
+    <polygon style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #8b6914" fill-rule="evenodd" points="280.467,319.267 271.334,319.267 289.601,301 307.867,319.267 298.734,319.267 298.734,337.533 317.001,337.533 317.001,355.8 280.467,355.8 "/>
+    <g>
+      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #8b6914" x="805.2" y="310.6" width="115.35" height="70"/>
+      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #8b6914" x="785.2" y="324.6" width="40" height="14"/>
+      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #8b6914" x="785.2" y="352.6" width="40" height="14"/>
+      <text font-size="12.8" style="fill: #8b6914; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:italic;font-weight:700" x="833.2" y="338.3">
+        <tspan x="833.2" y="338.3">PARENT</tspan>
+        <tspan x="833.2" y="354.3">COMPONENT</tspan>
+      </text>
+    </g>
+    <g>
+      <polygon style="fill: #f3f3ff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #7f7f7f" fill-rule="evenodd" points="35.2,202.6 125.9,202.6 137.9,214.6 137.9,236.6 35.2,236.6 "/>
+      <polyline style="fill: none; stroke-opacity: 1; stroke-width: 1; stroke: #7f7f7f" points="125.9,202.6 125.9,214.6 137.9,214.6 "/>
+      <text font-size="12.8" style="fill: #7f7f7f; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:italic;font-weight:700" x="42.2" y="227.5">
+        <tspan x="42.2" y="227.5">&lt;HTML PAGE&gt;</tspan>
+      </text>
+    </g>
+  </g>
+</svg>

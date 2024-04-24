@@ -26,5 +26,3 @@ session.db
 dist
 .goreleaser.yaml
 *.dia
-*.odt
-docs

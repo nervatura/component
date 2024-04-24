@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
+<svg width="54cm" height="23cm" viewBox="2 2 1075 446" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs/>
+  <g id="Háttér"/>
+  <g id="Háttér"/>
+  <g id="Háttér"/>
+  <g id="Háttér"/>
+  <g id="Háttér"/>
+  <g id="Új réteg 1">
+    <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2.35099e-37; stroke: #ffffff" x="2" y="2" width="1075" height="446" rx="0" ry="0"/>
+    <g>
+      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #000000" x="16.2" y="14.6" width="386.15" height="28"/>
+      <text font-size="16" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="209.275" y="36.6">ClientComponent</text>
+      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #000000" x="16.2" y="42.6" width="386.15" height="116"/>
+      <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="19.2" y="56.6">+Properties(): map[string]interface{}</text>
+      <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="19.2" y="72.6">+Validation(string,interface{}): interface{}</text>
+      <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="19.2" y="88.6">+GetProperty(string): interface{}</text>
+      <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="19.2" y="104.6">+SetProperty(string,interface{}): interface{}</text>
+      <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="19.2" y="120.6">+InitProps(ClientComponent)</text>
+      <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="19.2" y="136.6">+Render()</text>
+      <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="19.2" y="152.6">+OnRequest(TriggerEvent): ResponseEvent</text>
+    </g>
+    <polygon style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #000000" fill-rule="evenodd" points="415,74.25 445.5,74.25 445.5,65 476,83.5 445.5,102 445.5,92.75 415,92.75 "/>
+    <g>
+      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #000099" x="491.2" y="28.6" width="483.8" height="28"/>
+      <text font-size="16" style="fill: #000099; fill-opacity: 1; stroke: none;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="733.1" y="50.6">BaseComponent</text>
+      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #000099" x="491.2" y="56.6" width="483.8" height="180"/>
+      <text font-size="12.8" style="fill: #000099; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="494.2" y="70.6">+Id: string</text>
+      <text font-size="12.8" style="fill: #000099; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="494.2" y="86.6">+Name: string</text>
+      <text font-size="12.8" style="fill: #000099; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="494.2" y="102.6">+EventURL: string</text>
+      <text font-size="12.8" style="fill: #000099; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="494.2" y="118.6">+Target: string</text>
+      <text font-size="12.8" style="fill: #000099; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="494.2" y="134.6">+Swap: string</text>
+      <text font-size="12.8" style="fill: #000099; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="494.2" y="150.6">+Indicator: string</text>
+      <text font-size="12.8" style="fill: #000099; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="494.2" y="166.6">+Class: []string</text>
+      <text font-size="12.8" style="fill: #000099; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="494.2" y="182.6">+Style: map[string]string</text>
+      <text font-size="12.8" style="fill: #000099; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="494.2" y="198.6">+Data: map[string]interface{}</text>
+      <text font-size="12.8" style="fill: #000099; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="494.2" y="214.6">+RequestValue: map[string]map[string]interface{}</text>
+      <text font-size="12.8" style="fill: #000099; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="494.2" y="230.6">+RequestMap: map[string]ClientComponent</text>
+      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #000099" x="491.2" y="236.6" width="483.8" height="52"/>
+      <text font-size="12.8" style="fill: #000099; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="494.2" y="250.6">+CheckEnumValue(string,string,[]string): string</text>
+      <text font-size="12.8" style="fill: #000099; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="494.2" y="266.6">+SetRequestValue(string,interface{},[]string): interface{}</text>
+      <text font-size="12.8" style="fill: #000099; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="494.2" y="282.6">+OnResponse(ResponseEvent): ResponseEvent</text>
+      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke-dasharray: 6; stroke: #000099" x="929" y="14.6" width="131.2" height="20"/>
+      <text font-size="12.8" style="fill: #000099; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="935" y="28.6">:ClientComponent</text>
+    </g>
+    <g>
+      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #8b6914" x="193.2" y="188.6" width="164" height="44"/>
+      <text font-size="12.8" style="fill: #8b6914; fill-opacity: 1; stroke: none;text-anchor:middle;font-family:monospace;font-style:normal;font-weight:normal" x="275.2" y="204.6">&lt;&lt;BaseComponent&gt;&gt;</text>
+      <text font-size="16" style="fill: #8b6914; fill-opacity: 1; stroke: none;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="275.2" y="226.6">Input</text>
+      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #8b6914" x="193.2" y="232.6" width="164" height="196"/>
+      <text font-size="12.8" style="fill: #8b6914; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="196.2" y="246.6">+Type: string</text>
+      <text font-size="12.8" style="fill: #8b6914; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="196.2" y="262.6">+Value: string</text>
+      <text font-size="12.8" style="fill: #8b6914; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="196.2" y="278.6">+Placeholder: string</text>
+      <text font-size="12.8" style="fill: #8b6914; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="196.2" y="294.6">+Label: string</text>
+      <text font-size="12.8" style="fill: #8b6914; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="196.2" y="310.6">+Disabled: bool</text>
+      <text font-size="12.8" style="fill: #8b6914; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="196.2" y="326.6">+ReadOnly: bool</text>
+      <text font-size="12.8" style="fill: #8b6914; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="196.2" y="342.6">+AutoFocus: bool</text>
+      <text font-size="12.8" style="fill: #8b6914; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="196.2" y="358.6">+Invalid: bool</text>
+      <text font-size="12.8" style="fill: #8b6914; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="196.2" y="374.6">+Accept: string</text>
+      <text font-size="12.8" style="fill: #8b6914; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="196.2" y="390.6">+MaxLength: int64</text>
+      <text font-size="12.8" style="fill: #8b6914; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="196.2" y="406.6">+Size: int64</text>
+      <text font-size="12.8" style="fill: #8b6914; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="196.2" y="422.6">+Full: bool</text>
+      <rect style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke-dasharray: 6; stroke: #8b6914" x="311.2" y="174.6" width="131.2" height="20"/>
+      <text font-size="12.8" style="fill: #8b6914; fill-opacity: 1; stroke: none;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="317.2" y="188.6">:ClientComponent</text>
+    </g>
+    <polygon style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #000000" fill-rule="evenodd" points="457.2,227.402 426.7,227.402 426.7,218.152 396.2,236.652 426.7,255.152 426.7,245.902 457.2,245.902 "/>
+  </g>
+</svg>
