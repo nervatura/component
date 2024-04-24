@@ -274,9 +274,22 @@
       based on it inherit and can use if necessary.
     </p>
     <img class="pic" src="comp.svg" name="Components" width="643" height="267" border="0"/>
+    <p>The easiest way to <strong><em>create a new component is to add new properties 
+      and functions to the</em></strong> <strong>BaseComponent</strong> <strong> <em> and 
+      override the functions of the</em></strong> <strong>ClientComponent</strong><strong> <em>
+      interface</em></strong> if necessary. The <strong>Application</strong> component 
+      is a top-level element to which all other components belong. This element is completely 
+      never replaced, only some of its parts can change. Its task is to load and manage all 
+      static elements required for the operation and display of the components, such as style 
+      sheets and the htmx package.
+    </p>
 
     <h4 id="examples">Examples and demo application</h4>
-    <p>The logic of the components can be understood most easily from the code of the existing components.</p>
+    <p>The logic of the components can be understood most easily from the code 
+      of the existing components. The source code repository contains sample code 
+      for ~15 server-side components, from the basic input component to the complex 
+      component.
+    </p>
     <ul>
       <li><p style="margin-bottom: 0cm">
         The <strong>NumberInput</strong>
