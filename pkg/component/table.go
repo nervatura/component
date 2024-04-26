@@ -828,7 +828,7 @@ var testFields []TableField = []TableField{
 	{Column: &TableColumn{Id: "id", CellStyle: ut.SM{"color": "red"}}},
 }
 
-var testRows []ut.IM = []ut.IM{
+var testTableRows []ut.IM = []ut.IM{
 	{"id": 1, "name": "Name1", "levels": 0, "valid": "true",
 		"date": "2000-03-06", "start": "2019-04-23T05:30:00+02:00", "stamp": "2020-04-20T10:30:00+02:00",
 		"name_color":            "red",
@@ -894,7 +894,7 @@ func TestTable(cc ClientComponent) []TestComponent {
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 				},
-				Rows:       testRows,
+				Rows:       testTableRows,
 				Fields:     testFields,
 				Pagination: PaginationTypeNone,
 				PageSize:   10,
@@ -943,7 +943,7 @@ func TestTable(cc ClientComponent) []TestComponent {
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 				},
-				Rows:              testRows,
+				Rows:              testTableRows,
 				Fields:            testFields,
 				Pagination:        PaginationTypeBottom,
 				PageSize:          5,
@@ -965,7 +965,7 @@ func TestTable(cc ClientComponent) []TestComponent {
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 				},
-				Rows:        testRows,
+				Rows:        testTableRows,
 				Fields:      testFields,
 				Pagination:  PaginationTypeAll,
 				CurrentPage: 1,

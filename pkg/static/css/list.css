@@ -1,0 +1,61 @@
+.list {
+  overflow-x: auto;
+  width: 100%;
+  border: 1px solid rgba(var(--neutral-1), 0.2);
+  border-bottom: none;
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.list li:nth-child(odd) {
+  background-color: rgba(var(--functional-yellow),0.1);
+}
+
+.list-row {
+  display: table;
+  width: 100%;
+  border-bottom: 1px solid rgba(var(--neutral-1), 0.2);
+}
+
+.list-edit-cell {
+  display: table-cell;
+  vertical-align: middle;
+  text-align: center;
+  width: 45px;
+  cursor: pointer;
+}
+
+.list-edit-cell:hover {
+  fill: rgb(var(--functional-green));
+}
+
+.list-value-cell {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.list-label {
+  width: 100%;
+  font-weight: bold;
+  padding: 5px 8px 2px;
+  border-bottom: 1px solid rgba(var(--neutral-1), 0.2);
+}
+
+.list-value {
+  width: 100%;
+  padding: 2px 8px 5px;
+}
+
+.list-delete-cell {
+  display: table-cell;
+  vertical-align: middle;
+  text-align: center;
+  width: 45px;
+  cursor: pointer;
+}
+
+.list-delete-cell:hover {
+  fill: rgb(var(--functional-red));
+}

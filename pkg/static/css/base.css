@@ -130,6 +130,23 @@ div {
   border-top: 0.5px solid rgba(var(--neutral-1), 0.2);
 }
 
+.responsive {
+  display: grid; 
+  width: 100%;
+  font-family: var(--font-family);
+	font-size: var(--font-size);
+	color: var(--text-1);
+	fill: var(--text-1);
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.cursor-disabled {
+  cursor: not-allowed;
+}
+
 @media only screen and (min-width: 601px){
   .dialog {
     min-width: 400px;

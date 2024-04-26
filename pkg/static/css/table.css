@@ -1,11 +1,3 @@
-.responsive {
-  display: grid; 
-  width: 100%;
-  font-family: var(--font-family);
-	font-size: var(--font-size);
-	color: var(--text-1);
-	fill: var(--text-1);
-}
 .table-wrap {
   display: block;
   max-width: 100%;
@@ -142,10 +134,4 @@
   .number-cell {
     text-align: left;
   }
-}
-.cursor-pointer {
-  cursor: pointer;
-}
-.cursor-disabled {
-  cursor: not-allowed;
 }

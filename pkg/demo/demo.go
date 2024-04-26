@@ -86,6 +86,7 @@ var DemoMap map[string][]DemoView = map[string][]DemoView{
 	},
 	ComponentGroupMolecule: {
 		{ComponentType: ct.ComponentTypeTable, TestData: ct.TestTable},
+		{ComponentType: ct.ComponentTypeList, TestData: ct.TestList},
 		{ComponentType: ct.ComponentTypeMenuBar, TestData: ct.TestMenuBar},
 		{ComponentType: ct.ComponentTypePagination, TestData: ct.TestPagination},
 	},

@@ -1,3 +1,7 @@
+## 1.1.0
+- new list component
+- documentation page
+
 ## 1.0.1
 - modifying the structure of the demo application
 - demo application database session support (default file session)
