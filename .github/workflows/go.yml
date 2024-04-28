@@ -29,3 +29,4 @@ jobs:
         amend: true
         report: true
         chart: true
+      continue-on-error: true
