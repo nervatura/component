@@ -1,4 +1,8 @@
 # Nervatura server-side Go components
+[![GoDoc](https://godoc.org/github.com/nervatura/component?status.svg)](https://pkg.go.dev/github.com/nervatura/component/pkg/component)
+[![Go Report Card](https://goreportcard.com/badge/github.com/nervatura/component)](https://goreportcard.com/report/github.com/nervatura/component)
+[![Go Coverage](https://github.com/nervatura/component/wiki/coverage.svg)](https://raw.githack.com/wiki/nervatura/component/coverage.html)
+[![Release](https://img.shields.io/github/v/release/nervatura/component)](https://github.com/nervatura/component/releases)
 
 An easy way to create a server-side component in any programming language
 
