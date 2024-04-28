@@ -27,3 +27,5 @@ jobs:
         coverage-file: coverage.out
         reuse-go: true
         amend: true
+        report: true
+        chart: true
