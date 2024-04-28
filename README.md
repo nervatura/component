@@ -1,5 +1,5 @@
 # Nervatura server-side Go components
-![Coverage](https://img.shields.io/badge/Coverage-99.3%25-brightgreen)
+![Coverage](https://img.shields.io/badge/Coverage-100.0%25-brightgreen)
 [![GoDoc](https://godoc.org/github.com/nervatura/component?status.svg)](https://pkg.go.dev/github.com/nervatura/component/pkg/component)
 [![Go Report Card](https://goreportcard.com/badge/github.com/nervatura/component)](https://goreportcard.com/report/github.com/nervatura/component)
 [![GoDoc](https://godoc.org/github.com/nervatura/component?status.svg)](https://pkg.go.dev/github.com/nervatura/component/pkg/component)
