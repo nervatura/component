@@ -93,6 +93,7 @@ var DemoMap map[string][]DemoView = map[string][]DemoView{
 	ComponentGroupTemplate: {
 		{ComponentType: ct.ComponentTypeLogin, TestData: ct.TestLogin},
 		{ComponentType: ct.ComponentTypeLocale, TestData: ct.TestLocale},
+		{ComponentType: ct.ComponentTypeBrowser, TestData: ct.TestBrowser},
 	},
 }
 

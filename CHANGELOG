@@ -1,3 +1,8 @@
+## 1.1.1
+- new Browser (data advanced search) component
+- table component: new TableFieldTypeInteger, TableFieldTypeLink, TableFieldTypeMeta type
+- NumberInput number format bug fixes
+
 ## 1.1.0
 - new list component
 - documentation page

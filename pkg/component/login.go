@@ -339,11 +339,11 @@ func (lgn *Login) Render() (res string, err error) {
 			return lgn.getComponent(name)
 		},
 	}
-	tpl := `<div id="{{ .Id }}" class="modal {{ customClass }}" theme="{{ .Theme }}" 
+	tpl := `<div id="{{ .Id }}" class="login-modal {{ customClass }}" theme="{{ .Theme }}" 
 	{{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}>
 	<div class="middle"><div class="dialog">
 	<div class="row title">
-	<div class="cell title-cell" ><span>{{ msg "title_login" }}</span></div>
+	<div class="cell title-cell login-title-cell" ><span>{{ msg "title_login" }}</span></div>
 	<div class="cell version-cell" ><span>{{ .Version }}</span></div>
 	</div>
 	<div class="row full section-small" >

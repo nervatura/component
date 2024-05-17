@@ -223,74 +223,88 @@ func (loc *Locale) response(evt ResponseEvent) (re ResponseEvent) {
 	case "values":
 		return evt
 
-	case "tag_keys", "locales":
-		locEvt.Name = LocalesEventChange
-		loc.SetProperty("data", ut.IM{evt.TriggerName: locEvt.Value})
-		loc.SetProperty("filter_value", "")
-		if evt.TriggerName == "locales" {
-			loc.SetProperty("data", ut.IM{"tag_keys": loc.TagKeys[0].Value})
+	case "tag_keys", "locales", "undo", "update", "add", "missing", "tag_cell", "value_cell",
+		"lang_key", "lang_name", "filter", "add_item":
+		evtMap := map[string]func(){
+			"tag_keys": func() {
+				locEvt.Name = LocalesEventChange
+				loc.SetProperty("data", ut.IM{evt.TriggerName: locEvt.Value})
+				loc.SetProperty("filter_value", "")
+			},
+			"locales": func() {
+				locEvt.Name = LocalesEventChange
+				loc.SetProperty("data", ut.IM{evt.TriggerName: locEvt.Value})
+				loc.SetProperty("filter_value", "")
+				loc.SetProperty("data", ut.IM{"tag_keys": loc.TagKeys[0].Value})
+			},
+			"undo": func() {
+				locEvt.Name = LocalesEventUndo
+			},
+			"update": func() {
+				locEvt.Name = LocalesEventSave
+			},
+			"add": func() {
+				lang_key := ut.ToString(loc.GetProperty("data").(ut.IM)["lang_key"], "")
+				lang_name := ut.ToString(loc.GetProperty("data").(ut.IM)["lang_name"], "")
+				locales := loc.Data["locfile"].(ut.IM)["locales"].(ut.IM)
+				if _, found := locales[lang_key].(ut.IM); found || lang_key == "en" {
+					locEvt.Name = LocalesEventError
+					locEvt.Value = loc.msg("locale_existing_lang")
+				} else if lang_key == "" || lang_name == "" {
+					locEvt.Name = LocalesEventError
+					locEvt.Value = loc.msg("locale_missing")
+				} else {
+					locEvt.Name = LocalesEventChange
+					locales[lang_key] = ut.IM{
+						"key":    lang_key,
+						lang_key: lang_name,
+					}
+					langs := append(loc.Locales, SelectOption{Value: lang_key, Text: lang_key})
+					loc.SetProperty("locales", langs)
+					loc.SetProperty("add_item", false)
+					loc.SetProperty("data", ut.IM{"lang_key": ""})
+					loc.SetProperty("data", ut.IM{"lang_name": ""})
+				}
+			},
+			"missing": func() {
+				locEvt.Name = LocalesEventChange
+				loc.SetProperty("data", ut.IM{"tag_keys": "missing"})
+				loc.SetProperty("filter_value", "")
+			},
+			"tag_cell": func() {
+				locEvt.Name = LocalesEventChange
+				loc.SetProperty("data", ut.IM{"tag_keys": locEvt.Value})
+				loc.SetProperty("filter_value", "")
+			},
+			"value_cell": func() {
+				locEvt.Name = LocalesEventChange
+				key := ut.ToString(evt.Trigger.GetProperty("data").(ut.IM)["key"], "")
+				locales := loc.Data["locfile"].(ut.IM)["locales"].(ut.IM)
+				lang := ut.ToString(loc.Data["locales"], "")
+				if langValues, found := locales[lang].(ut.IM); found {
+					langValues[key] = locEvt.Value
+				}
+				loc.SetProperty("dirty", true)
+			},
+			"lang_key": func() {
+				locEvt.Name = LocalesEventChange
+				loc.SetProperty("data", ut.IM{evt.TriggerName: locEvt.Value})
+				loc.SetProperty("dirty", true)
+			},
+			"lang_name": func() {
+				locEvt.Name = LocalesEventChange
+				loc.SetProperty("data", ut.IM{evt.TriggerName: locEvt.Value})
+				loc.SetProperty("dirty", true)
+			},
+			"filter": func() {
+				locEvt.Name = LocalesEventChange
+				loc.SetProperty("filter_value", locEvt.Value)
+			},
+			"add_item": func() {
+				loc.SetProperty("add_item", !loc.AddItem)
+			},
 		}
-
-	case "undo":
-		locEvt.Name = LocalesEventUndo
-
-	case "update":
-		locEvt.Name = LocalesEventSave
-
-	case "add":
-		lang_key := ut.ToString(loc.GetProperty("data").(ut.IM)["lang_key"], "")
-		lang_name := ut.ToString(loc.GetProperty("data").(ut.IM)["lang_name"], "")
-		locales := loc.Data["locfile"].(ut.IM)["locales"].(ut.IM)
-		if _, found := locales[lang_key].(ut.IM); found || lang_key == "en" {
-			locEvt.Name = LocalesEventError
-			locEvt.Value = loc.msg("locale_existing_lang")
-		} else if lang_key == "" || lang_name == "" {
-			locEvt.Name = LocalesEventError
-			locEvt.Value = loc.msg("locale_missing")
-		} else {
-			locEvt.Name = LocalesEventChange
-			locales[lang_key] = ut.IM{
-				"key":    lang_key,
-				lang_key: lang_name,
-			}
-			langs := append(loc.Locales, SelectOption{Value: lang_key, Text: lang_key})
-			loc.SetProperty("locales", langs)
-			loc.SetProperty("add_item", false)
-			loc.SetProperty("data", ut.IM{"lang_key": ""})
-			loc.SetProperty("data", ut.IM{"lang_name": ""})
-		}
-
-	case "missing":
-		locEvt.Name = LocalesEventChange
-		loc.SetProperty("data", ut.IM{"tag_keys": "missing"})
-		loc.SetProperty("filter_value", "")
-
-	case "tag_cell":
-		locEvt.Name = LocalesEventChange
-		loc.SetProperty("data", ut.IM{"tag_keys": locEvt.Value})
-		loc.SetProperty("filter_value", "")
-
-	case "value_cell":
-		locEvt.Name = LocalesEventChange
-		key := ut.ToString(evt.Trigger.GetProperty("data").(ut.IM)["key"], "")
-		locales := loc.Data["locfile"].(ut.IM)["locales"].(ut.IM)
-		lang := ut.ToString(loc.Data["locales"], "")
-		if langValues, found := locales[lang].(ut.IM); found {
-			langValues[key] = locEvt.Value
-		}
-		loc.SetProperty("dirty", true)
-
-	case "lang_key", "lang_name":
-		locEvt.Name = LocalesEventChange
-		loc.SetProperty("data", ut.IM{evt.TriggerName: locEvt.Value})
-		loc.SetProperty("dirty", true)
-
-	case "filter":
-		locEvt.Name = LocalesEventChange
-		loc.SetProperty("filter_value", locEvt.Value)
-
-	case "add_item":
-		loc.SetProperty("add_item", !loc.AddItem)
+		evtMap[evt.TriggerName]()
 
 	default:
 	}
@@ -641,6 +655,43 @@ var demoLocaleResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt Res
 	return evt
 }
 
+func testLocaleData() ut.IM {
+	return ut.IM{
+		"deflang": ut.IM{
+			"key":               "en",
+			"en":                "English",
+			"address_view":      "Address Data",
+			"address_country":   "Country",
+			"address_state":     "State",
+			"address_zipcode":   "Zipcode",
+			"address_city":      "City",
+			"address_street":    "Street",
+			"address_notes":     "Comment",
+			"login_username":    "Username",
+			"login_password":    "Password",
+			"login_database":    "Database",
+			"login_lang":        "Language",
+			"login_login":       "Login",
+			"login_server":      "Server URL",
+			"login_engine_err":  "Invalid database type!",
+			"login_version_err": "Invalid service version!",
+		},
+		"locales":  "default",
+		"tag_keys": "address",
+		"tag_values": map[string][]string{
+			"address": {
+				"address_view", "address_country", "address_state", "address_zipcode",
+				"address_city", "address_street", "address_notes",
+			},
+			"login": {
+				"login_username", "login_password", "login_database", "login_lang",
+				"login_login", "login_server", "login_engine_err", "login_version_err",
+			},
+		},
+		"locfile": localeLocfile(),
+	}
+}
+
 // [Locale] test and demo data
 func TestLocale(cc ClientComponent) []TestComponent {
 	id := ut.ToString(cc.GetProperty("id"), "")
@@ -658,40 +709,32 @@ func TestLocale(cc ClientComponent) []TestComponent {
 					OnResponse:   demoLocaleResponse,
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
-					Data: ut.IM{
-						"deflang": ut.IM{
-							"key":               "en",
-							"en":                "English",
-							"address_view":      "Address Data",
-							"address_country":   "Country",
-							"address_state":     "State",
-							"address_zipcode":   "Zipcode",
-							"address_city":      "City",
-							"address_street":    "Street",
-							"address_notes":     "Comment",
-							"login_username":    "Username",
-							"login_password":    "Password",
-							"login_database":    "Database",
-							"login_lang":        "Language",
-							"login_login":       "Login",
-							"login_server":      "Server URL",
-							"login_engine_err":  "Invalid database type!",
-							"login_version_err": "Invalid service version!",
-						},
-						"locales":  "default",
-						"tag_keys": "address",
-						"tag_values": map[string][]string{
-							"address": {
-								"address_view", "address_country", "address_state", "address_zipcode",
-								"address_city", "address_street", "address_notes",
-							},
-							"login": {
-								"login_username", "login_password", "login_database", "login_lang",
-								"login_login", "login_server", "login_engine_err", "login_version_err",
-							},
-						},
-						"locfile": localeLocfile(),
-					},
+					Data:         testLocaleData(),
+				},
+				Locales: []SelectOption{
+					{Value: "default", Text: "Default"},
+					{Value: "de", Text: "Deutsch"},
+					{Value: "jp", Text: "Japanese"},
+				},
+				TagKeys: []SelectOption{
+					{Value: "address", Text: "address"},
+					{Value: "login", Text: "login"},
+				},
+			}},
+		{
+			Label:         "Input",
+			ComponentType: ComponentTypeLocale,
+			Component: &Locale{
+				BaseComponent: BaseComponent{
+					Id:           id + "_locale_input",
+					EventURL:     eventURL,
+					OnResponse:   demoLocaleResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
+					Data: ut.MergeIM(testLocaleData(), ut.IM{
+						"locales":  "de",
+						"tag_keys": "login",
+					}),
 				},
 				Locales: []SelectOption{
 					{Value: "default", Text: "Default"},

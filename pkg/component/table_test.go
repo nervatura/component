@@ -358,6 +358,28 @@ func TestTable_SortRows(t *testing.T) {
 				sortAsc:   true,
 			},
 		},
+		{
+			name: "integer",
+			fields: fields{
+				Rows: rows,
+			},
+			args: args{
+				fieldName: "integer",
+				fieldType: TableFieldTypeInteger,
+				sortAsc:   false,
+			},
+		},
+		{
+			name: "integer_asc",
+			fields: fields{
+				Rows: rows,
+			},
+			args: args{
+				fieldName: "integer",
+				fieldType: TableFieldTypeInteger,
+				sortAsc:   true,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

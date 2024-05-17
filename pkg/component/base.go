@@ -18,9 +18,9 @@ const (
 	ThemeLight = "light"
 	ThemeDark  = "dark"
 
-	TextAlignLeft   = "align-left"
+	TextAlignLeft   = "left"
 	TextAlignCenter = "center"
-	TextAlignRight  = "align-right"
+	TextAlignRight  = "right"
 
 	VerticalAlignTop    = "top"
 	VerticalAlignMiddle = "middle"

@@ -21,18 +21,24 @@ const (
 	TableEventRowSelected  = "row_selected"
 
 	TableFieldTypeString   = "string"
-	TableFieldTypeNumber   = "number"
+	TableFieldTypeInteger  = "integer"
+	TableFieldTypeNumber   = "float"
 	TableFieldTypeDateTime = "datetime"
 	TableFieldTypeDate     = "date"
 	TableFieldTypeTime     = "time"
 	TableFieldTypeBool     = "bool"
-	TableFieldTypeDeffield = "deffield"
-	TableFieldTypeCustom   = "custom"
+	TableFieldTypeLink     = "link"
+	TableFieldTypeMeta     = "meta"
 )
 
 // [Table] TableFieldType values
-var TableFieldType []string = []string{TableFieldTypeString, TableFieldTypeNumber, TableFieldTypeDateTime,
-	TableFieldTypeDate, TableFieldTypeTime, TableFieldTypeBool, TableFieldTypeDeffield, TableFieldTypeCustom}
+var TableFieldType []string = []string{TableFieldTypeString, TableFieldTypeInteger, TableFieldTypeNumber,
+	TableFieldTypeDateTime, TableFieldTypeDate, TableFieldTypeTime, TableFieldTypeBool, TableFieldTypeLink,
+	TableFieldTypeMeta}
+
+// [Table] TableMetaType values
+var TableMetaType []string = []string{TableFieldTypeString, TableFieldTypeInteger, TableFieldTypeNumber,
+	TableFieldTypeDateTime, TableFieldTypeDate, TableFieldTypeTime, TableFieldTypeBool, TableFieldTypeLink}
 
 /*
 Creates an interactive and customizable table control
@@ -101,13 +107,14 @@ type Table struct {
 	RowSelected bool `json:"row_selected"`
 }
 
-// [Table] column definitions
+// [Table] column definition
 type TableField struct {
 	// The field name of the data source
 	Name string `json:"name"`
 	/* [TableFieldType] variable constants:
-	[TableFieldTypeString], [TableFieldTypeNumber], [TableFieldTypeDateTime],[TableFieldTypeDate],
-	[TableFieldTypeTime], [TableFieldTypeBool], [TableFieldTypeDeffield], [TableFieldTypeCustom].
+	[TableFieldTypeString], [TableFieldTypeInteger], [TableFieldTypeNumber], [TableFieldTypeDateTime],
+	[TableFieldTypeDate], [TableFieldTypeTime], [TableFieldTypeBool], [TableFieldTypeLink],
+	[TableFieldTypeMeta].
 	Default value: [TableFieldTypeString] */
 	FieldType string `json:"field_type"`
 	// The label of the column
@@ -341,6 +348,14 @@ func (tbl *Table) SetProperty(propName string, propValue interface{}) interface{
 
 func (tbl *Table) SortRows(fieldName, fieldType string, sortAsc bool) {
 	lessMap := map[string]func(i, j int) bool{
+		TableFieldTypeInteger: func(i, j int) bool {
+			a := ut.ToInteger(tbl.Rows[i][fieldName], 0)
+			b := ut.ToInteger(tbl.Rows[j][fieldName], 0)
+			if sortAsc {
+				return a > b
+			}
+			return a < b
+		},
 		TableFieldTypeNumber: func(i, j int) bool {
 			a := ut.ToFloat(tbl.Rows[i][fieldName], 0)
 			b := ut.ToFloat(tbl.Rows[j][fieldName], 0)
@@ -379,21 +394,6 @@ func (tbl *Table) response(evt ResponseEvent) (re ResponseEvent) {
 		tblEvt.Name = TableEventCurrentPage
 		tbl.SetProperty("current_page", tblEvt.Value)
 
-	case "filter":
-		tblEvt.Name = TableEventFilterChange
-		tbl.SetProperty("filter_value", tblEvt.Value)
-
-	case "btn_add":
-		tblEvt.Name = TableEventAddItem
-
-	case "link_cell":
-		tblEvt.Name = TableEventEditCell
-		tblEvt.Value = evt.Trigger.GetProperty("data")
-
-	case "data_row":
-		tblEvt.Name = TableEventRowSelected
-		tblEvt.Value = evt.Trigger.GetProperty("data")
-
 	case "header_sort":
 		sortCol := ut.ToString(evt.Trigger.GetProperty("data").(ut.IM)["fieldname"], "")
 		fieldType := ut.ToString(evt.Trigger.GetProperty("data").(ut.IM)["fieldtype"], "")
@@ -403,6 +403,26 @@ func (tbl *Table) response(evt ResponseEvent) (re ResponseEvent) {
 		tbl.SetProperty("sort_col", sortCol)
 		tbl.SortRows(tbl.SortCol, fieldType, tbl.SortAsc)
 		return tblEvt
+
+	case "filter", "btn_add", "link_cell", "data_row":
+		evtMap := map[string]func(){
+			"filter": func() {
+				tblEvt.Name = TableEventFilterChange
+				tbl.SetProperty("filter_value", tblEvt.Value)
+			},
+			"btn_add": func() {
+				tblEvt.Name = TableEventAddItem
+			},
+			"link_cell": func() {
+				tblEvt.Name = TableEventEditCell
+				tblEvt.Value = evt.Trigger.GetProperty("data")
+			},
+			"data_row": func() {
+				tblEvt.Name = TableEventRowSelected
+				tblEvt.Value = evt.Trigger.GetProperty("data")
+			},
+		}
+		evtMap[evt.TriggerName]()
 
 	default:
 	}
@@ -506,8 +526,8 @@ func (tbl *Table) columns() (cols []TableColumn) {
 		return fmt.Sprintf(
 			`<div class="number-cell">
 	    <span class="cell-label">%s</span>
-	    <span %s >%g</span>
-    </div>`, label, tbl.getStyle(style), ut.ToFloat(value, 0))
+	    <span %s >%s</span>
+    </div>`, label, tbl.getStyle(style), ut.ToString(value, "0"))
 	}
 
 	dateCell := func(value interface{}, label, dateType string) string {
@@ -562,6 +582,23 @@ func (tbl *Table) columns() (cols []TableColumn) {
 			<span %s >%s</span>`, label, tbl.getStyle(style), value)
 	}
 
+	getFieldType := func(fType string) string {
+		bt := ut.SM{
+			TableFieldTypeInteger:  TableFieldTypeNumber,
+			TableFieldTypeNumber:   TableFieldTypeNumber,
+			TableFieldTypeDate:     TableFieldTypeDateTime,
+			TableFieldTypeTime:     TableFieldTypeDateTime,
+			TableFieldTypeDateTime: TableFieldTypeDateTime,
+			TableFieldTypeBool:     TableFieldTypeBool,
+			TableFieldTypeLink:     TableFieldTypeLink,
+			TableFieldTypeMeta:     TableFieldTypeMeta,
+		}
+		if fieldType, found := bt[fType]; found {
+			return fieldType
+		}
+		return TableFieldTypeString
+	}
+
 	cols = []TableColumn{}
 	for _, field := range tbl.Fields {
 		if field.Column != nil {
@@ -575,71 +612,83 @@ func (tbl *Table) columns() (cols []TableColumn) {
 				CellStyle:   ut.SM{},
 				Field:       field,
 			}
-			switch field.FieldType {
 
-			case TableFieldTypeNumber:
-				coldef.HeaderStyle["text-align"] = TextAlignRight
-				coldef.Cell = func(row ut.IM, col TableColumn, value interface{}) string {
-					style := ut.SM{}
-					if col.Field.Format {
-						style["font-weight"] = "bold"
-						if evalue, found := row["edited"].(bool); found && evalue {
-							style["text-decoration"] = "line-through"
-						} else if ut.ToFloat(value, 0) != 0 {
-							style["color"] = "red"
-						} else {
-							style["color"] = "green"
+			setFieldType := map[string]func(){
+				TableFieldTypeNumber: func() {
+					coldef.HeaderStyle["text-align"] = TextAlignRight
+					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}) string {
+						style := ut.SM{}
+						if col.Field.Format {
+							style["font-weight"] = "bold"
+							if evalue, found := row["edited"].(bool); found && evalue {
+								style["text-decoration"] = "line-through"
+							} else if ut.ToFloat(value, 0) != 0 {
+								style["color"] = "red"
+							} else {
+								style["color"] = "green"
+							}
 						}
+						return numberCell(ut.ToFloat(value, 0), col.Field.Label, style)
 					}
-					return numberCell(ut.ToFloat(value, 0), col.Field.Label, style)
-				}
-
-			case TableFieldTypeDate, TableFieldTypeTime, TableFieldTypeDateTime:
-				coldef.Cell = func(row ut.IM, col TableColumn, value interface{}) string {
-					return dateCell(value, col.Field.Label, col.Field.FieldType)
-				}
-
-			case TableFieldTypeBool:
-				coldef.Cell = func(row ut.IM, col TableColumn, value interface{}) string {
-					return boolCell(value, col.Field.Label)
-				}
-
-			case TableFieldTypeDeffield:
-				coldef.Cell = func(row ut.IM, col TableColumn, value interface{}) string {
-					switch row["fieldtype"] {
-					case "bool":
+				},
+				TableFieldTypeDateTime: func() {
+					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}) string {
+						return dateCell(value, col.Field.Label, col.Field.FieldType)
+					}
+				},
+				TableFieldTypeBool: func() {
+					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}) string {
 						return boolCell(value, col.Field.Label)
-
-					case "integer", "float":
-						return numberCell(ut.ToFloat(value, 0), col.Field.Label, ut.SM{})
-
-					case "customer", "tool", "product", "trans", "transitem", "transmovement",
-						"transpayment", "project", "employee", "place", "urlink":
-						return linkCell(ut.ToString(row["export_deffield_value"], ""), col.Field.Label,
-							ut.ToString(row["fieldtype"], ""), row[field.Name], row,
-						)
-
-					default:
+					}
+				},
+				TableFieldTypeLink: func() {
+					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}) string {
+						return linkCell(ut.ToString(value, ""), col.Field.Label,
+							col.Field.Name, row[col.Field.Name], row)
+					}
+				},
+				TableFieldTypeMeta: func() {
+					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}) string {
+						fieldType := tbl.CheckEnumValue(ut.ToString(row[field.Name+"_meta"], ""), TableFieldTypeString, TableMetaType)
+						mResult := map[string]func() string{
+							TableFieldTypeBool: func() string {
+								return boolCell(value, col.Field.Label)
+							},
+							TableFieldTypeInteger: func() string {
+								return numberCell(ut.ToFloat(value, 0), col.Field.Label, ut.SM{})
+							},
+							TableFieldTypeNumber: func() string {
+								return numberCell(ut.ToFloat(value, 0), col.Field.Label, ut.SM{})
+							},
+							TableFieldTypeLink: func() string {
+								return linkCell(ut.ToString(value, ""), col.Field.Label,
+									field.Name, row[field.Name], row)
+							},
+						}
+						if ut.Contains([]string{TableFieldTypeBool, TableFieldTypeInteger, TableFieldTypeNumber, TableFieldTypeLink}, fieldType) {
+							return mResult[fieldType]()
+						}
 						return stringCell(ut.ToString(value, ""), col.Field.Label, ut.SM{})
 					}
-				}
-
-			default:
-				coldef.Cell = func(row ut.IM, col TableColumn, value interface{}) string {
-					style := ut.SM{}
-					if color, found := row[col.Field.Name+"_color"].(string); found {
-						style["color"] = color
-					}
-					for key, ivalue := range row {
-						if key == "export_"+col.Field.Name {
-							return linkCell(ut.ToString(ivalue, ""), col.Field.Label,
-								col.Field.Name, row[col.Field.Name], row,
-							)
+				},
+				TableFieldTypeString: func() {
+					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}) string {
+						style := ut.SM{}
+						if color, found := row[col.Field.Name+"_color"].(string); found {
+							style["color"] = color
 						}
+						for key, ivalue := range row {
+							if key == col.Field.Name+"_link" {
+								return linkCell(ut.ToString(ivalue, ""), col.Field.Label,
+									col.Field.Name, row[col.Field.Name], row,
+								)
+							}
+						}
+						return stringCell(ut.ToString(value, ""), col.Field.Label, style)
 					}
-					return stringCell(ut.ToString(value, ""), col.Field.Label, style)
-				}
+				},
 			}
+			setFieldType[getFieldType(field.FieldType)]()
 
 			if tbl.TablePadding != "" {
 				coldef.HeaderStyle["padding"] = tbl.TablePadding
@@ -811,48 +860,54 @@ func (tbl *Table) Render() (res string, err error) {
 	return ut.TemplateBuilder("table", tpl, funcMap, tbl)
 }
 
-var testFields []TableField = []TableField{
+var testTableFields []TableField = []TableField{
 	{Name: "name", FieldType: TableFieldTypeString, Label: "Name", TextAlign: TextAlignLeft},
 	{Name: "valid", FieldType: TableFieldTypeBool, Label: "Valid"},
 	{Name: "date", FieldType: TableFieldTypeDate, Label: "From"},
 	{Name: "start", FieldType: TableFieldTypeTime},
 	{Name: "stamp", FieldType: TableFieldTypeDateTime, Label: "Stamp"},
 	{Name: "levels", FieldType: TableFieldTypeNumber, Label: "Levels", Format: true, VerticalAlign: VerticalAlignMiddle},
-	{Name: "deffield", FieldType: TableFieldTypeDeffield, Label: "Deffield"},
-	{Column: &TableColumn{Id: "editor", Cell: func(row ut.IM, col TableColumn, value interface{}) string {
-		btn := Button{
-			Type: ButtonTypePrimary, Label: "Hello", Disabled: ut.ToBoolean(row["disabled"], false), Small: true}
-		res, _ := btn.Render()
-		return res
-	}}},
+	{Name: "product", FieldType: TableFieldTypeLink, Label: "Product"},
+	{Name: "deffield", FieldType: TableFieldTypeMeta, Label: "Multiple type"},
+	{Column: &TableColumn{Id: "editor", Header: "Custom",
+		Cell: func(row ut.IM, col TableColumn, value interface{}) string {
+			btn := Button{
+				Type: ButtonTypePrimary, Label: "Hello", Disabled: ut.ToBoolean(row["disabled"], false), Small: true}
+			res, _ := btn.Render()
+			return res
+		}}},
 	{Column: &TableColumn{Id: "id", CellStyle: ut.SM{"color": "red"}}},
 }
 
 var testTableRows []ut.IM = []ut.IM{
 	{"id": 1, "name": "Name1", "levels": 0, "valid": "true",
 		"date": "2000-03-06", "start": "2019-04-23T05:30:00+02:00", "stamp": "2020-04-20T10:30:00+02:00",
-		"name_color":            "red",
-		"export_deffield_value": "Customer 1", "fieldtype": "customer", "deffield": 123},
-	{"id": 2, "name": "Name2", "export_name": "Name link",
+		"name_color": "red", "product": "Product1",
+		"deffield": "Customer 1", "deffield_meta": TableFieldTypeLink},
+	{"id": 2, "name": "Name2", "name_link": "Name link",
 		"levels": 20, "valid": 1,
 		"date": "2008-04-07", "start": "2019-04-23T11:30:00+02:00", "stamp": "2020-04-25T10:30:00+02:00",
-		"name_color": "red", "edited": true,
-		"fieldtype": "bool", "deffield": "true"},
+		"name_color": "red", "edited": true, "product": "Product2",
+		"deffield": "true", "deffield_meta": TableFieldTypeBool},
 	{"id": 3, "name": "Name3", "levels": 40, "valid": "false",
 		"date": "2022-01-01", "start": "2019-04-23T10:27:00+02:00", "stamp": "2020-04-09T10:30:00+02:00",
-		"name_color": "orange", "disabled": true,
-		"fieldtype": "integer", "deffield": 123},
-	{"id": 4, "name": "Name4", "levels": 401234.345, "valid": 0,
+		"name_color": "orange", "disabled": true, "product": "Product2",
+		"deffield": 123, "deffield_meta": TableFieldTypeInteger},
+	{"id": 4, "name": "Name4", "levels": 40, "valid": "false",
+		"date": "2022-01-01", "start": "2019-04-23T10:27:00+02:00", "stamp": "2020-04-09T10:30:00+02:00",
+		"name_color": "orange", "disabled": true, "product": "Product1",
+		"deffield": 123.45, "deffield_meta": TableFieldTypeNumber},
+	{"id": 5, "name": "Name5", "levels": 401234.345, "valid": 0,
 		"date": "2015-07-26", "start": "", "stamp": time.Now(),
-		"name_color": "orange",
-		"fieldtype":  "string", "deffield": "value"},
-	{"id": 5, "name": "Name5", "levels": 40, "valid": false,
+		"name_color": "orange", "product": "Product3",
+		"deffield": "value", "deffield_meta": TableFieldTypeString},
+	{"id": 6, "name": "Name6", "levels": 40, "valid": false,
 		"date": "1999-11-07", "start": "2019-04-23T10:30:00+02:00", "stamp": "2020-04-11T10:30:00+02:00",
-		"export_deffield_value": "Customer 2", "fieldtype": "customer", "deffield": 124},
-	{"id": 6, "name": "Name6", "levels": 60, "valid": true,
+		"product": "Product1", "deffield": "Customer 2", "deffield_meta": TableFieldTypeLink},
+	{"id": 7, "name": "Name7", "levels": 60, "valid": true,
 		"date": "2020-06-06", "start": "2019-04-23T04:10:00+02:00", "stamp": "2020-04-18T10:30:00+02:00",
-		"name_color":            "green",
-		"export_deffield_value": "Customer 7", "fieldtype": "customer", "deffield": 222},
+		"name_color": "green", "product": "Product2",
+		"deffield": "Customer 7", "deffield_meta": TableFieldTypeLink},
 }
 
 var demoTableResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt ResponseEvent) (re ResponseEvent) {
@@ -895,7 +950,7 @@ func TestTable(cc ClientComponent) []TestComponent {
 					RequestMap:   requestMap,
 				},
 				Rows:       testTableRows,
-				Fields:     testFields,
+				Fields:     testTableFields,
 				Pagination: PaginationTypeNone,
 				PageSize:   10,
 			}},
@@ -944,7 +999,7 @@ func TestTable(cc ClientComponent) []TestComponent {
 					RequestMap:   requestMap,
 				},
 				Rows:              testTableRows,
-				Fields:            testFields,
+				Fields:            testTableFields,
 				Pagination:        PaginationTypeBottom,
 				PageSize:          5,
 				CurrentPage:       10,
@@ -966,7 +1021,7 @@ func TestTable(cc ClientComponent) []TestComponent {
 					RequestMap:   requestMap,
 				},
 				Rows:        testTableRows,
-				Fields:      testFields,
+				Fields:      testTableFields,
 				Pagination:  PaginationTypeAll,
 				CurrentPage: 1,
 				TableFilter: true,

@@ -215,8 +215,7 @@ func RandString(length int) string {
 		"0123456789")
 	var b strings.Builder
 	for i := 0; i < length; i++ {
-		var n = big.NewInt(int64(i))
-		n, _ = rand.Int(rand.Reader, big.NewInt(int64(len(chars))))
+		n, _ := rand.Int(rand.Reader, big.NewInt(int64(len(chars))))
 		b.WriteRune(chars[n.Int64()])
 	}
 	return b.String()
