@@ -3,7 +3,7 @@ input {
   font-size: var(--font-size);
   border-radius: 3px;
   border-width: 1px;
-  padding: 8px;
+  padding: 7px 8px;
   display: block;
   color: var(--text-1);
   background-color: rgba(var(--base-4), 1);
@@ -26,6 +26,31 @@ input:focus, input:hover:not(:disabled) {
   color: rgb(var(--functional-green))!important;
 }
 input.invalid {
+  color: rgba(var(--functional-red), 1);
+  border: 1px solid rgba(var(--functional-red), 1);
+}
+
+textarea {
+  font-family: var(--font-family);
+  font-size: var(--font-size);
+  border-radius: 3px;
+  overflow: auto;
+  padding: 8px;
+  color: var(--text-1);
+  background-color: rgba(var(--base-4), 1);
+  border: 1px solid rgba(var(--neutral-1), 0.2);
+  box-sizing: border-box;
+}
+textarea:focus, textarea:hover:not(:disabled) {
+  color: rgb(var(--functional-green))!important;
+}
+textarea:disabled {
+  opacity: 0.5;
+}
+textarea::placeholder, textarea::-ms-input-placeholder {
+  opacity: 0.5;
+}
+textarea.invalid {
   color: rgba(var(--functional-red), 1);
   border: 1px solid rgba(var(--functional-red), 1);
 }

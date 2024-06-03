@@ -154,7 +154,7 @@ func (tst *Toast) Render() (res string, err error) {
 	return ut.TemplateBuilder("toast", tpl, funcMap, tst)
 }
 
-var demoToastResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt ResponseEvent) (re ResponseEvent) {
+var testToastResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt ResponseEvent) (re ResponseEvent) {
 	data := evt.Trigger.GetProperty("data").(ut.IM)
 	re = ResponseEvent{
 		Trigger: &Toast{
@@ -189,13 +189,13 @@ func TestToast(cc ClientComponent) []TestComponent {
 						"toast-type": "info", "toast-value": "This is an info message.", "toast-timeout": "4",
 					},
 					EventURL:     eventURL,
-					OnResponse:   demoToastResponse,
+					OnResponse:   testToastResponse,
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 				},
-				Type:  ButtonTypeDefault,
-				Align: TextAlignCenter,
-				Label: "Info message",
+				ButtonStyle: ButtonStyleDefault,
+				Align:       TextAlignCenter,
+				Label:       "Info message",
 			}},
 
 		{
@@ -208,13 +208,13 @@ func TestToast(cc ClientComponent) []TestComponent {
 						"toast-type": "error", "toast-value": "<i>This is an error message.</i>", "toast-timeout": "0",
 					},
 					EventURL:     eventURL,
-					OnResponse:   demoToastResponse,
+					OnResponse:   testToastResponse,
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 				},
-				Type:  ButtonTypeDefault,
-				Align: TextAlignCenter,
-				Label: "Error message",
+				ButtonStyle: ButtonStyleDefault,
+				Align:       TextAlignCenter,
+				Label:       "Error message",
 			}},
 		{
 			Label:         "A long success message",
@@ -228,13 +228,13 @@ func TestToast(cc ClientComponent) []TestComponent {
 						"toast-timeout": "4",
 					},
 					EventURL:     eventURL,
-					OnResponse:   demoToastResponse,
+					OnResponse:   testToastResponse,
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 				},
-				Type:  ButtonTypeDefault,
-				Align: TextAlignCenter,
-				Label: "Success message",
+				ButtonStyle: ButtonStyleDefault,
+				Align:       TextAlignCenter,
+				Label:       "Success message",
 			}},
 	}
 }

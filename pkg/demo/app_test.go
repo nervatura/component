@@ -1,14 +1,18 @@
 package demo
 
 import (
+	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"io"
 	"io/fs"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 
 	_ "github.com/nervatura/component/pkg/demo/sqltest"
@@ -105,12 +109,23 @@ func TestApp_AppEvent(t *testing.T) {
 		w http.ResponseWriter
 		r *http.Request
 	}
+	upload := func() (body io.Reader) {
+		bodyBuffer := new(bytes.Buffer)
+		mw := multipart.NewWriter(bodyBuffer)
+		if part, err := mw.CreateFormFile("file", "myfile.txt"); err == nil {
+			file := strings.NewReader(`------WebKitFormBoundaryePkpFF7tjBAqx29L--`)
+			io.Copy(part, file)
+		}
+		return bodyBuffer
+	}
+
 	sessionID := base64.StdEncoding.EncodeToString([]byte("SessionID"))
 	demoApp := &Demo{}
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
+		name    string
+		fields  fields
+		args    args
+		content string
 	}{
 		{
 			name: "mem",
@@ -138,6 +153,7 @@ func TestApp_AppEvent(t *testing.T) {
 				w: httptest.NewRecorder(),
 				r: httptest.NewRequest("POST", "/event", nil),
 			},
+			content: "application/x-www-form-urlencoded",
 		},
 		{
 			name: "file",
@@ -167,6 +183,7 @@ func TestApp_AppEvent(t *testing.T) {
 				w: httptest.NewRecorder(),
 				r: httptest.NewRequest("POST", "/event", nil),
 			},
+			content: "application/x-www-form-urlencoded",
 		},
 		{
 			name: "missing",
@@ -195,6 +212,63 @@ func TestApp_AppEvent(t *testing.T) {
 				w: httptest.NewRecorder(),
 				r: httptest.NewRequest("POST", "/event", nil),
 			},
+			content: "application/x-www-form-urlencoded",
+		},
+		{
+			name: "file",
+			fields: fields{
+				memSession: map[string]*Demo{
+					sessionID: demoApp,
+				},
+				osStat: func(name string) (fs.FileInfo, error) {
+					return nil, nil
+				},
+				osMkdir: func(name string, perm fs.FileMode) error {
+					return nil
+				},
+				osCreate: func(name string) (*os.File, error) {
+					return os.NewFile(0, name), nil
+				},
+				loadSession: func(name string, data any) (err error) {
+					return nil
+				},
+				saveSession: func(name string, data any) (err error) {
+					return nil
+				},
+			},
+			args: args{
+				w: httptest.NewRecorder(),
+				r: httptest.NewRequest("POST", "/event", upload()),
+			},
+			content: "multipart/form-data; boundary=----WebKitFormBoundaryePkpFF7tjBAqx29L",
+		},
+		{
+			name: "json",
+			fields: fields{
+				memSession: map[string]*Demo{
+					sessionID: demoApp,
+				},
+				osStat: func(name string) (fs.FileInfo, error) {
+					return nil, nil
+				},
+				osMkdir: func(name string, perm fs.FileMode) error {
+					return nil
+				},
+				osCreate: func(name string) (*os.File, error) {
+					return os.NewFile(0, name), nil
+				},
+				loadSession: func(name string, data any) (err error) {
+					return nil
+				},
+				saveSession: func(name string, data any) (err error) {
+					return nil
+				},
+			},
+			args: args{
+				w: httptest.NewRecorder(),
+				r: httptest.NewRequest("POST", "/event", nil),
+			},
+			content: "application/json",
 		},
 	}
 	for _, tt := range tests {
@@ -214,6 +288,7 @@ func TestApp_AppEvent(t *testing.T) {
 			app.saveSession = app.SaveFileSession
 			tt.args.r.Header.Set("X-Session-Token", "SessionID")
 			tt.args.r.Header.Set("Hx-Current-Url", "/session")
+			tt.args.r.Header.Set("Content-Type", tt.content)
 			app.AppEvent(tt.args.w, tt.args.r)
 		})
 	}

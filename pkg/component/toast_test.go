@@ -11,7 +11,7 @@ func TestTestToast(t *testing.T) {
 			tt.Component.Render()
 		})
 	}
-	demoToastResponse(ResponseEvent{Trigger: &Toast{}})
+	testToastResponse(ResponseEvent{Trigger: &Toast{}})
 }
 
 func TestToast_Render(t *testing.T) {

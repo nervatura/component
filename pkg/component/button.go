@@ -12,13 +12,19 @@ const (
 
 	ButtonEventClick = "click"
 
-	ButtonTypeDefault = ""
-	ButtonTypePrimary = "primary"
-	ButtonTypeBorder  = "border"
+	ButtonTypeButton   = "button"
+	ButtonTypeReset    = "reset"
+	ButtonTypeSubmit   = "submit"
+	ButtonStyleDefault = ""
+	ButtonStylePrimary = "primary"
+	ButtonStyleBorder  = "border"
 )
 
 // [Button] Type values
-var ButtonType []string = []string{ButtonTypeDefault, ButtonTypePrimary, ButtonTypeBorder}
+var ButtonType []string = []string{ButtonTypeButton, ButtonTypeReset, ButtonTypeSubmit}
+
+// [Button] ButtonStyle values
+var ButtonStyle []string = []string{ButtonStyleDefault, ButtonStylePrimary, ButtonStyleBorder}
 
 /*
 Creates an HTML button control
@@ -36,7 +42,8 @@ For example:
 	    RequestValue: parent_component.GetProperty("request_value").(map[string]ut.IM),
 	    RequestMap:   parent_component.GetProperty("request_map").(map[string]ClientComponent)
 	  },
-	  Type:     ButtonTypePrimary,
+		Type:     ButtonTypeButton,
+	  ButtonStyle:     ButtonStylePrimary,
 	  Align:    TextAlignCenter,
 	  Label:    "Primary",
 	  Icon:     "Check",
@@ -45,9 +52,12 @@ For example:
 */
 type Button struct {
 	BaseComponent
-	/* [ButtonType] variable constants: [ButtonTypeDefault], [ButtonTypePrimary], [ButtonTypeBorder].
-	Default value: [ButtonTypeDefault] */
+	/* [ButtonType] variable constants: [ButtonTypeButton], [ButtonTypeReset], [ButtonTypeSubmit].
+	Default value: [ButtonTypeButton] */
 	Type string `json:"type"`
+	/* [ButtonStyle] variable constants: [ButtonStyleDefault], [ButtonStylePrimary], [ButtonStyleBorder].
+	Default value: [ButtonStyleDefault] */
+	ButtonStyle string `json:"button_style"`
 	/* [TextAlign] variable constants: [TextAlignLeft], [TextAlignCenter], [TextAlignRight].
 	Default value: [TextAlignCenter] */
 	Align string `json:"align"`
@@ -83,6 +93,7 @@ func (btn *Button) Properties() ut.IM {
 		btn.BaseComponent.Properties(),
 		ut.IM{
 			"type":            btn.Type,
+			"button_style":    btn.ButtonStyle,
 			"align":           btn.Align,
 			"label":           btn.Label,
 			"label_component": btn.LabelComponent,
@@ -111,7 +122,10 @@ It checks the value given to the property of the [Button] and always returns a v
 func (btn *Button) Validation(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"type": func() interface{} {
-			return btn.CheckEnumValue(ut.ToString(propValue, ""), ButtonTypeDefault, ButtonType)
+			return btn.CheckEnumValue(ut.ToString(propValue, ""), ButtonTypeButton, ButtonType)
+		},
+		"button_style": func() interface{} {
+			return btn.CheckEnumValue(ut.ToString(propValue, ""), ButtonStyleDefault, ButtonStyle)
 		},
 		"align": func() interface{} {
 			return btn.CheckEnumValue(ut.ToString(propValue, ""), TextAlignCenter, TextAlign)
@@ -138,6 +152,10 @@ func (btn *Button) SetProperty(propName string, propValue interface{}) interface
 		"type": func() interface{} {
 			btn.Type = btn.Validation(propName, propValue).(string)
 			return btn.Type
+		},
+		"button_style": func() interface{} {
+			btn.ButtonStyle = btn.Validation(propName, propValue).(string)
+			return btn.ButtonStyle
 		},
 		"align": func() interface{} {
 			btn.Align = btn.Validation(propName, propValue).(string)
@@ -249,8 +267,8 @@ func (btn *Button) Render() (res string, err error) {
 			return btn.getComponent(name)
 		},
 	}
-	tpl := `<button id="{{ .Id }}" name="{{ .Name }}"
-	{{ if or (eq .Type "primary") (eq .Type "border") }} button-type="{{ .Type }}"{{ end }}
+	tpl := `<button id="{{ .Id }}" name="{{ .Name }}" type="{{ .Type }}"
+	{{ if or (eq .ButtonStyle "primary") (eq .ButtonStyle "border") }} button-type="{{ .ButtonStyle }}"{{ end }}
 	{{ if ne .EventURL "" }} hx-post="{{ .EventURL }}" hx-target="{{ .Target }}" hx-swap="{{ .Swap }}"{{ end }}
 	{{ if ne .Indicator "" }} hx-indicator="#{{ .Indicator }}"{{ end }}
 	{{ if .Disabled }} disabled{{ end }}
@@ -270,7 +288,7 @@ func (btn *Button) Render() (res string, err error) {
 	return res, err
 }
 
-var demoBtnResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt ResponseEvent) (re ResponseEvent) {
+var testBtnResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt ResponseEvent) (re ResponseEvent) {
 	badge := ut.ToInteger(evt.Trigger.GetProperty("badge"), 0)
 	evt.Trigger.SetProperty("badge", badge+1)
 	evt.Trigger.SetProperty("show_badge", true)
@@ -291,13 +309,13 @@ func TestButton(cc ClientComponent) []TestComponent {
 				BaseComponent: BaseComponent{
 					Id:           id + "_button_default",
 					EventURL:     eventURL,
-					OnResponse:   demoBtnResponse,
+					OnResponse:   testBtnResponse,
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 				},
-				Type:  ButtonTypeDefault,
-				Align: TextAlignCenter,
-				Label: "Default",
+				ButtonStyle: ButtonStyleDefault,
+				Align:       TextAlignCenter,
+				Label:       "Default",
 			}},
 		{
 			Label:         "Right icon",
@@ -306,15 +324,15 @@ func TestButton(cc ClientComponent) []TestComponent {
 				BaseComponent: BaseComponent{
 					Id:           id + "_button_right_icon",
 					EventURL:     eventURL,
-					OnResponse:   demoBtnResponse,
+					OnResponse:   testBtnResponse,
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 				},
-				Type:      ButtonTypeDefault,
-				Align:     TextAlignRight,
-				Label:     "Right icon",
-				Icon:      "InfoCircle",
-				HideLabel: true,
+				ButtonStyle: ButtonStyleDefault,
+				Align:       TextAlignRight,
+				Label:       "Right icon",
+				Icon:        "InfoCircle",
+				HideLabel:   true,
 			}},
 		{
 			Label:         "Primary and icon",
@@ -323,15 +341,15 @@ func TestButton(cc ClientComponent) []TestComponent {
 				BaseComponent: BaseComponent{
 					Id:           id + "_button_primary",
 					EventURL:     eventURL,
-					OnResponse:   demoBtnResponse,
+					OnResponse:   testBtnResponse,
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 				},
-				Type:     ButtonTypePrimary,
-				Align:    TextAlignCenter,
-				Label:    "Primary",
-				Icon:     "Check",
-				Selected: true,
+				ButtonStyle: ButtonStylePrimary,
+				Align:       TextAlignCenter,
+				Label:       "Primary",
+				Icon:        "Check",
+				Selected:    true,
 			}},
 		{
 			Label:         "Border and selected",
@@ -340,14 +358,14 @@ func TestButton(cc ClientComponent) []TestComponent {
 				BaseComponent: BaseComponent{
 					Id:           id + "_button_border",
 					EventURL:     eventURL,
-					OnResponse:   demoBtnResponse,
+					OnResponse:   testBtnResponse,
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 				},
-				Type:     ButtonTypeBorder,
-				Align:    TextAlignCenter,
-				Label:    "Border selected",
-				Selected: true,
+				ButtonStyle: ButtonStyleBorder,
+				Align:       TextAlignCenter,
+				Label:       "Border selected",
+				Selected:    true,
 			}},
 		{
 			Label:         "Border full and badge",
@@ -356,26 +374,26 @@ func TestButton(cc ClientComponent) []TestComponent {
 				BaseComponent: BaseComponent{
 					Id:           id + "_button_full",
 					EventURL:     eventURL,
-					OnResponse:   demoBtnResponse,
+					OnResponse:   testBtnResponse,
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 				},
-				Type:      ButtonTypeBorder,
-				Align:     TextAlignCenter,
-				Label:     "Border full and badge",
-				Full:      true,
-				Badge:     0,
-				ShowBadge: true,
+				ButtonStyle: ButtonStyleBorder,
+				Align:       TextAlignCenter,
+				Label:       "Border full and badge",
+				Full:        true,
+				Badge:       0,
+				ShowBadge:   true,
 			}},
 		{
 			Label:         "Small disabled",
 			ComponentType: ComponentTypeButton,
 			Component: &Button{
-				Type:     ButtonTypeDefault,
-				Align:    TextAlignCenter,
-				Label:    "Small disabled",
-				Small:    true,
-				Disabled: true,
+				ButtonStyle: ButtonStyleDefault,
+				Align:       TextAlignCenter,
+				Label:       "Small disabled",
+				Small:       true,
+				Disabled:    true,
 			}},
 		{
 			Label:         "Label component",
@@ -384,11 +402,11 @@ func TestButton(cc ClientComponent) []TestComponent {
 				BaseComponent: BaseComponent{
 					Id:           id + "_button_label",
 					EventURL:     eventURL,
-					OnResponse:   demoBtnResponse,
+					OnResponse:   testBtnResponse,
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 				},
-				Type:           ButtonTypeDefault,
+				ButtonStyle:    ButtonStyleDefault,
 				Align:          TextAlignCenter,
 				Label:          "Label component",
 				LabelComponent: &Icon{Value: "Print", Width: 32, Height: 32},
@@ -400,16 +418,16 @@ func TestButton(cc ClientComponent) []TestComponent {
 				BaseComponent: BaseComponent{
 					Id:           id + "_button_custom",
 					EventURL:     eventURL,
-					OnResponse:   demoBtnResponse,
+					OnResponse:   testBtnResponse,
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 					Style: ut.SM{
 						"border-color": "green", "color": "red", "border-radius": "3px",
 					},
 				},
-				Type:  ButtonTypeBorder,
-				Align: TextAlignCenter,
-				Label: "Button style",
+				ButtonStyle: ButtonStyleBorder,
+				Align:       TextAlignCenter,
+				Label:       "Button style",
 			}},
 	}
 }

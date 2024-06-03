@@ -13,8 +13,8 @@ func TestTestBrowser(t *testing.T) {
 			tt.Component.Render()
 		})
 	}
-	demoBrowserResponse(ResponseEvent{Name: BrowserEventSearch, Trigger: &Browser{}})
-	demoBrowserResponse(ResponseEvent{Name: BrowserEventView, Trigger: &Browser{}, Value: "meta"})
+	testBrowserResponse(ResponseEvent{Name: BrowserEventSearch, Trigger: &Browser{}})
+	testBrowserResponse(ResponseEvent{Name: BrowserEventView, Trigger: &Browser{}, Value: "meta"})
 }
 
 func TestBrowser_GetProperty(t *testing.T) {

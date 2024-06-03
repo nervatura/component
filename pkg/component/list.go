@@ -308,12 +308,11 @@ func (lst *List) getComponent(name string, pageCount int64) (res string, err err
 					Style:        ut.SM{"border-radius": "0", "margin": "1px 0 2px"},
 					EventURL:     lst.EventURL,
 					Target:       lst.Target,
-					Swap:         SwapOuterHTML,
 					OnResponse:   lst.response,
 					RequestValue: lst.RequestValue,
 					RequestMap:   lst.RequestMap,
 				},
-				Type:        InputTypeText,
+				Type:        InputTypeString,
 				Label:       lst.FilterPlaceholder,
 				Placeholder: lst.FilterPlaceholder,
 				Value:       lst.FilterValue,
@@ -331,8 +330,8 @@ func (lst *List) getComponent(name string, pageCount int64) (res string, err err
 					RequestValue: lst.RequestValue,
 					RequestMap:   lst.RequestMap,
 				},
-				Type: ButtonTypeBorder,
-				Icon: lst.AddIcon, Label: lst.LabelAdd,
+				ButtonStyle: ButtonStyleBorder,
+				Icon:        lst.AddIcon, Label: lst.LabelAdd,
 			}
 		},
 		"edit_icon": func() ClientComponent {
@@ -473,7 +472,7 @@ var testListRows []ut.IM = []ut.IM{
 	{"lslabel": "Label 9", "lsvalue": "Value row 9"},
 }
 
-var demoListResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt ResponseEvent) (re ResponseEvent) {
+var testListResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt ResponseEvent) (re ResponseEvent) {
 	toastType := ut.SM{
 		ListEventAddItem:  ToastTypeSuccess,
 		ListEventEditItem: ToastTypeInfo,
@@ -524,7 +523,7 @@ func TestList(cc ClientComponent) []TestComponent {
 				BaseComponent: BaseComponent{
 					Id:           id + "_list_top_pagination",
 					EventURL:     eventURL,
-					OnResponse:   demoListResponse,
+					OnResponse:   testListResponse,
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 				},
@@ -543,7 +542,7 @@ func TestList(cc ClientComponent) []TestComponent {
 				BaseComponent: BaseComponent{
 					Id:           id + "_list_bottom_pagination",
 					EventURL:     eventURL,
-					OnResponse:   demoListResponse,
+					OnResponse:   testListResponse,
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 				},
@@ -568,7 +567,7 @@ func TestList(cc ClientComponent) []TestComponent {
 				BaseComponent: BaseComponent{
 					Id:           id + "_list_filtered",
 					EventURL:     eventURL,
-					OnResponse:   demoListResponse,
+					OnResponse:   testListResponse,
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 				},

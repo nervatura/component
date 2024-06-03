@@ -11,7 +11,7 @@ func TestTestIcon(t *testing.T) {
 			tt.Component.Render()
 		})
 	}
-	demoIcoResponse(ResponseEvent{Trigger: &Icon{}})
+	testIcoResponse(ResponseEvent{Trigger: &Icon{}})
 }
 
 func TestIcon_GetProperty(t *testing.T) {

@@ -158,8 +158,10 @@ type TriggerEvent struct {
 	Name string `json:"name"`
 	// The hx-target attribute of the component that receives the user event. htmx request header: HX-Target
 	Target string `json:"target"`
-	// The URL-encoded data of the request
+	// The URL-encoded data of the request (application/x-www-form-urlencoded)
 	Values url.Values `json:"values"`
+	// text/plain or application/json data
+	Data []byte
 }
 
 // Response data for a user event

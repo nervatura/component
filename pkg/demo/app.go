@@ -31,6 +31,7 @@ import (
 	"database/sql"
 	"embed"
 	"errors"
+	"io"
 	"strings"
 
 	"encoding/base64"
@@ -180,7 +181,11 @@ func (app *App) HomeRoute(w http.ResponseWriter, r *http.Request) {
 // Receive the component event request.
 // Loads the Demo component based on the X-Session-Token identifier.
 func (app *App) AppEvent(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
+	var err error
+	var res string
+	var evt ct.ResponseEvent
+	var demo *Demo
+
 	tokenID := r.Header.Get("X-Session-Token")
 	sessionID := base64.StdEncoding.EncodeToString([]byte(tokenID))
 	dataSave := strings.Contains(r.Header.Get("Hx-Current-Url"), "/session")
@@ -188,33 +193,62 @@ func (app *App) AppEvent(w http.ResponseWriter, r *http.Request) {
 		Id:     r.Header.Get("HX-Trigger"),
 		Name:   r.Header.Get("HX-Trigger-Name"),
 		Target: r.Header.Get("HX-Target"),
-		Values: r.Form,
 	}
-	var err error
-	var evt ct.ResponseEvent
-	var demo *Demo
-	if mem, found := app.memSession[sessionID]; found {
-		evt = mem.OnRequest(te)
-	} else if dataSave {
-		if err = app.loadSession(sessionID, &demo); err == nil {
-			demo.DemoMap = DemoMap
-			demo.RequestMap = map[string]ct.ClientComponent{}
-			demo.InitDemoMap()
-			_, err = demo.Render()
-			if err == nil {
-				evt = demo.OnRequest(te)
+	switch strings.Split(r.Header.Get("Content-Type"), ";")[0] {
+	case "multipart/form-data":
+		// File upload handling
+		//var file multipart.File
+		//var handler *multipart.FileHeader
+		//var dst *os.File
+		// Parse request body as multipart form data with 32MB max memory
+		if err = r.ParseMultipartForm(32 << 20); err == nil {
+			// Get file from Form
+			_, _, err = r.FormFile("file")
+			/*
+				if file, _, err = r.FormFile("file"); err == nil {
+					// Create file locally
+					if dst, err = os.Create(handler.Filename); err == nil {
+						// Copy the uploaded file data to the newly created file on the filesystem
+						_, err = io.Copy(dst, file)
+					}
+					defer dst.Close()
+				}
+				defer file.Close()
+			*/
+		}
+	case "application/x-www-form-urlencoded":
+		if err = r.ParseForm(); err == nil {
+			te.Values = r.Form
+		}
+	default:
+		// text/plain, application/json
+		te.Data, err = io.ReadAll(r.Body)
+	}
+
+	if err == nil {
+		if mem, found := app.memSession[sessionID]; found {
+			evt = mem.OnRequest(te)
+		} else if dataSave {
+			if err = app.loadSession(sessionID, &demo); err == nil {
+				demo.DemoMap = DemoMap
+				demo.RequestMap = map[string]ct.ClientComponent{}
+				demo.InitDemoMap()
+				_, err = demo.Render()
+				if err == nil {
+					evt = demo.OnRequest(te)
+				}
 			}
 		}
+		for key, value := range evt.Header {
+			w.Header().Set(key, value)
+		}
+		if evt.Trigger != nil {
+			res, err = evt.Trigger.Render()
+		} else {
+			err = errors.New("missing component")
+		}
 	}
-	for key, value := range evt.Header {
-		w.Header().Set(key, value)
-	}
-	var res string
-	if evt.Trigger != nil {
-		res, err = evt.Trigger.Render()
-	} else {
-		err = errors.New("missing component")
-	}
+
 	if err != nil {
 		res, _ = (&ct.Toast{
 			Type: ct.ToastTypeError, Value: err.Error(),

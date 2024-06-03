@@ -135,6 +135,7 @@ func (sel *Select) SetProperty(propName string, propValue interface{}) interface
 		},
 		"options": func() interface{} {
 			sel.Options = sel.Validation(propName, propValue).([]SelectOption)
+			sel.SetProperty("value", sel.Value)
 			return sel.Options
 		},
 		"is_null": func() interface{} {

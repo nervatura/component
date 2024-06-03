@@ -106,7 +106,7 @@ func TestSelect_Validation(t *testing.T) {
 			want: []SelectOption{},
 		},
 		{
-			name: "isnull",
+			name: "is_null",
 			fields: fields{
 				IsNull: true,
 			},

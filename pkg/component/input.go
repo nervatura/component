@@ -12,14 +12,14 @@ const (
 
 	InputEventChange = "change"
 
-	InputTypeText     = "text"
+	InputTypeString   = "text"
+	InputTypeText     = "area"
 	InputTypeColor    = "color"
-	InputTypeFile     = "file"
 	InputTypePassword = "password"
 )
 
 // [Input] Type values
-var InputType []string = []string{InputTypeText, InputTypeColor, InputTypeFile, InputTypePassword}
+var InputType []string = []string{InputTypeString, InputTypeText, InputTypeColor, InputTypePassword}
 
 /*
 Creates an HTML text, color, file or password type input control
@@ -30,7 +30,7 @@ For example:
 	  BaseComponent: BaseComponent{
 	    Id: "id_input_default",
 	  },
-	  Type:        InputTypeText,
+	  Type:        InputTypeString,
 	  Placeholder: "placeholder text",
 	  AutoFocus:   true,
 	}
@@ -38,8 +38,8 @@ For example:
 type Input struct {
 	BaseComponent
 	/* [InputType] variable constants:
-	[InputTypeText], [InputTypeColor], [InputTypeFile], [InputTypePassword].
-	Default value: [InputTypeText] */
+	[InputTypeString], [InputTypeText], [InputTypeColor], [InputTypePassword].
+	Default value: [InputTypeString] */
 	Type string `json:"type"`
 	// Any valid value based on control type
 	Value string `json:"value"`
@@ -50,18 +50,17 @@ type Input struct {
 	// Specifies that the input should be disabled
 	Disabled bool `json:"disabled"`
 	// Specifies that the input field is read-only
-	ReadOnly bool `json:"read_only"`
+	ReadOnly bool `json:"readonly"`
 	// Specifies that the input element should automatically get focus when the page loads
 	AutoFocus bool `json:"auto_focus"`
 	// Sets the values of the invalid class style
 	Invalid bool `json:"invalid"`
-	/* Specifies a filter for what file types the user can pick from the file input dialog box
-	(only for type=[InputTypeFile]) */
-	Accept string `json:"accept"`
 	// Specifies the maximum number of characters allowed in the input element
 	MaxLength int64 `json:"max_length"`
 	// Specifies the width, in characters, of the input element
 	Size int64 `json:"size"`
+	// Specifies the visible number of lines in a text area. Only [InputTypeText]
+	Rows int64 `json:"rows"`
 	// Full width input (100%)
 	Full bool `json:"full"`
 }
@@ -81,9 +80,9 @@ func (inp *Input) Properties() ut.IM {
 			"readonly":    inp.ReadOnly,
 			"auto_focus":  inp.AutoFocus,
 			"invalid":     inp.Invalid,
-			"accept":      inp.Accept,
 			"max_length":  inp.MaxLength,
 			"size":        inp.Size,
+			"rows":        inp.Rows,
 			"full":        inp.Full,
 		})
 }
@@ -101,7 +100,7 @@ It checks the value given to the property of the [Input] and always returns a va
 func (inp *Input) Validation(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"type": func() interface{} {
-			return inp.CheckEnumValue(ut.ToString(propValue, ""), InputTypeText, InputType)
+			return inp.CheckEnumValue(ut.ToString(propValue, ""), InputTypeString, InputType)
 		},
 	}
 	if _, found := pm[propName]; found {
@@ -147,10 +146,6 @@ func (inp *Input) SetProperty(propName string, propValue interface{}) interface{
 			inp.Invalid = ut.ToBoolean(propValue, false)
 			return inp.Invalid
 		},
-		"accept": func() interface{} {
-			inp.Accept = ut.ToString(propValue, "")
-			return inp.Accept
-		},
 		"max_length": func() interface{} {
 			inp.MaxLength = ut.ToInteger(propValue, 0)
 			return inp.MaxLength
@@ -158,6 +153,10 @@ func (inp *Input) SetProperty(propName string, propValue interface{}) interface{
 		"size": func() interface{} {
 			inp.Size = ut.ToInteger(propValue, 0)
 			return inp.Size
+		},
+		"rows": func() interface{} {
+			inp.Rows = ut.ToInteger(propValue, 0)
+			return inp.Rows
 		},
 		"full": func() interface{} {
 			inp.Full = ut.ToBoolean(propValue, false)
@@ -207,8 +206,18 @@ func (inp *Input) Render() (res string, err error) {
 		"customClass": func() string {
 			return strings.Join(inp.Class, " ")
 		},
+		"tagEl": func() string {
+			if inp.Type == InputTypeText {
+				return "textarea"
+			}
+			return "input"
+		},
+		"inputEl": func() bool {
+			return (inp.Type != InputTypeText)
+		},
 	}
-	tpl := `<input id="{{ .Id }}" name="{{ .Name }}" type="{{ .Type }}" value="{{ .Value }}"
+	tpl := `<{{ tagEl }} id="{{ .Id }}" name="{{ .Name }}" 
+	{{ if inputEl }} type="{{ .Type }}" value="{{ .Value }}"{{ end }}
 	{{ if ne .EventURL "" }} hx-post="{{ .EventURL }}" hx-target="{{ .Target }}" hx-swap="{{ .Swap }}"{{ end }}
 	{{ if ne .Indicator "" }} hx-indicator="#{{ .Indicator }}"{{ end }}
 	{{ if ne .Placeholder "" }} placeholder="{{ .Placeholder }}"{{ end }}
@@ -216,12 +225,12 @@ func (inp *Input) Render() (res string, err error) {
 	{{ if .Disabled }} disabled{{ end }}
 	{{ if .AutoFocus }} autofocus{{ end }}
 	{{ if ne .Label "" }} aria-label="{{ .Label }}"{{ end }}
-	{{ if ne .Accept "" }} accept="{{ .Accept }}"{{ end }}
 	{{ if gt .MaxLength 0 }} maxlength="{{ .MaxLength }}"{{ end }}
 	{{ if gt .Size 0 }} size="{{ .Size }}"{{ end }}
+	{{ if and (gt .Rows 0) (ne inputEl true) }} rows="{{ .Rows }}"{{ end }}
 	 class="{{ if .Full }} full{{ end }}{{ if .Invalid }} invalid{{ end }} {{ customClass }}"
 	{{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}
-	></input>`
+	>{{ if ne inputEl true }}{{ .Value }}{{ end }}</{{ tagEl }}>`
 
 	if res, err = ut.TemplateBuilder("input", tpl, funcMap, inp); err == nil && inp.EventURL != "" {
 		inp.SetProperty("request_map", inp)
@@ -229,7 +238,7 @@ func (inp *Input) Render() (res string, err error) {
 	return res, nil
 }
 
-var demoInputResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt ResponseEvent) (re ResponseEvent) {
+var testInputResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt ResponseEvent) (re ResponseEvent) {
 	evt.Trigger.SetProperty("invalid", false)
 	if evt.Value != "valid" {
 		evt.Trigger.SetProperty("invalid", true)
@@ -251,7 +260,7 @@ func TestInput(cc ClientComponent) []TestComponent {
 				BaseComponent: BaseComponent{
 					Id: id + "_input_default",
 				},
-				Type:        InputTypeText,
+				Type:        InputTypeString,
 				Placeholder: "placeholder text",
 				AutoFocus:   true,
 			}},
@@ -262,12 +271,11 @@ func TestInput(cc ClientComponent) []TestComponent {
 				BaseComponent: BaseComponent{
 					Id:           id + "_input_valid",
 					EventURL:     eventURL,
-					Swap:         SwapOuterHTML,
-					OnResponse:   demoInputResponse,
+					OnResponse:   testInputResponse,
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 				},
-				Type:  InputTypeText,
+				Type:  InputTypeString,
 				Value: "valid",
 			}},
 		{
@@ -277,7 +285,7 @@ func TestInput(cc ClientComponent) []TestComponent {
 				BaseComponent: BaseComponent{
 					Id: id + "_input_readonly",
 				},
-				Type:     InputTypeText,
+				Type:     InputTypeString,
 				Value:    "hello",
 				ReadOnly: true,
 			}},
@@ -288,7 +296,7 @@ func TestInput(cc ClientComponent) []TestComponent {
 				BaseComponent: BaseComponent{
 					Id: id + "_input_disabled",
 				},
-				Type:     InputTypeText,
+				Type:     InputTypeString,
 				Value:    "hello",
 				Disabled: true,
 			}},
@@ -304,16 +312,6 @@ func TestInput(cc ClientComponent) []TestComponent {
 				Full:  true,
 			}},
 		{
-			Label:         "File input",
-			ComponentType: ComponentTypeInput,
-			Component: &Input{
-				BaseComponent: BaseComponent{
-					Id: id + "_input_file",
-				},
-				Type:   InputTypeFile,
-				Accept: ".jpg,.png",
-			}},
-		{
 			Label:         "Color input",
 			ComponentType: ComponentTypeInput,
 			Component: &Input{
@@ -322,6 +320,18 @@ func TestInput(cc ClientComponent) []TestComponent {
 				},
 				Type:  InputTypeColor,
 				Value: "#845185",
+			}},
+		{
+			Label:         "Text",
+			ComponentType: ComponentTypeInput,
+			Component: &Input{
+				BaseComponent: BaseComponent{
+					Id: id + "_input_text",
+				},
+				Type:  InputTypeText,
+				Value: `Long text&#13;&#10;Next row...`,
+				Rows:  4,
+				Full:  true,
 			}},
 	}
 }

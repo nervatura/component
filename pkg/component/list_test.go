@@ -13,8 +13,8 @@ func TestTestList(t *testing.T) {
 			tt.Component.Render()
 		})
 	}
-	demoListResponse(ResponseEvent{Name: ListEventAddItem, Trigger: &List{}})
-	demoListResponse(ResponseEvent{Name: ListEventFilterChange, Trigger: &List{}})
+	testListResponse(ResponseEvent{Name: ListEventAddItem, Trigger: &List{}})
+	testListResponse(ResponseEvent{Name: ListEventFilterChange, Trigger: &List{}})
 }
 
 func TestList_GetProperty(t *testing.T) {

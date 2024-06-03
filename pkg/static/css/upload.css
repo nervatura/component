@@ -1,0 +1,47 @@
+.upload input {
+  opacity: 0;
+  height: 0px;
+  width: 0px;
+}
+
+.upload label {
+  font-family: var(--font-family);
+  font-size: var(--font-size);
+  border-radius: 3px;
+  border-width: 1px;
+  padding: 8px;
+  display: block;
+  color: var(--text-1);
+  background-color: rgba(var(--base-4), 1);
+  border: 1px solid rgba(var(--neutral-1), 0.2);
+  box-sizing: border-box;
+}
+
+.upload-disabled {
+  opacity: 0.5;
+}
+
+.upload progress {
+  accent-color: rgb(var(--functional-green));
+  appearance: none;
+  background-color: rgba(var(--base-4), 1);
+  border: 1px solid rgba(var(--neutral-1), 0.2);
+  border-radius: 4px;
+  width: 100%;
+}
+
+.upload ::-webkit-progress-bar {
+  background-color: rgba(var(--base-4), 1);
+  border: 1px solid rgba(var(--neutral-1), 0.2);
+  border-radius: 4px;
+}
+
+.upload ::-webkit-progress-value {
+  background-color: rgb(var(--functional-green));
+}
+
+.upload ::-moz-progress-bar {
+  background-color: rgb(var(--functional-green));
+}
+
+

@@ -13,9 +13,9 @@ func TestTestLogin(t *testing.T) {
 			tt.Component.Render()
 		})
 	}
-	demoLoginResponse(ResponseEvent{Name: LoginEventLogin, Trigger: &Login{}})
-	demoLoginResponse(ResponseEvent{Name: LoginEventLang, Trigger: &Login{}})
-	demoLoginResponse(ResponseEvent{Name: LoginEventTheme, Trigger: &Login{}})
+	testLoginResponse(ResponseEvent{Name: LoginEventLogin, Trigger: &Login{}})
+	testLoginResponse(ResponseEvent{Name: LoginEventLang, Trigger: &Login{}})
+	testLoginResponse(ResponseEvent{Name: LoginEventTheme, Trigger: &Login{}})
 }
 
 func TestLogin_Validation(t *testing.T) {

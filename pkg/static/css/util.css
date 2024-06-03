@@ -37,6 +37,9 @@
 .section-small { padding-top: 8px!important; padding-bottom: 8px!important; }
 .section-small-top { padding-top: 8px!important; }
 .section-small-bottom { padding-bottom: 8px!important; }
+.section-tiny { padding-top: 4px!important; padding-bottom: 4px!important; }
+.section-tiny-top { padding-top: 4px!important; }
+.section-tiny-bottom { padding-bottom: 4px!important; }
 .block { display: block; width: 100%; }
 .full { width: 100%; }
 

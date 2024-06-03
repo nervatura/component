@@ -187,8 +187,8 @@ func (pgn *Pagination) getComponent(name string) (res string, err error) {
 				RequestValue: pgn.RequestValue,
 				RequestMap:   pgn.RequestMap,
 			},
-			Type:  ButtonTypeBorder,
-			Label: label, Disabled: disabled,
+			ButtonStyle: ButtonStyleBorder,
+			Label:       label, Disabled: disabled,
 		}
 	}
 	ccMap := map[string]func() ClientComponent{

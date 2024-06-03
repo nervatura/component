@@ -331,7 +331,7 @@ func (loc *Locale) getComponent(name string, data ut.IM) (res string, err error)
 		sel.SetProperty("value", loc.Data[name])
 		return sel
 	}
-	ccBtn := func(icoKey, label, btype string) *Button {
+	ccBtn := func(icoKey, label, bstyle string) *Button {
 		return &Button{
 			BaseComponent: BaseComponent{
 				Id: loc.Id + "_" + name, Name: name,
@@ -342,7 +342,7 @@ func (loc *Locale) getComponent(name string, data ut.IM) (res string, err error)
 				RequestValue: loc.RequestValue,
 				RequestMap:   loc.RequestMap,
 			},
-			Type:           btype,
+			ButtonStyle:    bstyle,
 			Label:          loc.msg(label),
 			LabelComponent: &Icon{Value: icoKey, Width: 18, Height: 18},
 		}
@@ -354,13 +354,12 @@ func (loc *Locale) getComponent(name string, data ut.IM) (res string, err error)
 				Name:         name,
 				EventURL:     loc.EventURL,
 				Target:       loc.Target,
-				Swap:         SwapOuterHTML,
 				OnResponse:   loc.response,
 				RequestValue: loc.RequestValue,
 				RequestMap:   loc.RequestMap,
 				Data:         data,
 			},
-			Type:        InputTypeText,
+			Type:        InputTypeString,
 			Label:       label,
 			Placeholder: placeholder,
 			Full:        true,
@@ -399,26 +398,26 @@ func (loc *Locale) getComponent(name string, data ut.IM) (res string, err error)
 			return ccSel(keys)
 		},
 		"missing": func() ClientComponent {
-			return ccBtn("QuestionCircle", "locale_missing", ButtonTypeDefault)
+			return ccBtn("QuestionCircle", "locale_missing", ButtonStyleDefault)
 		},
 		"filter": func() ClientComponent {
 			return ccInp(loc.msg("locale_filter"), loc.msg("locale_filter"), loc.FilterValue)
 		},
 		"update": func() ClientComponent {
-			return ccBtn("Check", "locale_update", ButtonTypePrimary)
+			return ccBtn("Check", "locale_update", ButtonStylePrimary)
 		},
 		"undo": func() ClientComponent {
-			return ccBtn("Undo", "locale_undo", ButtonTypePrimary)
+			return ccBtn("Undo", "locale_undo", ButtonStylePrimary)
 		},
 		"add_item": func() ClientComponent {
 			icon := "Plus"
 			if loc.AddItem {
 				icon = "ArrowUp"
 			}
-			return ccBtn(icon, "locale_add", ButtonTypeDefault)
+			return ccBtn(icon, "locale_add", ButtonStyleDefault)
 		},
 		"add": func() ClientComponent {
-			return ccBtn("Plus", "locale_add", ButtonTypeDefault)
+			return ccBtn("Plus", "locale_add", ButtonStyleDefault)
 		},
 		"lang_key": func() ClientComponent {
 			lang_key := ut.ToString(loc.GetProperty("data").(ut.IM)["lang_key"], "")
@@ -618,7 +617,7 @@ func localeLocfile() ut.IM {
 	}
 }
 
-var demoLocaleResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt ResponseEvent) (re ResponseEvent) {
+var testLocaleResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt ResponseEvent) (re ResponseEvent) {
 	switch evt.Name {
 	case LocalesEventError:
 		re = ResponseEvent{
@@ -706,7 +705,7 @@ func TestLocale(cc ClientComponent) []TestComponent {
 				BaseComponent: BaseComponent{
 					Id:           id + "_locale_default",
 					EventURL:     eventURL,
-					OnResponse:   demoLocaleResponse,
+					OnResponse:   testLocaleResponse,
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 					Data:         testLocaleData(),
@@ -728,7 +727,7 @@ func TestLocale(cc ClientComponent) []TestComponent {
 				BaseComponent: BaseComponent{
 					Id:           id + "_locale_input",
 					EventURL:     eventURL,
-					OnResponse:   demoLocaleResponse,
+					OnResponse:   testLocaleResponse,
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 					Data: ut.MergeIM(testLocaleData(), ut.IM{

@@ -13,9 +13,9 @@ func TestTestLocale(t *testing.T) {
 			tt.Component.Render()
 		})
 	}
-	demoLocaleResponse(ResponseEvent{Name: LocalesEventError, Trigger: &Locale{}})
-	demoLocaleResponse(ResponseEvent{Name: LocalesEventSave, Trigger: &Locale{}})
-	demoLocaleResponse(ResponseEvent{Name: LocalesEventUndo, Trigger: &Locale{}})
+	testLocaleResponse(ResponseEvent{Name: LocalesEventError, Trigger: &Locale{}})
+	testLocaleResponse(ResponseEvent{Name: LocalesEventSave, Trigger: &Locale{}})
+	testLocaleResponse(ResponseEvent{Name: LocalesEventUndo, Trigger: &Locale{}})
 }
 
 func TestLocale_Validation(t *testing.T) {

@@ -11,13 +11,14 @@ func TestTestButton(t *testing.T) {
 			tt.Component.Render()
 		})
 	}
-	demoBtnResponse(ResponseEvent{Trigger: &Button{}})
+	testBtnResponse(ResponseEvent{Trigger: &Button{}})
 }
 
 func TestButton_GetProperty(t *testing.T) {
 	type fields struct {
 		BaseComponent  BaseComponent
 		Type           string
+		ButtonStyle    string
 		Align          string
 		Label          string
 		LabelComponent ClientComponent
@@ -53,6 +54,7 @@ func TestButton_GetProperty(t *testing.T) {
 			btn := &Button{
 				BaseComponent:  tt.fields.BaseComponent,
 				Type:           tt.fields.Type,
+				ButtonStyle:    tt.fields.ButtonStyle,
 				Align:          tt.fields.Align,
 				Label:          tt.fields.Label,
 				LabelComponent: tt.fields.LabelComponent,
@@ -77,6 +79,7 @@ func TestButton_Validation(t *testing.T) {
 	type fields struct {
 		BaseComponent  BaseComponent
 		Type           string
+		ButtonStyle    string
 		Align          string
 		Label          string
 		LabelComponent ClientComponent
@@ -122,6 +125,7 @@ func TestButton_Validation(t *testing.T) {
 			btn := &Button{
 				BaseComponent:  tt.fields.BaseComponent,
 				Type:           tt.fields.Type,
+				ButtonStyle:    tt.fields.ButtonStyle,
 				Align:          tt.fields.Align,
 				Label:          tt.fields.Label,
 				LabelComponent: tt.fields.LabelComponent,
@@ -146,6 +150,7 @@ func TestButton_SetProperty(t *testing.T) {
 	type fields struct {
 		BaseComponent  BaseComponent
 		Type           string
+		ButtonStyle    string
 		Align          string
 		Label          string
 		LabelComponent ClientComponent
@@ -191,6 +196,7 @@ func TestButton_SetProperty(t *testing.T) {
 			btn := &Button{
 				BaseComponent:  tt.fields.BaseComponent,
 				Type:           tt.fields.Type,
+				ButtonStyle:    tt.fields.ButtonStyle,
 				Align:          tt.fields.Align,
 				Label:          tt.fields.Label,
 				LabelComponent: tt.fields.LabelComponent,
@@ -215,6 +221,7 @@ func TestButton_OnRequest(t *testing.T) {
 	type fields struct {
 		BaseComponent  BaseComponent
 		Type           string
+		ButtonStyle    string
 		Align          string
 		Label          string
 		LabelComponent ClientComponent
@@ -277,6 +284,7 @@ func TestButton_OnRequest(t *testing.T) {
 			btn := &Button{
 				BaseComponent:  tt.fields.BaseComponent,
 				Type:           tt.fields.Type,
+				ButtonStyle:    tt.fields.ButtonStyle,
 				Align:          tt.fields.Align,
 				Label:          tt.fields.Label,
 				LabelComponent: tt.fields.LabelComponent,

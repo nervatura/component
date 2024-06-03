@@ -462,12 +462,11 @@ func (tbl *Table) getComponent(name string, pageCount int64, data ut.IM) (res st
 					Style:        ut.SM{"border-radius": "0", "margin": "1px 0 2px"},
 					EventURL:     tbl.EventURL,
 					Target:       tbl.Target,
-					Swap:         SwapOuterHTML,
 					OnResponse:   tbl.response,
 					RequestValue: tbl.RequestValue,
 					RequestMap:   tbl.RequestMap,
 				},
-				Type:        InputTypeText,
+				Type:        InputTypeString,
 				Label:       tbl.FilterPlaceholder,
 				Placeholder: tbl.FilterPlaceholder,
 				Value:       tbl.FilterValue,
@@ -485,8 +484,8 @@ func (tbl *Table) getComponent(name string, pageCount int64, data ut.IM) (res st
 					RequestValue: tbl.RequestValue,
 					RequestMap:   tbl.RequestMap,
 				},
-				Type: ButtonTypeBorder,
-				Icon: tbl.AddIcon, Label: tbl.LabelAdd,
+				ButtonStyle: ButtonStyleBorder,
+				Icon:        tbl.AddIcon, Label: tbl.LabelAdd,
 			}
 		},
 		"link_cell": func() ClientComponent {
@@ -872,7 +871,7 @@ var testTableFields []TableField = []TableField{
 	{Column: &TableColumn{Id: "editor", Header: "Custom",
 		Cell: func(row ut.IM, col TableColumn, value interface{}) string {
 			btn := Button{
-				Type: ButtonTypePrimary, Label: "Hello", Disabled: ut.ToBoolean(row["disabled"], false), Small: true}
+				ButtonStyle: ButtonStylePrimary, Label: "Hello", Disabled: ut.ToBoolean(row["disabled"], false), Small: true}
 			res, _ := btn.Render()
 			return res
 		}}},
@@ -910,7 +909,7 @@ var testTableRows []ut.IM = []ut.IM{
 		"deffield": "Customer 7", "deffield_meta": TableFieldTypeLink},
 }
 
-var demoTableResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt ResponseEvent) (re ResponseEvent) {
+var testTableResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt ResponseEvent) (re ResponseEvent) {
 	switch evt.Name {
 	case TableEventAddItem, TableEventEditCell, TableEventRowSelected:
 		re = ResponseEvent{
@@ -945,7 +944,7 @@ func TestTable(cc ClientComponent) []TestComponent {
 				BaseComponent: BaseComponent{
 					Id:           id + "_table_default",
 					EventURL:     eventURL,
-					OnResponse:   demoTableResponse,
+					OnResponse:   testTableResponse,
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 				},
@@ -961,7 +960,7 @@ func TestTable(cc ClientComponent) []TestComponent {
 				BaseComponent: BaseComponent{
 					Id:           id + "_table_string_row_selected",
 					EventURL:     eventURL,
-					OnResponse:   demoTableResponse,
+					OnResponse:   testTableResponse,
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 				},
@@ -994,7 +993,7 @@ func TestTable(cc ClientComponent) []TestComponent {
 				BaseComponent: BaseComponent{
 					Id:           id + "_table_bottom_pagination",
 					EventURL:     eventURL,
-					OnResponse:   demoTableResponse,
+					OnResponse:   testTableResponse,
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 				},
@@ -1016,7 +1015,7 @@ func TestTable(cc ClientComponent) []TestComponent {
 				BaseComponent: BaseComponent{
 					Id:           id + "_table_filtered",
 					EventURL:     eventURL,
-					OnResponse:   demoTableResponse,
+					OnResponse:   testTableResponse,
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 				},

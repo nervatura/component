@@ -50,7 +50,7 @@ type DateTime struct {
 	// Specifies that the input should be disabled
 	Disabled bool `json:"disabled"`
 	// Specifies that the input field is read-only
-	ReadOnly bool `json:"read_only"`
+	ReadOnly bool `json:"readonly"`
 	// Specifies that the input element should automatically get focus when the page loads
 	AutoFocus bool `json:"auto_focus"`
 	// Full width input (100%)
@@ -67,7 +67,7 @@ func (dti *DateTime) Properties() ut.IM {
 			"type":       dti.Type,
 			"value":      dti.Value,
 			"label":      dti.Label,
-			"isnull":     dti.IsNull,
+			"is_null":    dti.IsNull,
 			"picker":     dti.Picker,
 			"disabled":   dti.Disabled,
 			"readonly":   dti.ReadOnly,
@@ -117,6 +117,9 @@ func (dti *DateTime) Validation(propName string, propValue interface{}) interfac
 			}
 			return value
 		},
+		"swap": func() interface{} {
+			return dti.CheckEnumValue(ut.ToString(propValue, ""), SwapInnerHTML, Swap)
+		},
 	}
 	if _, found := pm[propName]; found {
 		return pm[propName]()
@@ -145,7 +148,7 @@ func (dti *DateTime) SetProperty(propName string, propValue interface{}) interfa
 			dti.Label = ut.ToString(propValue, "")
 			return dti.Label
 		},
-		"isnull": func() interface{} {
+		"is_null": func() interface{} {
 			dti.IsNull = ut.ToBoolean(propValue, false)
 			return dti.IsNull
 		},
@@ -169,6 +172,10 @@ func (dti *DateTime) SetProperty(propName string, propValue interface{}) interfa
 			dti.Full = ut.ToBoolean(propValue, false)
 			return dti.Full
 		},
+		"swap": func() interface{} {
+			dti.Swap = dti.Validation(propName, propValue).(string)
+			return dti.Swap
+		},
 	}
 	if _, found := pm[propName]; found {
 		return dti.SetRequestValue(propName, pm[propName](), []string{})
@@ -187,8 +194,12 @@ func (dti *DateTime) OnRequest(te TriggerEvent) (re ResponseEvent) {
 	value := dti.SetProperty("value", te.Values.Get(te.Name))
 	evt := ResponseEvent{
 		Trigger: dti, TriggerName: dti.Name,
-		Name:  DateTimeEventChange,
-		Value: value,
+		Name:   DateTimeEventChange,
+		Value:  value,
+		Header: map[string]string{},
+	}
+	if (value != te.Values.Get(te.Name)) && (dti.Swap == SwapInnerHTML) {
+		evt.Header[HeaderReswap] = SwapOuterHTML
 	}
 	if dti.OnResponse != nil {
 		return dti.OnResponse(evt)
@@ -264,7 +275,6 @@ func TestDateTime(cc ClientComponent) []TestComponent {
 				BaseComponent: BaseComponent{
 					Id:           id + "_datetime_time",
 					EventURL:     eventURL,
-					Swap:         SwapOuterHTML,
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 				},

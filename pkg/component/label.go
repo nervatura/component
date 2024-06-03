@@ -34,6 +34,10 @@ type Label struct {
 	Value string `json:"value"`
 	// If the entire space is filled, the text is centered or aligned to the left
 	Centered bool `json:"centered"`
+	// Cell border
+	Border bool `json:"border"`
+	// Full width cell (100%)
+	Full bool `json:"full"`
 	// Valid [Icon] component value. See more [IconKey] variable values.
 	LeftIcon string `json:"left_icon"`
 	// Valid [Icon] component value. See more [IconKey] variable values.
@@ -51,6 +55,8 @@ func (lbl *Label) Properties() ut.IM {
 		ut.IM{
 			"value":      lbl.Value,
 			"centered":   lbl.Centered,
+			"border":     lbl.Border,
+			"full":       lbl.Full,
 			"left_icon":  lbl.LeftIcon,
 			"right_icon": lbl.RightIcon,
 			"icon_style": lbl.IconStyle,
@@ -99,6 +105,14 @@ func (lbl *Label) SetProperty(propName string, propValue interface{}) interface{
 		"centered": func() interface{} {
 			lbl.Centered = ut.ToBoolean(propValue, false)
 			return lbl.Centered
+		},
+		"border": func() interface{} {
+			lbl.Border = ut.ToBoolean(propValue, false)
+			return lbl.Border
+		},
+		"full": func() interface{} {
+			lbl.Full = ut.ToBoolean(propValue, false)
+			return lbl.Full
 		},
 		"left_icon": func() interface{} {
 			lbl.LeftIcon = ut.ToString(propValue, "")
@@ -178,28 +192,29 @@ func (lbl *Label) Render() (res string, err error) {
 			return lbl.getComponent(name)
 		},
 	}
-	tpl := `{{ if or (ne .LeftIcon "") (ne .RightIcon "") }}<div id="{{ .Id }}" name="{{ .Name }}"
+	head := `id="{{ .Id }}" name="{{ .Name }}"
 	{{ if ne .EventURL "" }} hx-post="{{ .EventURL }}" hx-target="{{ .Target }}" hx-swap="{{ .Swap }}"{{ end }}
-	{{ if ne .Indicator "" }} hx-indicator="#{{ .Indicator }}"{{ end }}
-	 class="label row{{ if ne .EventURL "" }} label_link{{ else }} label_text{{ end }}{{ if and (ne .LeftIcon "") (.Centered) }} centered{{ end }} {{ customClass }}"
+	{{ if ne .Indicator "" }} hx-indicator="#{{ .Indicator }}"{{ end }}`
+	tpl := `{{ if or (ne .LeftIcon "") (ne .RightIcon "") }}<div ` + head + `
+	 class="label row{{ if .Border }} label-border{{ end }}{{ if .Full }} full{{ end }}
+	 {{ if ne .EventURL "" }} label-link{{ else }} label-text{{ end }}{{ if and (ne .LeftIcon "") (.Centered) }} centered{{ end }} {{ customClass }}"
 	>{{ if ne .LeftIcon "" }}
-	<div class="cell label_icon_left">{{ labelComponent "left_icon" }}</div>
-	<div class="cell label_info_left bold"
+	<div class="cell label-icon-left">{{ labelComponent "left_icon" }}</div>
+	<div class="cell label-info-left bold"
 	{{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}
 	>{{ .Value }}</div>
 	{{ else }}
-	<div class="cell label_info_right bold"
+	<div class="cell label-info-right bold"
 	{{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}
 	>{{ .Value }}</div>
-	<div class="cell label_icon_right">{{ labelComponent "right_icon" }}</div>
+	<div class="cell label-icon-right">{{ labelComponent "right_icon" }}</div>
 	{{ end }}</div>
 	{{ else }}
-	<span id="{{ .Id }}" name="{{ .Name }}"
-	{{ if ne .EventURL "" }} hx-post="{{ .EventURL }}" hx-target="{{ .Target }}" hx-swap="{{ .Swap }}"{{ end }}
-	{{ if ne .Indicator "" }} hx-indicator="#{{ .Indicator }}"{{ end }}
-	 class="label bold{{ if ne .EventURL "" }} label_link{{ else }} label_text{{ end }}"
+	{{ if .Border }}<div ` + head + ` class="label-border{{ if .Full }} full{{ end }}"><span {{ else }}<span ` + head + `{{ end }}
+	 class="label bold{{ if ne .EventURL "" }} label-link{{ else }} label-text{{ end }}"
 	 {{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}
-	>{{ .Value }}</span>{{ end }}`
+	>{{ .Value }}</span>{{ if .Border }}</div>{{ end }}
+	{{ end }}`
 
 	if res, err = ut.TemplateBuilder("label", tpl, funcMap, lbl); err == nil && lbl.EventURL != "" {
 		lbl.SetProperty("request_map", lbl)
@@ -207,7 +222,7 @@ func (lbl *Label) Render() (res string, err error) {
 	return res, nil
 }
 
-var demoLblResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt ResponseEvent) (re ResponseEvent) {
+var testLblResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt ResponseEvent) (re ResponseEvent) {
 	re = ResponseEvent{
 		Trigger: &Toast{
 			Type:    ToastTypeInfo,
@@ -249,6 +264,7 @@ func TestLabel(cc ClientComponent) []TestComponent {
 				},
 				Value:    "Label",
 				LeftIcon: "InfoCircle",
+				Border:   true,
 			}},
 		{
 			Label:         "Right icon",
@@ -293,12 +309,30 @@ func TestLabel(cc ClientComponent) []TestComponent {
 					Data: ut.IM{
 						"toast_value": "Link value",
 					},
-					OnResponse:   demoLblResponse,
+					OnResponse:   testLblResponse,
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 				},
 				Value:    "Label link",
 				LeftIcon: "Globe",
+			}},
+		{
+			Label:         "Link cell",
+			ComponentType: ComponentTypeLabel,
+			Component: &Label{
+				BaseComponent: BaseComponent{
+					Id:       id + "_label_cell",
+					EventURL: eventURL,
+					Data: ut.IM{
+						"toast_value": "Link value",
+					},
+					OnResponse:   testLblResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
+				},
+				Value:  "Link cell",
+				Border: true,
+				Full:   true,
 			}},
 	}
 }

@@ -1,4 +1,4 @@
-FROM golang:1.22.0-alpine AS builder
+FROM golang:1.22.3-alpine AS builder
 
 ARG APP_VNUM=demo
 ARG APP_NAME=component

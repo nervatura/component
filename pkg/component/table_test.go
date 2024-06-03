@@ -13,8 +13,8 @@ func TestTestTable(t *testing.T) {
 			tt.Component.Render()
 		})
 	}
-	demoTableResponse(ResponseEvent{Name: TableEventAddItem, Trigger: &Table{}})
-	demoTableResponse(ResponseEvent{Name: TableEventFilterChange, Trigger: &Table{}})
+	testTableResponse(ResponseEvent{Name: TableEventAddItem, Trigger: &Table{}})
+	testTableResponse(ResponseEvent{Name: TableEventFilterChange, Trigger: &Table{}})
 }
 
 func TestTable_GetProperty(t *testing.T) {

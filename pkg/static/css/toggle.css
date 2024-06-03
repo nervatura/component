@@ -1,0 +1,35 @@
+.toggle-on {
+  fill: rgb(var(--functional-green))!important;
+}
+
+.toggle {
+  font-family: var(--font-family);
+  font-size: var(--font-size);
+  text-align: center;
+  cursor: pointer;
+  fill: var(--text-1);
+}
+
+.toggle-border {
+  border-radius: 3px;
+  padding: 1px;
+  background-color: rgba(var(--base-4), 1);
+  border: 1px solid rgba(var(--neutral-1), 0.2);
+}
+
+.toggle:hover {
+  fill: rgb(var(--functional-green))!important;
+}
+
+.toggle-disabled {
+  cursor: default;
+  fill: var(--text-1);
+}
+
+.toggle-off {
+  opacity: 0.5;
+}
+
+.toggle-disabled {
+  opacity: 0.5;
+}

@@ -13,7 +13,7 @@ func TestTestLabel(t *testing.T) {
 			tt.Component.Render()
 		})
 	}
-	demoLblResponse(ResponseEvent{Trigger: &Label{}})
+	testLblResponse(ResponseEvent{Trigger: &Label{}})
 }
 
 func TestLabel_Validation(t *testing.T) {

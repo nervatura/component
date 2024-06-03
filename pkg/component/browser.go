@@ -112,7 +112,7 @@ type Browser struct {
 	// Show or hide the help button
 	HideHelp bool `json:"hide_help"`
 	// Editability of table rows
-	ReadOnly bool `json:"read_only"`
+	ReadOnly bool `json:"readonly"`
 	// The name of the columns to be displayed from the data source
 	VisibleColumns map[string]bool `json:"visible_columns"`
 	// List of filter criteria
@@ -139,7 +139,7 @@ func (bro *Browser) Properties() ut.IM {
 			"show_total":      bro.ShowTotal,
 			"hide_bookmark":   bro.HideBookmark,
 			"hide_export":     bro.HideExport,
-			"read_only":       bro.ReadOnly,
+			"readonly":        bro.ReadOnly,
 			"hide_help":       bro.HideHelp,
 			"visible_columns": bro.VisibleColumns,
 			"filters":         bro.Filters,
@@ -288,7 +288,7 @@ func (bro *Browser) SetProperty(propName string, propValue interface{}) interfac
 			bro.HideExport = ut.ToBoolean(propValue, false)
 			return bro.HideExport
 		},
-		"read_only": func() interface{} {
+		"readonly": func() interface{} {
 			bro.ReadOnly = ut.ToBoolean(propValue, false)
 			return bro.ReadOnly
 		},
@@ -558,7 +558,7 @@ func (bro *Browser) getComponent(name string, data ut.IM) (res string, err error
 		sel.SetProperty("value", value)
 		return sel
 	}
-	ccBtn := func(icoKey, label, btype, index string) *Button {
+	ccBtn := func(icoKey, label, bstyle, index string) *Button {
 		btn := &Button{
 			BaseComponent: BaseComponent{
 				Id:           bro.Id + "_" + name + "_" + index,
@@ -570,11 +570,11 @@ func (bro *Browser) getComponent(name string, data ut.IM) (res string, err error
 				RequestValue: bro.RequestValue,
 				RequestMap:   bro.RequestMap,
 			},
-			Type:  btype,
-			Label: bro.msg(label),
-			Icon:  icoKey,
+			ButtonStyle: bstyle,
+			Label:       bro.msg(label),
+			Icon:        icoKey,
 		}
-		if btype == ButtonTypeBorder {
+		if bstyle == ButtonStyleBorder {
 			btn.HideLabel = true
 			btn.Style = ut.SM{"padding": "8px 12px", "margin": "0 1px"}
 		}
@@ -605,12 +605,11 @@ func (bro *Browser) getComponent(name string, data ut.IM) (res string, err error
 				Data:         ut.IM{"index": index},
 				EventURL:     bro.EventURL,
 				Target:       bro.Target,
-				Swap:         SwapOuterHTML,
 				OnResponse:   bro.response,
 				RequestValue: bro.RequestValue,
 				RequestMap:   bro.RequestMap,
 			},
-			Type: InputTypeText,
+			Type: InputTypeString,
 			Full: true,
 		}
 		inp.SetProperty("value", value)
@@ -652,7 +651,7 @@ func (bro *Browser) getComponent(name string, data ut.IM) (res string, err error
 	}
 	ccMap := map[string]func() ClientComponent{
 		"hide_header": func() ClientComponent {
-			btn := ccBtn("Filter", "browser_view", ButtonTypePrimary, "0")
+			btn := ccBtn("Filter", "browser_view", ButtonStylePrimary, "0")
 			for _, view := range bro.Views {
 				if view.Value == bro.View {
 					btn.Label = view.Text
@@ -663,35 +662,35 @@ func (bro *Browser) getComponent(name string, data ut.IM) (res string, err error
 			return btn
 		},
 		"btn_search": func() ClientComponent {
-			return ccBtn("Search", "browser_search", ButtonTypeBorder, "0")
+			return ccBtn("Search", "browser_search", ButtonStyleBorder, "0")
 		},
 		"btn_bookmark": func() ClientComponent {
-			return ccBtn("Star", "browser_bookmark", ButtonTypeBorder, "0")
+			return ccBtn("Star", "browser_bookmark", ButtonStyleBorder, "0")
 		},
 		"btn_export": func() ClientComponent {
-			return ccBtn("Download", "browser_export", ButtonTypeBorder, "0")
+			return ccBtn("Download", "browser_export", ButtonStyleBorder, "0")
 		},
 		"btn_help": func() ClientComponent {
-			return ccBtn("QuestionCircle", "browser_help", ButtonTypeBorder, "0")
+			return ccBtn("QuestionCircle", "browser_help", ButtonStyleBorder, "0")
 		},
 		"btn_views": func() ClientComponent {
-			btn := ccBtn("Eye", "browser_views", ButtonTypeBorder, "0")
+			btn := ccBtn("Eye", "browser_views", ButtonStyleBorder, "0")
 			btn.Selected = bro.ShowDropdown
 			return btn
 		},
 		"btn_columns": func() ClientComponent {
-			return ccBtn("Columns", "browser_columns", ButtonTypeBorder, "0")
+			return ccBtn("Columns", "browser_columns", ButtonStyleBorder, "0")
 		},
 		"btn_filter": func() ClientComponent {
-			return ccBtn("Plus", "browser_filter", ButtonTypeBorder, "0")
+			return ccBtn("Plus", "browser_filter", ButtonStyleBorder, "0")
 		},
 		"btn_total": func() ClientComponent {
-			btn := ccBtn("InfoCircle", "browser_total", ButtonTypeBorder, "0")
+			btn := ccBtn("InfoCircle", "browser_total", ButtonStyleBorder, "0")
 			btn.Disabled = (len(bro.Rows) == 0) || (len(bro.totalFields) == 0)
 			return btn
 		},
 		"btn_ok": func() ClientComponent {
-			btn := ccBtn("Check", "browser_label_ok", ButtonTypePrimary, "0")
+			btn := ccBtn("Check", "browser_label_ok", ButtonStylePrimary, "0")
 			btn.AutoFocus = true
 			btn.Full = true
 			return btn
@@ -757,7 +756,7 @@ func (bro *Browser) getComponent(name string, data ut.IM) (res string, err error
 		},
 		"filter_delete": func() ClientComponent {
 			index := ut.ToString(data["index"], "0")
-			btn := ccBtn("", "browser_label_delete", ButtonTypeBorder, index)
+			btn := ccBtn("", "browser_label_delete", ButtonStyleBorder, index)
 			btn.Style = ut.SM{"padding": "8px", "border-radius": "3px"}
 			btn.LabelComponent = &Icon{Value: "Times"}
 			return btn
@@ -1157,7 +1156,7 @@ var testBrowserMetaFields map[string]func() map[string]BrowserMetaField = map[st
 	},
 }
 
-var demoBrowserResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt ResponseEvent) (re ResponseEvent) {
+var testBrowserResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt ResponseEvent) (re ResponseEvent) {
 	switch evt.Name {
 	case BrowserEventSearch, BrowserEventBookmark, BrowserEventHelp,
 		TableEventAddItem, TableEventEditCell, TableEventRowSelected, BrowserEventEditRow:
@@ -1203,7 +1202,7 @@ func TestBrowser(cc ClientComponent) []TestComponent {
 					BaseComponent: BaseComponent{
 						Id:           id + "default",
 						EventURL:     eventURL,
-						OnResponse:   demoBrowserResponse,
+						OnResponse:   testBrowserResponse,
 						RequestValue: requestValue,
 						RequestMap:   requestMap,
 					},
@@ -1232,7 +1231,7 @@ func TestBrowser(cc ClientComponent) []TestComponent {
 					BaseComponent: BaseComponent{
 						Id:           id + "meta",
 						EventURL:     eventURL,
-						OnResponse:   demoBrowserResponse,
+						OnResponse:   testBrowserResponse,
 						RequestValue: requestValue,
 						RequestMap:   requestMap,
 					},
@@ -1262,7 +1261,7 @@ func TestBrowser(cc ClientComponent) []TestComponent {
 					BaseComponent: BaseComponent{
 						Id:           id + "contact",
 						EventURL:     eventURL,
-						OnResponse:   demoBrowserResponse,
+						OnResponse:   testBrowserResponse,
 						RequestValue: requestValue,
 						RequestMap:   requestMap,
 					},
@@ -1293,7 +1292,7 @@ func TestBrowser(cc ClientComponent) []TestComponent {
 					BaseComponent: BaseComponent{
 						Id:           id + "total",
 						EventURL:     eventURL,
-						OnResponse:   demoBrowserResponse,
+						OnResponse:   testBrowserResponse,
 						RequestValue: requestValue,
 						RequestMap:   requestMap,
 					},

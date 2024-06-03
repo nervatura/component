@@ -1,3 +1,14 @@
+## 1.2.0
+- new Toggle component
+- new file Upload component
+- new Selector (interactive input) component
+- new Field (multi-type input) component
+- new Row (responsive data row) component
+- Button component: ButtonType -> ButtonStyle, new ButtonType enums: ButtonTypeButton, ButtonTypeReset, ButtonTypeSubmit
+- Input component: removed InputTypeFile type
+- Label component: added Border and Full props
+- DateTime input bug fixes
+
 ## 1.1.1
 - new Browser (data advanced search) component
 - table component: new TableFieldTypeInteger, TableFieldTypeLink, TableFieldTypeMeta type

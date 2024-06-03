@@ -11,7 +11,7 @@ func TestTestInput(t *testing.T) {
 			tt.Component.Render()
 		})
 	}
-	demoInputResponse(ResponseEvent{Trigger: &Input{}})
+	testInputResponse(ResponseEvent{Trigger: &Input{}})
 }
 
 func TestInput_GetProperty(t *testing.T) {
@@ -59,7 +59,6 @@ func TestInput_GetProperty(t *testing.T) {
 				ReadOnly:      tt.fields.ReadOnly,
 				AutoFocus:     tt.fields.AutoFocus,
 				Invalid:       tt.fields.Invalid,
-				Accept:        tt.fields.Accept,
 				MaxLength:     tt.fields.MaxLength,
 				Size:          tt.fields.Size,
 				Full:          tt.fields.Full,
@@ -126,7 +125,6 @@ func TestInput_Validation(t *testing.T) {
 				ReadOnly:      tt.fields.ReadOnly,
 				AutoFocus:     tt.fields.AutoFocus,
 				Invalid:       tt.fields.Invalid,
-				Accept:        tt.fields.Accept,
 				MaxLength:     tt.fields.MaxLength,
 				Size:          tt.fields.Size,
 				Full:          tt.fields.Full,
@@ -193,7 +191,6 @@ func TestInput_SetProperty(t *testing.T) {
 				ReadOnly:      tt.fields.ReadOnly,
 				AutoFocus:     tt.fields.AutoFocus,
 				Invalid:       tt.fields.Invalid,
-				Accept:        tt.fields.Accept,
 				MaxLength:     tt.fields.MaxLength,
 				Size:          tt.fields.Size,
 				Full:          tt.fields.Full,
@@ -277,7 +274,6 @@ func TestInput_OnRequest(t *testing.T) {
 				ReadOnly:      tt.fields.ReadOnly,
 				AutoFocus:     tt.fields.AutoFocus,
 				Invalid:       tt.fields.Invalid,
-				Accept:        tt.fields.Accept,
 				MaxLength:     tt.fields.MaxLength,
 				Size:          tt.fields.Size,
 				Full:          tt.fields.Full,

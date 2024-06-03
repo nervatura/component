@@ -77,12 +77,17 @@ var DemoMap map[string][]DemoView = map[string][]DemoView{
 	ComponentGroupAtom: {
 		{ComponentType: ct.ComponentTypeButton, TestData: ct.TestButton},
 		{ComponentType: ct.ComponentTypeDateTime, TestData: ct.TestDateTime},
+		{ComponentType: ct.ComponentTypeField, TestData: ct.TestField},
 		{ComponentType: ct.ComponentTypeIcon, TestData: ct.TestIcon},
 		{ComponentType: ct.ComponentTypeInput, TestData: ct.TestInput},
 		{ComponentType: ct.ComponentTypeLabel, TestData: ct.TestLabel},
 		{ComponentType: ct.ComponentTypeNumberInput, TestData: ct.TestNumberInput},
 		{ComponentType: ct.ComponentTypeSelect, TestData: ct.TestSelect},
 		{ComponentType: ct.ComponentTypeToast, TestData: ct.TestToast},
+		{ComponentType: ct.ComponentTypeToggle, TestData: ct.TestToggle},
+		{ComponentType: ct.ComponentTypeUpload, TestData: ct.TestUpload},
+		{ComponentType: ct.ComponentTypeSelector, TestData: ct.TestSelector},
+		{ComponentType: ct.ComponentTypeRow, TestData: ct.TestRow},
 	},
 	ComponentGroupMolecule: {
 		{ComponentType: ct.ComponentTypeTable, TestData: ct.TestTable},
@@ -97,7 +102,7 @@ var DemoMap map[string][]DemoView = map[string][]DemoView{
 	},
 }
 
-var demoIcoMap map[string][]string = map[string][]string{
+var testIcoMap map[string][]string = map[string][]string{
 	ct.ThemeDark: {ct.ThemeLight, "Sun"}, ct.ThemeLight: {ct.ThemeDark, "Moon"},
 	ViewSizeCentered: {ViewSizeFull, "Desktop"}, ViewSizeFull: {ViewSizeCentered, "Mobile"},
 }
@@ -276,11 +281,11 @@ func (sto *Demo) response(evt ct.ResponseEvent) (re ct.ResponseEvent) {
 	switch evt.TriggerName {
 	case "theme":
 		stoEvt.Name = DemoEventTheme
-		value = sto.SetProperty("theme", demoIcoMap[sto.Theme][0])
+		value = sto.SetProperty("theme", testIcoMap[sto.Theme][0])
 
 	case "view_size":
 		stoEvt.Name = DemoEventViewSize
-		value = sto.SetProperty("view_size", demoIcoMap[sto.ViewSize][0])
+		value = sto.SetProperty("view_size", testIcoMap[sto.ViewSize][0])
 
 	default:
 		sto.Name = DemoEventChange
@@ -310,8 +315,8 @@ func (sto *Demo) getComponent(name string) (res string, err error) {
 				RequestValue: sto.RequestValue,
 				RequestMap:   sto.RequestMap,
 			},
-			Type:           ct.ButtonTypePrimary,
-			LabelComponent: &ct.Icon{Value: demoIcoMap[propValue[name]][1], Width: 18, Height: 18},
+			ButtonStyle:    ct.ButtonStylePrimary,
+			LabelComponent: &ct.Icon{Value: testIcoMap[propValue[name]][1], Width: 18, Height: 18},
 		}
 	}
 	ccSel := func() *ct.Select {

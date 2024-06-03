@@ -53,7 +53,7 @@ type NumberInput struct {
 	// Specifies that the input should be disabled
 	Disabled bool `json:"disabled"`
 	// Specifies that the input field is read-only
-	ReadOnly bool `json:"read_only"`
+	ReadOnly bool `json:"readonly"`
 	// Specifies that the input element should automatically get focus when the page loads
 	AutoFocus bool `json:"auto_focus"`
 	// Full width input (100%)

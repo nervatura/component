@@ -224,7 +224,6 @@ func (lgn *Login) getComponent(name string) (res string, err error) {
 				Id: lgn.Id + "_" + name, Name: name,
 				EventURL:     lgn.EventURL,
 				Target:       lgn.Target,
-				Swap:         SwapOuterHTML,
 				OnResponse:   lgn.response,
 				RequestValue: lgn.RequestValue,
 				RequestMap:   lgn.RequestMap,
@@ -242,7 +241,7 @@ func (lgn *Login) getComponent(name string) (res string, err error) {
 	}
 	ccMap := map[string]func() ClientComponent{
 		"username": func() ClientComponent {
-			return ccInp(InputTypeText)
+			return ccInp(InputTypeString)
 		},
 		"login_username": func() ClientComponent {
 			return ccLbl()
@@ -254,7 +253,7 @@ func (lgn *Login) getComponent(name string) (res string, err error) {
 			return ccLbl()
 		},
 		"database": func() ClientComponent {
-			return ccInp(InputTypeText)
+			return ccInp(InputTypeString)
 		},
 		"login_database": func() ClientComponent {
 			return ccLbl()
@@ -269,10 +268,10 @@ func (lgn *Login) getComponent(name string) (res string, err error) {
 					RequestValue: lgn.RequestValue,
 					RequestMap:   lgn.RequestMap,
 				},
-				Type:     ButtonTypePrimary,
-				Label:    lgn.Labels["login_"+name],
-				Disabled: loginDisabled,
-				Full:     true, AutoFocus: true,
+				ButtonStyle: ButtonStylePrimary,
+				Label:       lgn.Labels["login_"+name],
+				Disabled:    loginDisabled,
+				Full:        true, AutoFocus: true,
 			}
 		},
 		"theme": func() ClientComponent {
@@ -285,7 +284,7 @@ func (lgn *Login) getComponent(name string) (res string, err error) {
 					RequestValue: lgn.RequestValue,
 					RequestMap:   lgn.RequestMap,
 				},
-				Type:           ButtonTypeBorder,
+				ButtonStyle:    ButtonStyleBorder,
 				Label:          lgn.Labels["login_"+name],
 				LabelComponent: &Icon{Value: loginThemeMap[lgn.Theme][1], Width: 18, Height: 18},
 			}
@@ -378,7 +377,7 @@ func (lgn *Login) Render() (res string, err error) {
 	return ut.TemplateBuilder("login", tpl, funcMap, lgn)
 }
 
-var demoLabels map[string]ut.SM = map[string]ut.SM{
+var testLoginLabels map[string]ut.SM = map[string]ut.SM{
 	"en": loginDefaultLabel,
 	"de": {
 		"title_login":    "Nervatura Client",
@@ -391,7 +390,7 @@ var demoLabels map[string]ut.SM = map[string]ut.SM{
 	},
 }
 
-var demoLoginResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt ResponseEvent) (re ResponseEvent) {
+var testLoginResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt ResponseEvent) (re ResponseEvent) {
 	switch evt.Name {
 	case LoginEventLogin:
 		data := evt.Trigger.GetProperty("data").(ut.IM)
@@ -414,7 +413,7 @@ var demoLoginResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt Resp
 		return re
 	case LoginEventLang:
 		value := ut.ToString(evt.Value, "en")
-		labels := ut.MergeSM(nil, demoLabels[value])
+		labels := ut.MergeSM(nil, testLoginLabels[value])
 		evt.Trigger.SetProperty("labels", labels)
 	default:
 	}
@@ -435,7 +434,7 @@ func TestLogin(cc ClientComponent) []TestComponent {
 				BaseComponent: BaseComponent{
 					Id:           id + "_login_default",
 					EventURL:     eventURL,
-					OnResponse:   demoLoginResponse,
+					OnResponse:   testLoginResponse,
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 					Data: ut.IM{
@@ -450,7 +449,7 @@ func TestLogin(cc ClientComponent) []TestComponent {
 					{Value: "de", Text: "Deutsch"},
 				},
 				Theme:  ThemeLight,
-				Labels: ut.MergeSM(nil, demoLabels["en"]),
+				Labels: ut.MergeSM(nil, testLoginLabels["en"]),
 			}},
 	}
 }

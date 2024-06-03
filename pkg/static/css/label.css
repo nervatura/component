@@ -2,33 +2,48 @@
   font-family: var(--font-family);
   font-size: var(--font-size);
 }
-.label_text {
+
+.label-text {
   color: var(--text-1);
   fill: var(--text-1);
 }
+
 .label.cell {
   line-height: 1;
 }
-.label_info_left {
+
+.label-info-left {
   padding: 0 0 0 3px;
 }
-.label_info_right {
+.label-info-right {
   text-align: right;
   padding: 0 3px 0 0;
 }
-.label_icon_left {
+
+.label-icon-left {
   text-align: center;
   width: auto;
 }
-.label_icon_right {
+.label-icon-right {
   text-align: right;
   width: auto;
 }
-.label_link {
+
+.label-link {
   color: rgb(var(--functional-blue));
   fill: rgb(var(--functional-blue));
   cursor: pointer;
 }
-.label_link:hover {
+
+.label-link:hover {
   text-decoration: underline;
+}
+
+.label-border {
+  border-radius: 3px;
+  padding: 8px;
+  vertical-align: middle;
+  min-height: 35px;
+  background-color: rgba(var(--base-4), 1);
+  border: 1px solid rgba(var(--neutral-1), 0.2);
 }

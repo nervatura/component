@@ -8,8 +8,11 @@
 @import "menubar.css";
 @import "number.css";
 @import "select.css";
+@import "selector.css";
 @import "spinner.css";
 @import "table.css";
 @import "toast.css";
+@import "toggle.css";
+@import "upload.css";
 @import "util.css";
 @import "variable.css";

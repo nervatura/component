@@ -199,7 +199,7 @@ func (ico *Icon) Render() (res string, err error) {
 	return res, nil
 }
 
-var demoIcoResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt ResponseEvent) (re ResponseEvent) {
+var testIcoResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt ResponseEvent) (re ResponseEvent) {
 	re = ResponseEvent{
 		Trigger: &Toast{
 			Type:    ToastTypeInfo,
@@ -266,7 +266,7 @@ func TestIcon(cc ClientComponent) []TestComponent {
 					Data: ut.IM{
 						"toast_value": "Link icon",
 					},
-					OnResponse:   demoIcoResponse,
+					OnResponse:   testIcoResponse,
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 				},
