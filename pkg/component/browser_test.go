@@ -564,6 +564,30 @@ func TestBrowser_response(t *testing.T) {
 			},
 		},
 		{
+			name: "filter_value_response",
+			fields: fields{
+				Table: Table{
+					BaseComponent: BaseComponent{
+						OnResponse: func(evt ResponseEvent) (re ResponseEvent) {
+							evt.Trigger = &Browser{}
+							return evt
+						},
+					},
+				},
+				Filters: []BrowserFilter{
+					{Field: "field", Comp: "==", Value: "value"},
+				},
+			},
+			args: args{
+				evt: ResponseEvent{
+					TriggerName: "filter_value",
+					Trigger: &BaseComponent{
+						Data: ut.IM{"index": 0},
+					},
+				},
+			},
+		},
+		{
 			name: "filter_delete",
 			fields: fields{
 				Filters: []BrowserFilter{

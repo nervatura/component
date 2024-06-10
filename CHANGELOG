@@ -1,3 +1,6 @@
+## 1.2.2
+- Browser component: BrowserEventChangeFilter bug fixes
+
 ## 1.2.1
 - Button component: Indicator bug fixes
 - Browser component: ExportLimit (Limit the maximum character length of a URL)
