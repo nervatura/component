@@ -669,6 +669,7 @@ func (bro *Browser) getComponent(name string, data ut.IM) (res string, err error
 			BaseComponent: BaseComponent{
 				Id:           bro.Id + "_" + name + "_" + index,
 				Name:         name,
+				Data:         ut.IM{"index": index},
 				EventURL:     bro.EventURL,
 				Target:       bro.Target,
 				OnResponse:   bro.response,
