@@ -25,6 +25,7 @@ const (
 	BrowserEventShowTotal    = "show_total"
 	BrowserEventSetColumn    = "set_column"
 	BrowserEventEditRow      = "edit_row"
+	BrowserExportLimit       = 2000
 )
 
 var browserDefaultLabel ut.SM = ut.SM{
@@ -45,6 +46,7 @@ var browserDefaultLabel ut.SM = ut.SM{
 	"browser_label_yes":    "YES",
 	"browser_label_no":     "NO",
 	"browser_label_ok":     "OK",
+	"browser_export_error": "There is too much data, it cannot be exported. Use the Filters to limit the displayed result!",
 }
 
 var browserFilterComp []SelectOption = []SelectOption{
@@ -109,6 +111,8 @@ type Browser struct {
 	HideBookmark bool `json:"hide_bookmark"`
 	// Show or hide the export button
 	HideExport bool `json:"hide_export"`
+	// Export limit of data rows. Limit the maximum character length of a URL.
+	ExportLimit int64 `json:"export_limit"`
 	// Show or hide the help button
 	HideHelp bool `json:"hide_help"`
 	// Editability of table rows
@@ -139,6 +143,7 @@ func (bro *Browser) Properties() ut.IM {
 			"show_total":      bro.ShowTotal,
 			"hide_bookmark":   bro.HideBookmark,
 			"hide_export":     bro.HideExport,
+			"export_limit":    bro.ExportLimit,
 			"readonly":        bro.ReadOnly,
 			"hide_help":       bro.HideHelp,
 			"visible_columns": bro.VisibleColumns,
@@ -288,6 +293,10 @@ func (bro *Browser) SetProperty(propName string, propValue interface{}) interfac
 			bro.HideExport = ut.ToBoolean(propValue, false)
 			return bro.HideExport
 		},
+		"export_limit": func() interface{} {
+			bro.ExportLimit = ut.ToInteger(propValue, BrowserExportLimit)
+			return bro.ExportLimit
+		},
 		"readonly": func() interface{} {
 			bro.ReadOnly = ut.ToBoolean(propValue, false)
 			return bro.ReadOnly
@@ -358,7 +367,22 @@ func (bro *Browser) exportData() (re ResponseEvent) {
 	var b bytes.Buffer
 	writr := csv.NewWriter(&b)
 	if err := writr.WriteAll(sRows); err == nil {
-		re.Header[HeaderRedirect] = "data:text/csv;base64," + base64.URLEncoding.EncodeToString(b.Bytes())
+		encURL := base64.URLEncoding.EncodeToString(b.Bytes())
+		if len(encURL) > int(bro.ExportLimit) {
+			return ResponseEvent{
+				Trigger: &Toast{
+					Type:  ToastTypeError,
+					Value: bro.msg("browser_export_error"),
+				},
+				TriggerName: bro.Name,
+				Name:        BrowserEventExport,
+				Header: ut.SM{
+					HeaderRetarget: "#toast-msg",
+					HeaderReswap:   SwapInnerHTML,
+				},
+			}
+		}
+		re.Header[HeaderRedirect] = "data:text/csv;base64," + encURL
 	}
 
 	return re
@@ -438,6 +462,7 @@ func (bro *Browser) response(evt ResponseEvent) (re ResponseEvent) {
 				fieldName := ut.ToString(evt.Trigger.GetProperty("data").(ut.IM)["key"], "")
 				oldValue := ut.ToBoolean(bro.VisibleColumns[fieldName], false)
 				broEvt.Name = BrowserEventSetColumn
+				broEvt.Value = fieldName
 				bro.SetProperty("visible_columns", []map[string]bool{{fieldName: !oldValue}})
 			},
 			"filter_field": func() {
@@ -676,6 +701,7 @@ func (bro *Browser) getComponent(name string, data ut.IM) (res string, err error
 		"btn_views": func() ClientComponent {
 			btn := ccBtn("Eye", "browser_views", ButtonStyleBorder, "0")
 			btn.Selected = bro.ShowDropdown
+			btn.Indicator = IndicatorNone
 			return btn
 		},
 		"btn_columns": func() ClientComponent {
@@ -939,7 +965,9 @@ func (bro *Browser) Render() (res string, err error) {
 	<div class="row full" >
 	<div class="cell" >{{ browserComponent "btn_search" }}</div>
 	<div class="cell align-right" >
-	{{ browserComponent "btn_bookmark" }}{{ browserComponent "btn_export" }}{{ browserComponent "btn_help" }}
+	{{ if ne .HideBookmark true }}{{ browserComponent "btn_bookmark" }}{{ end }}
+	{{ if ne .HideExport true }}{{ browserComponent "btn_export" }}{{ end }}
+	{{ if ne .HideHelp true }}{{ browserComponent "btn_help" }}{{ end }}
 	</div></div>
 	<div class="row full section-small-top" >
 	<div class="cell" >
@@ -1283,6 +1311,9 @@ func TestBrowser(cc ClientComponent) []TestComponent {
 				MetaFields:     testBrowserMetaFields["contact"](),
 				ShowColumns:    true,
 				ShowDropdown:   true,
+				HideBookmark:   true,
+				HideHelp:       true,
+				HideExport:     true,
 			}},
 		{
 			Label:         "Total",

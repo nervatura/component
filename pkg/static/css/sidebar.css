@@ -1,0 +1,53 @@
+@keyframes animateleft{ 
+  from { left:-300px; opacity:0; }
+  to{ left:0; opacity:1; }
+}
+
+.sidebar{
+  position: fixed;
+  height: 100%;
+  width: var(--menu-side-width);
+  left: 0;
+  animation: animateleft 0.4s;
+  background-color: rgba(var(--accent-1), 0.95);
+  z-index: 3;
+  overflow-x: hidden;
+  overflow-y: auto;
+  font-weight: bold;
+  padding: 5px 4px 50px 2px;
+  box-shadow:0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12);
+}
+
+.hide{ 
+  display: none; 
+}
+
+.show{ 
+  display: block!important; 
+}
+
+.separator {
+  height: 10px;
+  width: 100%;
+  border: none;
+  margin: 0;
+}
+
+.state-label {
+  font-size: 18px;
+  width: 100%;
+  padding: 8px 16px;
+  background-color: rgb(var(--accent-1));
+  vertical-align: middle;
+}
+
+@media (min-width:769px){
+  .sidebar{
+    display: block!important;
+  }
+}
+@media (max-width:768px){
+  .sidebar{
+    display: none;
+  }
+}

@@ -1,3 +1,10 @@
+## 1.2.1
+- Button component: Indicator bug fixes
+- Browser component: ExportLimit (Limit the maximum character length of a URL)
+- Browser component: HideBookmark, HideExport, HideHelp bug fixes
+- Browser component: hide Views button indicator
+- Login component: HideDatabase (Show or hide the database input control)
+
 ## 1.2.0
 - new Toggle component
 - new file Upload component

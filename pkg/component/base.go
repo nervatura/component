@@ -48,13 +48,17 @@ const (
 	// Does not append content from response
 	SwapNone = "none"
 
-	IndicatorNone    = ""
+	IndicatorNone    = "none"
 	IndicatorSpinner = "spinner"
 
 	PaginationTypeTop    = "top"
 	PaginationTypeBottom = "bottom"
 	PaginationTypeAll    = "all"
 	PaginationTypeNone   = "none"
+
+	SideBarVisibilityAuto = "auto"
+	SideBarVisibilityShow = "show"
+	SideBarVisibilityHide = "hide"
 )
 
 // [ResponseEvent] Header map key constants
@@ -107,6 +111,9 @@ var Indicator []string = []string{IndicatorNone, IndicatorSpinner}
 var Header []string = []string{
 	HeaderLocation, HeaderPushUrl, HeaderRedirect, HeaderRefresh, HeaderReplaceUrl, HeaderReswap,
 	HeaderRetarget, HeaderReselect, HeaderTrigger, HeaderTriggerAfterSettle, HeaderTriggerAfterSwap}
+
+// [SideBar] Visibility values
+var SideBarVisibility []string = []string{SideBarVisibilityAuto, SideBarVisibilityShow, SideBarVisibilityHide}
 
 // Generic server-side component type. All components must implement these functions.
 type ClientComponent interface {

@@ -270,7 +270,7 @@ func (btn *Button) Render() (res string, err error) {
 	tpl := `<button id="{{ .Id }}" name="{{ .Name }}" type="{{ .Type }}"
 	{{ if or (eq .ButtonStyle "primary") (eq .ButtonStyle "border") }} button-type="{{ .ButtonStyle }}"{{ end }}
 	{{ if ne .EventURL "" }} hx-post="{{ .EventURL }}" hx-target="{{ .Target }}" hx-swap="{{ .Swap }}"{{ end }}
-	{{ if ne .Indicator "" }} hx-indicator="#{{ .Indicator }}"{{ end }}
+	{{ if ne .Indicator "none" }} hx-indicator="#{{ .Indicator }}"{{ end }}
 	{{ if .Disabled }} disabled{{ end }}
 	{{ if .AutoFocus }} autofocus{{ end }}
 	{{ if ne .Label "" }} aria-label="{{ .Label }}" title="{{ .Label }}"{{ end }}

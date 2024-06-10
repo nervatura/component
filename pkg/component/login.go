@@ -67,6 +67,8 @@ type Login struct {
 	Version string `json:"version"`
 	// Current ui language
 	Lang string `json:"lang"`
+	// Show or hide the database input control
+	HideDatabase bool `json:"hide_database"`
 	/*
 		The theme of the control.
 		[Theme] variable constants: [ThemeLight], [ThemeDark]. Default value: [ThemeLight]
@@ -85,11 +87,12 @@ func (lgn *Login) Properties() ut.IM {
 	return ut.MergeIM(
 		lgn.BaseComponent.Properties(),
 		ut.IM{
-			"version": lgn.Version,
-			"lang":    lgn.Lang,
-			"theme":   lgn.Theme,
-			"labels":  lgn.Labels,
-			"locales": lgn.Locales,
+			"version":       lgn.Version,
+			"lang":          lgn.Lang,
+			"hide_database": lgn.HideDatabase,
+			"theme":         lgn.Theme,
+			"labels":        lgn.Labels,
+			"locales":       lgn.Locales,
 		})
 }
 
@@ -161,6 +164,10 @@ func (lgn *Login) SetProperty(propName string, propValue interface{}) interface{
 			lgn.Lang = ut.ToString(propValue, "en")
 			return lgn.Lang
 		},
+		"hide_database": func() interface{} {
+			lgn.HideDatabase = ut.ToBoolean(propValue, false)
+			return lgn.HideDatabase
+		},
 		"locales": func() interface{} {
 			lgn.Locales = lgn.Validation(propName, propValue).([]SelectOption)
 			return lgn.Locales
@@ -218,6 +225,10 @@ func (lgn *Login) response(evt ResponseEvent) (re ResponseEvent) {
 
 func (lgn *Login) getComponent(name string) (res string, err error) {
 	var loginDisabled bool = ((ut.ToString(lgn.Data["username"], "") == "") || (ut.ToString(lgn.Data["database"], "") == ""))
+	if lgn.HideDatabase {
+		loginDisabled = (ut.ToString(lgn.Data["username"], "") == "")
+	}
+
 	ccInp := func(itype string) *Input {
 		return &Input{
 			BaseComponent: BaseComponent{
@@ -354,10 +365,12 @@ func (lgn *Login) Render() (res string, err error) {
 	<div class="cell label-cell padding-normal mobile" >{{ loginComponent "login_password" }}</div>
 	<div class="cell container mobile" >{{ loginComponent "password" }}</div>
 	</div>
+	{{ if ne .HideDatabase true }}
 	<div class="row full section-small" >
 	<div class="cell label-cell padding-normal mobile" >{{ loginComponent "login_database" }}</div>
 	<div class="cell container mobile" >{{ loginComponent "database" }}</div>
 	</div>
+	{{ end }}
 	</div>
 	<div class="row full section buttons" >
 	<div class="cell section-small mobile" >
@@ -450,6 +463,31 @@ func TestLogin(cc ClientComponent) []TestComponent {
 				},
 				Theme:  ThemeLight,
 				Labels: ut.MergeSM(nil, testLoginLabels["en"]),
+			}},
+		{
+			Label:         "Hide database",
+			ComponentType: ComponentTypeLogin,
+			Component: &Login{
+				BaseComponent: BaseComponent{
+					Id:           id + "_login_nodb",
+					EventURL:     eventURL,
+					OnResponse:   testLoginResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
+					Data: ut.IM{
+						"username": "admin",
+						"database": "demo",
+					},
+				},
+				Version: "6.0.0",
+				Lang:    "en",
+				Locales: []SelectOption{
+					{Value: "en", Text: "English"},
+					{Value: "de", Text: "Deutsch"},
+				},
+				Theme:        ThemeLight,
+				Labels:       ut.MergeSM(nil, testLoginLabels["en"]),
+				HideDatabase: true,
 			}},
 	}
 }

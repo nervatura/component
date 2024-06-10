@@ -253,6 +253,7 @@ func TestBrowser_exportData(t *testing.T) {
 		ShowTotal      bool
 		HideBookmark   bool
 		HideExport     bool
+		ExportLimit    int64
 		HideHelp       bool
 		ReadOnly       bool
 		VisibleColumns map[string]bool
@@ -280,6 +281,25 @@ func TestBrowser_exportData(t *testing.T) {
 				VisibleColumns: map[string]bool{
 					"field": true, "missing": true,
 				},
+				ExportLimit: 2000,
+			},
+		},
+		{
+			name: "limit",
+			fields: fields{
+				Table: Table{
+					Fields: []TableField{
+						{Name: "field", Label: "Label"},
+					},
+					Rows: []ut.IM{
+						{"field": "value", "missing": "missing"},
+						{"field": "value", "missing": "missing"},
+					},
+				},
+				VisibleColumns: map[string]bool{
+					"field": true, "missing": true,
+				},
+				ExportLimit: 0,
 			},
 		},
 	}
@@ -295,6 +315,7 @@ func TestBrowser_exportData(t *testing.T) {
 				ShowTotal:      tt.fields.ShowTotal,
 				HideBookmark:   tt.fields.HideBookmark,
 				HideExport:     tt.fields.HideExport,
+				ExportLimit:    tt.fields.ExportLimit,
 				HideHelp:       tt.fields.HideHelp,
 				ReadOnly:       tt.fields.ReadOnly,
 				VisibleColumns: tt.fields.VisibleColumns,

@@ -17,13 +17,13 @@ func TestTestMenuBar(t *testing.T) {
 
 func TestMenuBar_GetProperty(t *testing.T) {
 	type fields struct {
-		BaseComponent  BaseComponent
-		Value          string
-		SideBar        bool
-		SideVisibility string
-		LabelHide      string
-		LabelMenu      string
-		Items          []MenuBarItem
+		BaseComponent     BaseComponent
+		Value             string
+		SideBar           bool
+		SideBarVisibility string
+		LabelHide         string
+		LabelMenu         string
+		Items             []MenuBarItem
 	}
 	type args struct {
 		propName string
@@ -45,13 +45,13 @@ func TestMenuBar_GetProperty(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mnb := &MenuBar{
-				BaseComponent:  tt.fields.BaseComponent,
-				Value:          tt.fields.Value,
-				SideBar:        tt.fields.SideBar,
-				SideVisibility: tt.fields.SideVisibility,
-				LabelHide:      tt.fields.LabelHide,
-				LabelMenu:      tt.fields.LabelMenu,
-				Items:          tt.fields.Items,
+				BaseComponent:     tt.fields.BaseComponent,
+				Value:             tt.fields.Value,
+				SideBar:           tt.fields.SideBar,
+				SideBarVisibility: tt.fields.SideBarVisibility,
+				LabelHide:         tt.fields.LabelHide,
+				LabelMenu:         tt.fields.LabelMenu,
+				Items:             tt.fields.Items,
 			}
 			if got := mnb.GetProperty(tt.args.propName); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("MenuBar.GetProperty() = %v, want %v", got, tt.want)
@@ -62,13 +62,13 @@ func TestMenuBar_GetProperty(t *testing.T) {
 
 func TestMenuBar_Validation(t *testing.T) {
 	type fields struct {
-		BaseComponent  BaseComponent
-		Value          string
-		SideBar        bool
-		SideVisibility string
-		LabelHide      string
-		LabelMenu      string
-		Items          []MenuBarItem
+		BaseComponent     BaseComponent
+		Value             string
+		SideBar           bool
+		SideBarVisibility string
+		LabelHide         string
+		LabelMenu         string
+		Items             []MenuBarItem
 	}
 	type args struct {
 		propName  string
@@ -100,13 +100,13 @@ func TestMenuBar_Validation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mnb := &MenuBar{
-				BaseComponent:  tt.fields.BaseComponent,
-				Value:          tt.fields.Value,
-				SideBar:        tt.fields.SideBar,
-				SideVisibility: tt.fields.SideVisibility,
-				LabelHide:      tt.fields.LabelHide,
-				LabelMenu:      tt.fields.LabelMenu,
-				Items:          tt.fields.Items,
+				BaseComponent:     tt.fields.BaseComponent,
+				Value:             tt.fields.Value,
+				SideBar:           tt.fields.SideBar,
+				SideBarVisibility: tt.fields.SideBarVisibility,
+				LabelHide:         tt.fields.LabelHide,
+				LabelMenu:         tt.fields.LabelMenu,
+				Items:             tt.fields.Items,
 			}
 			if got := mnb.Validation(tt.args.propName, tt.args.propValue); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("MenuBar.Validation() = %v, want %v", got, tt.want)
@@ -117,13 +117,13 @@ func TestMenuBar_Validation(t *testing.T) {
 
 func TestMenuBar_SetProperty(t *testing.T) {
 	type fields struct {
-		BaseComponent  BaseComponent
-		Value          string
-		SideBar        bool
-		SideVisibility string
-		LabelHide      string
-		LabelMenu      string
-		Items          []MenuBarItem
+		BaseComponent     BaseComponent
+		Value             string
+		SideBar           bool
+		SideBarVisibility string
+		LabelHide         string
+		LabelMenu         string
+		Items             []MenuBarItem
 	}
 	type args struct {
 		propName  string
@@ -155,13 +155,13 @@ func TestMenuBar_SetProperty(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mnb := &MenuBar{
-				BaseComponent:  tt.fields.BaseComponent,
-				Value:          tt.fields.Value,
-				SideBar:        tt.fields.SideBar,
-				SideVisibility: tt.fields.SideVisibility,
-				LabelHide:      tt.fields.LabelHide,
-				LabelMenu:      tt.fields.LabelMenu,
-				Items:          tt.fields.Items,
+				BaseComponent:     tt.fields.BaseComponent,
+				Value:             tt.fields.Value,
+				SideBar:           tt.fields.SideBar,
+				SideBarVisibility: tt.fields.SideBarVisibility,
+				LabelHide:         tt.fields.LabelHide,
+				LabelMenu:         tt.fields.LabelMenu,
+				Items:             tt.fields.Items,
 			}
 			if got := mnb.SetProperty(tt.args.propName, tt.args.propValue); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("MenuBar.SetProperty() = %v, want %v", got, tt.want)
@@ -172,13 +172,13 @@ func TestMenuBar_SetProperty(t *testing.T) {
 
 func TestMenuBar_response(t *testing.T) {
 	type fields struct {
-		BaseComponent  BaseComponent
-		Value          string
-		SideBar        bool
-		SideVisibility string
-		LabelHide      string
-		LabelMenu      string
-		Items          []MenuBarItem
+		BaseComponent     BaseComponent
+		Value             string
+		SideBar           bool
+		SideBarVisibility string
+		LabelHide         string
+		LabelMenu         string
+		Items             []MenuBarItem
 	}
 	type args struct {
 		evt ResponseEvent
@@ -221,13 +221,13 @@ func TestMenuBar_response(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mnb := &MenuBar{
-				BaseComponent:  tt.fields.BaseComponent,
-				Value:          tt.fields.Value,
-				SideBar:        tt.fields.SideBar,
-				SideVisibility: tt.fields.SideVisibility,
-				LabelHide:      tt.fields.LabelHide,
-				LabelMenu:      tt.fields.LabelMenu,
-				Items:          tt.fields.Items,
+				BaseComponent:     tt.fields.BaseComponent,
+				Value:             tt.fields.Value,
+				SideBar:           tt.fields.SideBar,
+				SideBarVisibility: tt.fields.SideBarVisibility,
+				LabelHide:         tt.fields.LabelHide,
+				LabelMenu:         tt.fields.LabelMenu,
+				Items:             tt.fields.Items,
 			}
 			mnb.response(tt.args.evt)
 		})

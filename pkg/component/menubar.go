@@ -12,14 +12,7 @@ const (
 
 	MenuBarEventSide  = "side"
 	MenuBarEventValue = "value"
-
-	SideVisibilityAuto = "auto"
-	SideVisibilityShow = "show"
-	SideVisibilityHide = "hide"
 )
-
-// [MenuBar] SideVisibility values
-var SideVisibility []string = []string{SideVisibilityAuto, SideVisibilityShow, SideVisibilityHide}
 
 // [MenuBar] item data
 type MenuBarItem struct {
@@ -50,7 +43,7 @@ For example:
 	  },
 	  Value:          "search",
 	  SideBar:        true,
-	  SideVisibility: SideVisibilityAuto,
+	  SideBarVisibility: SideBarVisibilityAuto,
 	}
 */
 type MenuBar struct {
@@ -59,10 +52,10 @@ type MenuBar struct {
 	Value string `json:"value"`
 	// Show/hide sidebar button in mobile view
 	SideBar bool `json:"side_bar"`
-	/* [SideVisibility] variable constants:
-	[SideVisibilityAuto], [SideVisibilityShow], [SideVisibilityHide].
-	Default value: [SideVisibilityAuto] */
-	SideVisibility string `json:"side_visibility"`
+	/* [SideBarVisibility] variable constants:
+	[SideBarVisibilityAuto], [SideBarVisibilityShow], [SideBarVisibilityHide].
+	Default value: [SideBarVisibilityAuto] */
+	SideBarVisibility string `json:"sidebar_visibility"`
 	// Sidebar button caption. Default: Hide
 	LabelHide string `json:"label_hide"`
 	// Sidebar button caption. Default: Menu
@@ -78,12 +71,12 @@ func (mnb *MenuBar) Properties() ut.IM {
 	return ut.MergeIM(
 		mnb.BaseComponent.Properties(),
 		ut.IM{
-			"value":           mnb.Value,
-			"side_bar":        mnb.SideBar,
-			"side_visibility": mnb.SideVisibility,
-			"label_hide":      mnb.LabelHide,
-			"label_menu":      mnb.LabelMenu,
-			"items":           mnb.Items,
+			"value":              mnb.Value,
+			"side_bar":           mnb.SideBar,
+			"sidebar_visibility": mnb.SideBarVisibility,
+			"label_hide":         mnb.LabelHide,
+			"label_menu":         mnb.LabelMenu,
+			"items":              mnb.Items,
 		})
 }
 
@@ -99,8 +92,8 @@ It checks the value given to the property of the [MenuBar] and always returns a 
 */
 func (mnb *MenuBar) Validation(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
-		"side_visibility": func() interface{} {
-			return mnb.CheckEnumValue(mnb.SideVisibility, SideVisibilityAuto, SideVisibility)
+		"sidebar_visibility": func() interface{} {
+			return mnb.CheckEnumValue(mnb.SideBarVisibility, SideBarVisibilityAuto, SideBarVisibility)
 		},
 		"items": func() interface{} {
 			items := []MenuBarItem{}
@@ -141,9 +134,9 @@ func (mnb *MenuBar) SetProperty(propName string, propValue interface{}) interfac
 			mnb.SideBar = ut.ToBoolean(propValue, false)
 			return mnb.SideBar
 		},
-		"side_visibility": func() interface{} {
-			mnb.SideVisibility = mnb.Validation(propName, propValue).(string)
-			return mnb.SideVisibility
+		"sidebar_visibility": func() interface{} {
+			mnb.SideBarVisibility = mnb.Validation(propName, propValue).(string)
+			return mnb.SideBarVisibility
 		},
 		"label_hide": func() interface{} {
 			mnb.LabelHide = ut.ToString(propValue, "Hide")
@@ -197,7 +190,7 @@ func (mnb *MenuBar) getComponent(name string, item MenuBarItem) (res string, err
 			label := mnb.LabelMenu
 			icon := "Bars"
 			is := ut.SM{}
-			if mnb.SideVisibility == SideVisibilityShow {
+			if mnb.SideBarVisibility == SideBarVisibilityShow {
 				cclass = []string{"selected exit"}
 				label = mnb.LabelHide
 				icon = "Close"
@@ -345,9 +338,30 @@ func TestMenuBar(cc ClientComponent) []TestComponent {
 					{Value: "help", Label: "Help", Icon: "QuestionCircle"},
 					{Value: "logout", Label: "Logout", Icon: "Exit"},
 				},
-				Value:          "search",
-				SideBar:        true,
-				SideVisibility: SideVisibilityShow,
+				Value:   "search",
+				SideBar: false,
+			}},
+		{
+			Label:         "Sidebar",
+			ComponentType: ComponentTypeMenuBar,
+			Component: &MenuBar{
+				BaseComponent: BaseComponent{
+					Id:           id + "_menubar_sidebar",
+					EventURL:     eventURL,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
+				},
+				Items: []MenuBarItem{
+					{Value: "search", Label: "Search", Icon: "Search"},
+					{Value: "edit", Label: "Edit", Icon: "Edit"},
+					{Value: "setting", Label: "Setting", Icon: "Cog"},
+					{Value: "bookmark", Label: "Bookmark", Icon: "Star"},
+					{Value: "help", Label: "Help", Icon: "QuestionCircle"},
+					{Value: "logout", Label: "Logout", Icon: "Exit"},
+				},
+				Value:             "search",
+				SideBar:           true,
+				SideBarVisibility: SideBarVisibilityShow,
 			}},
 	}
 }
