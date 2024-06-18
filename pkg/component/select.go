@@ -201,7 +201,7 @@ func (sel *Select) Render() (res string, err error) {
 	}
 	tpl := `<select id="{{ .Id }}" name="{{ .Name }}" value="{{ .Value }}"
 	{{ if ne .EventURL "" }} hx-post="{{ .EventURL }}" hx-target="{{ .Target }}" hx-swap="{{ .Swap }}"{{ end }}
-	{{ if ne .Indicator "" }} hx-indicator="#{{ .Indicator }}"{{ end }}
+	{{ if ne .Indicator "none" }} hx-indicator="#{{ .Indicator }}"{{ end }}
 	{{ if .Disabled }} disabled{{ end }}
 	{{ if .AutoFocus }} autofocus{{ end }}
 	{{ if ne .Label "" }} aria-label="{{ .Label }}"{{ end }}

@@ -219,7 +219,7 @@ func (inp *Input) Render() (res string, err error) {
 	tpl := `<{{ tagEl }} id="{{ .Id }}" name="{{ .Name }}" 
 	{{ if inputEl }} type="{{ .Type }}" value="{{ .Value }}"{{ end }}
 	{{ if ne .EventURL "" }} hx-post="{{ .EventURL }}" hx-target="{{ .Target }}" hx-swap="{{ .Swap }}"{{ end }}
-	{{ if ne .Indicator "" }} hx-indicator="#{{ .Indicator }}"{{ end }}
+	{{ if ne .Indicator "none" }} hx-indicator="#{{ .Indicator }}"{{ end }}
 	{{ if ne .Placeholder "" }} placeholder="{{ .Placeholder }}"{{ end }}
 	{{ if .ReadOnly }} readonly{{ end }}
 	{{ if .Disabled }} disabled{{ end }}

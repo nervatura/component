@@ -8,7 +8,7 @@
   height: 100%;
   width: var(--menu-side-width);
   left: 0;
-  animation: animateleft 0.4s;
+  /*animation: animateleft 0.4s;*/
   background-color: rgba(var(--accent-1), 0.95);
   z-index: 3;
   overflow-x: hidden;
@@ -16,6 +16,11 @@
   font-weight: bold;
   padding: 5px 4px 50px 2px;
   box-shadow:0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12);
+}
+
+.sidebar .label-text {
+  color: rgba(var(--accent-1c), 0.85);
+  fill: rgba(var(--accent-1c), 0.85);
 }
 
 .hide{ 
@@ -33,12 +38,16 @@
   margin: 0;
 }
 
-.state-label {
+.static-label {
   font-size: 18px;
   width: 100%;
   padding: 8px 16px;
   background-color: rgb(var(--accent-1));
   vertical-align: middle;
+}
+
+.sidebar-group {
+  padding: 2px 8px 3px;
 }
 
 @media (min-width:769px){

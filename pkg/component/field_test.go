@@ -22,6 +22,7 @@ func TestTestField(t *testing.T) {
 	testFieldResponse(ResponseEvent{
 		Trigger: &Selector{}, TriggerName: "selector", Name: SelectorEventSelected,
 		Value: ut.IM{"row": ut.IM{}}})
+	testFieldResponse(ResponseEvent{Trigger: &List{}, TriggerName: "list", Value: ut.IM{"row": ut.IM{}}})
 }
 
 func TestField_GetProperty(t *testing.T) {

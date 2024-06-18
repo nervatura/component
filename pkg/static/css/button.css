@@ -62,6 +62,19 @@ button:focus, button:hover {
 button[button-type='border'].selected {
   border-color: rgb(var(--functional-yellow))!important;
 }
+
+button.left {
+  text-align: left;
+}
+
+button.center {
+  text-align: center;
+}
+
+button.right {
+  text-align: right;
+}
+
 .badge {
   font-weight: bold;
   font-size: 14px;

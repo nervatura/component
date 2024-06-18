@@ -421,6 +421,9 @@ func (lst *List) Render() (res string, err error) {
 			lbl.SetProperty("request_map", lbl)
 			return rowID
 		},
+		"isValue": func(row ut.IM, fieldName string) bool {
+			return (ut.ToString(row[fieldName], "") != "")
+		},
 		"rowValue": func(row ut.IM, fieldName string) string {
 			return ut.ToString(row[fieldName], "")
 		},
@@ -444,8 +447,8 @@ func (lst *List) Render() (res string, err error) {
 	{{ if ne $.EventURL "" }} hx-post="{{ $.EventURL }}" hx-target="{{ $.Target }}" hx-swap="{{ $.Swap }}"{{ end }}
 	{{ if ne $.Indicator "" }} hx-indicator="#{{ $.Indicator }}"{{ end }}
 	>
-	<div class="border-bottom list-label" ><span>{{ rowValue $row $.LabelField }}</span></div>
-  <div class="list-value" ><span>{{ rowValue $row $.LabelValue }}</span></div>
+	{{ if isValue $row $.LabelField }}<div class="border-bottom list-label" ><span>{{ rowValue $row $.LabelField }}</span></div>{{ end }}
+  {{ if isValue $row $.LabelValue }}<div class="list-value" ><span>{{ rowValue $row $.LabelValue }}</span></div>{{ end }}
 	</div>
 	{{ if $.DeleteItem }}<div id="{{ rowID $row $index "delete_item" }}" class="list-delete-cell" 
 	{{ if ne $.EventURL "" }} hx-post="{{ $.EventURL }}" hx-target="{{ $.Target }}" hx-swap="{{ $.Swap }}"{{ end }}
@@ -463,8 +466,8 @@ func (lst *List) Render() (res string, err error) {
 var testListRows []ut.IM = []ut.IM{
 	{"lslabel": "Label 1", "lsvalue": "Value row 1"},
 	{"lslabel": "Label 2", "lsvalue": "Value row 2"},
-	{"lslabel": "Label 3", "lsvalue": "Value row 3"},
-	{"lslabel": "Label 4", "lsvalue": "Value row 6"},
+	{"lslabel": "", "lsvalue": "Value row 3"},
+	{"lslabel": "", "lsvalue": "Value row 6"},
 	{"lslabel": "Label 5", "lsvalue": "Value row 6"},
 	{"lslabel": "Label 6", "lsvalue": "Value row 6"},
 	{"lslabel": "Label 7", "lsvalue": "Value row 7"},

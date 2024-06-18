@@ -188,7 +188,7 @@ func (ico *Icon) Render() (res string, err error) {
 	tpl := `<svg xmlns="http://www.w3.org/2000/svg" 
 	id="{{ .Id }}" name="{{ .Name }}" viewBox="{{ viewBox }}" width={{ .Width }} height={{ .Height }}
 	{{ if ne .EventURL "" }} class="link {{ customClass }}" hx-post="{{ .EventURL }}" hx-target="{{ .Target }}" hx-swap="{{ .Swap }}"{{ end }}
-	{{ if ne .Indicator "" }} hx-indicator="#{{ .Indicator }}"{{ end }}
+	{{ if ne .Indicator "none" }} hx-indicator="#{{ .Indicator }}"{{ end }}
 	{{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}
 	><g{{ if ne .Color "" }} fill="{{ .Color }}"{{ end }}><path d="{{ iPath }}"></path></g>
 	</svg>`

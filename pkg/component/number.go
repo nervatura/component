@@ -213,7 +213,7 @@ func (inp *NumberInput) Render() (res string, err error) {
 	}
 	tpl := `<input id="{{ .Id }}" name="{{ .Name }}" type="number" value="{{ value }}"
 	{{ if ne .EventURL "" }} hx-post="{{ .EventURL }}" hx-target="{{ .Target }}" hx-swap="{{ .Swap }}"{{ end }}
-	{{ if ne .Indicator "" }} hx-indicator="#{{ .Indicator }}"{{ end }}
+	{{ if ne .Indicator "none" }} hx-indicator="#{{ .Indicator }}"{{ end }}
 	{{ if .ReadOnly }} readonly{{ end }}
 	{{ if .Disabled }} disabled{{ end }}
 	{{ if .AutoFocus }} autofocus{{ end }}

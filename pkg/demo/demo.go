@@ -94,6 +94,7 @@ var DemoMap map[string][]DemoView = map[string][]DemoView{
 		{ComponentType: ct.ComponentTypeList, TestData: ct.TestList},
 		{ComponentType: ct.ComponentTypeMenuBar, TestData: ct.TestMenuBar},
 		{ComponentType: ct.ComponentTypePagination, TestData: ct.TestPagination},
+		{ComponentType: ct.ComponentTypeSideBar, TestData: ct.TestSidebar},
 	},
 	ComponentGroupTemplate: {
 		{ComponentType: ct.ComponentTypeLogin, TestData: ct.TestLogin},

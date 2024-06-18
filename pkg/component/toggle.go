@@ -148,7 +148,7 @@ func (tgl *Toggle) Render() (res string, err error) {
 	}
 	tpl := `<div id="{{ .Id }}" name="{{ .Name }}" 
 	{{ if eq .Disabled false }}{{ if ne .EventURL "" }} hx-post="{{ .EventURL }}" hx-target="{{ .Target }}" hx-swap="{{ .Swap }}"{{ end }}
-	{{ if ne .Indicator "" }} hx-indicator="#{{ .Indicator }}"{{ end }}{{ end }}
+	{{ if ne .Indicator "none" }} hx-indicator="#{{ .Indicator }}"{{ end }}{{ end }}
 	 class="toggle {{ customClass }}{{ if .Full }} full{{ end }}{{ if .Disabled }} toggle-disabled{{ end }}
 	{{ if .Border }} toggle-border{{ end }}{{ if .Value }} toggle-on{{ else }} toggle-off{{ end }}"
 	{{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}

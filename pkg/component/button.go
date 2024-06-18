@@ -276,9 +276,9 @@ func (btn *Button) Render() (res string, err error) {
 	{{ if ne .Label "" }} aria-label="{{ .Label }}" title="{{ .Label }}"{{ end }}
 	 class="{{ .Align }}{{ if .Small }} small-button{{ end }}{{ if .Full }} full{{ end }}{{ if .Selected }} selected{{ end }}{{ if .HideLabel }} hidelabel{{ end }} {{ customClass }}"
 	{{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}
-	>{{ if and (ne .Icon "") (ne .Align "align-right") }}{{ buttonComponent "icon" }}{{ end }}
+	>{{ if and (ne .Icon "") (ne .Align "right") }}{{ buttonComponent "icon" }}{{ end }}
 	{{ if .LabelComponent }}{{ buttonComponent "label" }}{{ else }}<span>{{ .Label }}</span>{{ end }}
-	{{ if and (ne .Icon "") (eq .Align "align-right") }}{{ buttonComponent "icon" }}{{ end }}
+	{{ if and (ne .Icon "") (eq .Align "right") }}{{ buttonComponent "icon" }}{{ end }}
 	{{ if .ShowBadge }}<span class="right" ><span class="badge{{ if .Selected }} selected-badge{{ end }}" >{{ .Badge }}</span></span>{{ end }}
 	</button>`
 
@@ -379,7 +379,7 @@ func TestButton(cc ClientComponent) []TestComponent {
 					RequestMap:   requestMap,
 				},
 				ButtonStyle: ButtonStyleBorder,
-				Align:       TextAlignCenter,
+				Align:       TextAlignLeft,
 				Label:       "Border full and badge",
 				Full:        true,
 				Badge:       0,

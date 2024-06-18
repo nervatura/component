@@ -23,13 +23,15 @@ const (
 	FieldTypeLink     = "link"
 	FieldTypeUpload   = "upload"
 	FieldTypeSelector = "selector"
+	FieldTypeList     = "list"
 )
 
 // [Field] Type values
 var FieldType []string = []string{
 	FieldTypeButton, FieldTypeString, FieldTypeText, FieldTypeColor, FieldTypePassword,
 	FieldTypeInteger, FieldTypeNumber, FieldTypeDate, FieldTypeTime, FieldTypeDateTime,
-	FieldTypeBool, FieldTypeSelect, FieldTypeLink, FieldTypeUpload, FieldTypeSelector}
+	FieldTypeBool, FieldTypeSelect, FieldTypeLink, FieldTypeUpload, FieldTypeSelector,
+	FieldTypeList}
 
 // Multi-type input component
 type Field struct {
@@ -199,6 +201,19 @@ func (fld *Field) getComponent() (res string, err error) {
 			setProperty(inp)
 			return inp
 		},
+		FieldTypeList: func() ClientComponent {
+			inp := &List{
+				BaseComponent: BaseComponent{
+					Id:           fld.Id + "_" + fld.Type,
+					EventURL:     fld.EventURL,
+					OnResponse:   fld.OnResponse,
+					RequestValue: fld.RequestValue,
+					RequestMap:   fld.RequestMap,
+				},
+			}
+			setProperty(inp)
+			return inp
+		},
 		FieldTypeColor: func() ClientComponent {
 			inp := ccInp()
 			setProperty(inp)
@@ -325,6 +340,9 @@ var testFieldResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt Resp
 		evt.Trigger.SetProperty("show_badge", true)
 	case "link":
 		return toast(ut.ToString(evt.Value, ""))
+	case "list":
+		row := evt.Value.(ut.IM)["row"].(ut.IM)
+		return toast(ut.ToString(row["lsvalue"], ""))
 	case "selector":
 		switch evt.Name {
 		case SelectorEventLink:
@@ -625,6 +643,36 @@ func TestField(cc ClientComponent) []TestComponent {
 					"rows":    testSelectorRows,
 					"link":    true,
 					"is_null": true,
+				},
+			}},
+		{
+			Label:         "List",
+			ComponentType: ComponentTypeField,
+			Component: &Field{
+				BaseComponent: BaseComponent{
+					Id:           id + "_list",
+					EventURL:     eventURL,
+					OnResponse:   testFieldResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
+				},
+				Type: FieldTypeList,
+				Value: ut.IM{
+					"name": "list",
+					"rows": []ut.IM{
+						{"lslabel": "Label 1", "lsvalue": "Value row 1"},
+						{"lslabel": "Label 2", "lsvalue": "Value row 2"},
+						{"lslabel": "", "lsvalue": "Value row 3"},
+						{"lslabel": "", "lsvalue": "Value row 6"},
+						{"lslabel": "", "lsvalue": "Value row 6"},
+						{"lslabel": "", "lsvalue": "Value row 6"},
+						{"lslabel": "Label 7", "lsvalue": "Value row 7"},
+						{"lslabel": "Label 8", "lsvalue": "Value row 8"},
+						{"lslabel": "Label 9", "lsvalue": "Value row 9"},
+					},
+					"pagination":  PaginationTypeNone,
+					"delete_item": true,
+					"edit_icon":   "Plus",
 				},
 			}},
 	}

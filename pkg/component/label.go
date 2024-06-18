@@ -194,7 +194,7 @@ func (lbl *Label) Render() (res string, err error) {
 	}
 	head := `id="{{ .Id }}" name="{{ .Name }}"
 	{{ if ne .EventURL "" }} hx-post="{{ .EventURL }}" hx-target="{{ .Target }}" hx-swap="{{ .Swap }}"{{ end }}
-	{{ if ne .Indicator "" }} hx-indicator="#{{ .Indicator }}"{{ end }}`
+	{{ if ne .Indicator "none" }} hx-indicator="#{{ .Indicator }}"{{ end }}`
 	tpl := `{{ if or (ne .LeftIcon "") (ne .RightIcon "") }}<div ` + head + `
 	 class="label row{{ if .Border }} label-border{{ end }}{{ if .Full }} full{{ end }}
 	 {{ if ne .EventURL "" }} label-link{{ else }} label-text{{ end }}{{ if and (ne .LeftIcon "") (.Centered) }} centered{{ end }} {{ customClass }}"
