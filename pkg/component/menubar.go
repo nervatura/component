@@ -295,7 +295,7 @@ func (mnb *MenuBar) Render() (res string, err error) {
 	tpl := `<div id="{{ .Id }}" name="{{ .Name }}" class="menubar {{ customClass }}"
 	{{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}
 	><div class="cell">
-	{{ if .SideBar }}<div id="mnu_sidebar" class="menuitem sidebar">{{ sideBar }}</div>{{ end }}
+	{{ if .SideBar }}<div id="mnu_sidebar" class="menuitem menu-sidebar">{{ sideBar }}</div>{{ end }}
 	{{ range $index, $item := .Items }}
 	<div id="mnu_{{ $item.Value }}_large" class="hide-small hide-medium menuitem">{{ menuItem $item }}</div>
 	{{ end }}

@@ -41,7 +41,7 @@
   fill: rgb(var(--functional-yellow));
 }
 @media (min-width:769px){
-  .sidebar{
+  .menu-sidebar{
     display: none;
   }
 }
