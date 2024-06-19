@@ -93,7 +93,7 @@ It checks the value given to the property of the [MenuBar] and always returns a 
 func (mnb *MenuBar) Validation(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"sidebar_visibility": func() interface{} {
-			return mnb.CheckEnumValue(mnb.SideBarVisibility, SideBarVisibilityAuto, SideBarVisibility)
+			return mnb.CheckEnumValue(ut.ToString(propValue, ""), SideBarVisibilityAuto, SideBarVisibility)
 		},
 		"items": func() interface{} {
 			items := []MenuBarItem{}
@@ -176,6 +176,7 @@ func (mnb *MenuBar) response(evt ResponseEvent) (re ResponseEvent) {
 		}
 	default:
 		mnbEvt.Name = MenuBarEventSide
+		mnbEvt.Value = MenuBarEventSide
 	}
 	if mnb.OnResponse != nil {
 		return mnb.OnResponse(mnbEvt)
