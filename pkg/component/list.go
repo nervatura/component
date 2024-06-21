@@ -104,7 +104,7 @@ func (lst *List) Validation(propName string, propValue interface{}) interface{} 
 			return ut.ToIMA(propValue, []ut.IM{})
 		},
 		"pagination": func() interface{} {
-			return lst.CheckEnumValue(lst.Pagination, PaginationTypeTop, PaginationType)
+			return lst.CheckEnumValue(ut.ToString(propValue, ""), PaginationTypeTop, PaginationType)
 		},
 		"current_page": func() interface{} {
 			value := ut.ToInteger(propValue, 1)

@@ -211,7 +211,7 @@ func (tbl *Table) Validation(propName string, propValue interface{}) interface{}
 			return fields
 		},
 		"pagination": func() interface{} {
-			return tbl.CheckEnumValue(tbl.Pagination, PaginationTypeTop, PaginationType)
+			return tbl.CheckEnumValue(ut.ToString(propValue, ""), PaginationTypeTop, PaginationType)
 		},
 		"current_page": func() interface{} {
 			value := ut.ToInteger(propValue, 1)
