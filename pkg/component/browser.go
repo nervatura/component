@@ -397,10 +397,7 @@ func (bro *Browser) response(evt ResponseEvent) (re ResponseEvent) {
 	}
 	switch evt.TriggerName {
 	case "table":
-		if ut.Contains([]string{TableEventAddItem, TableEventEditCell, TableEventRowSelected}, evt.Name) && (bro.OnResponse != nil) {
-			return bro.OnResponse(evt)
-		}
-		return evt
+		broEvt = evt
 
 	case "btn_export":
 		return bro.exportData()
@@ -414,10 +411,7 @@ func (bro *Browser) response(evt ResponseEvent) (re ResponseEvent) {
 		evt.Header = ut.SM{
 			HeaderRetarget: "#" + ut.ToString(evt.Trigger.GetProperty("id"), ""),
 		}
-		if bro.OnResponse != nil {
-			return bro.OnResponse(evt)
-		}
-		return evt
+		broEvt = evt
 
 	case "hide_header", "btn_search", "btn_bookmark", "btn_help", "btn_views", "btn_columns",
 		"btn_filter", "btn_total", "menu_item", "col_item", "filter_delete", "btn_ok", "edit_row",

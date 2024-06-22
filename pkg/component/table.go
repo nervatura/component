@@ -389,10 +389,10 @@ func (tbl *Table) response(evt ResponseEvent) (re ResponseEvent) {
 		if evt.Name == PaginationEventPageSize {
 			tbl.SetProperty("page_size", tblEvt.Value)
 			tbl.SetProperty("current_page", 1)
-			return tblEvt
+		} else {
+			tblEvt.Name = TableEventCurrentPage
+			tbl.SetProperty("current_page", tblEvt.Value)
 		}
-		tblEvt.Name = TableEventCurrentPage
-		tbl.SetProperty("current_page", tblEvt.Value)
 
 	case "header_sort":
 		sortCol := ut.ToString(evt.Trigger.GetProperty("data").(ut.IM)["fieldname"], "")
@@ -402,7 +402,6 @@ func (tbl *Table) response(evt ResponseEvent) (re ResponseEvent) {
 		}
 		tbl.SetProperty("sort_col", sortCol)
 		tbl.SortRows(tbl.SortCol, fieldType, tbl.SortAsc)
-		return tblEvt
 
 	case "filter", "btn_add", "link_cell", "data_row":
 		evtMap := map[string]func(){

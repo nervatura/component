@@ -250,10 +250,10 @@ func (lst *List) response(evt ResponseEvent) (re ResponseEvent) {
 		if evt.Name == PaginationEventPageSize {
 			lst.SetProperty("page_size", lstEvt.Value)
 			lst.SetProperty("current_page", 1)
-			return lstEvt
+		} else {
+			lstEvt.Name = ListEventCurrentPage
+			lst.SetProperty("current_page", lstEvt.Value)
 		}
-		lstEvt.Name = ListEventCurrentPage
-		lst.SetProperty("current_page", lstEvt.Value)
 
 	case "filter":
 		lstEvt.Name = ListEventFilterChange
