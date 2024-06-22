@@ -236,27 +236,42 @@ func (fld *Field) getComponent() (res string, err error) {
 		FieldTypeNumber: func() ClientComponent {
 			inp := ccNum()
 			setProperty(inp)
+			if _, found := fld.Value["value"]; found {
+				inp.SetProperty("", fld.Value["value"])
+			}
 			return inp
 		},
 		FieldTypeInteger: func() ClientComponent {
 			inp := ccNum()
 			inp.Integer = true
 			setProperty(inp)
+			if _, found := fld.Value["value"]; found {
+				inp.SetProperty("", fld.Value["value"])
+			}
 			return inp
 		},
 		FieldTypeDate: func() ClientComponent {
 			dti := ccDti()
 			setProperty(dti)
+			if _, found := fld.Value["value"]; found {
+				dti.SetProperty("", fld.Value["value"])
+			}
 			return dti
 		},
 		FieldTypeTime: func() ClientComponent {
 			dti := ccDti()
 			setProperty(dti)
+			if _, found := fld.Value["value"]; found {
+				dti.SetProperty("", fld.Value["value"])
+			}
 			return dti
 		},
 		FieldTypeDateTime: func() ClientComponent {
 			dti := ccDti()
 			setProperty(dti)
+			if _, found := fld.Value["value"]; found {
+				dti.SetProperty("", fld.Value["value"])
+			}
 			return dti
 		},
 		FieldTypeSelect: func() ClientComponent {
@@ -271,6 +286,9 @@ func (fld *Field) getComponent() (res string, err error) {
 				Full: true,
 			}
 			setProperty(sel)
+			if _, found := fld.Value["value"]; found {
+				sel.SetProperty("", fld.Value["value"])
+			}
 			return sel
 		},
 		FieldTypeLink: func() ClientComponent {
@@ -512,6 +530,7 @@ func TestField(cc ClientComponent) []TestComponent {
 				Type: FieldTypeDate,
 				Value: ut.IM{
 					"name":    "date",
+					"value":   "2024-12-24",
 					"is_null": false,
 				},
 			}},
@@ -530,6 +549,7 @@ func TestField(cc ClientComponent) []TestComponent {
 				Value: ut.IM{
 					"name":    "time",
 					"is_null": true,
+					"value":   "12:24",
 				},
 			}},
 		{
@@ -547,6 +567,7 @@ func TestField(cc ClientComponent) []TestComponent {
 				Value: ut.IM{
 					"name":    "datetime",
 					"is_null": false,
+					"value":   "2024-12-24T12:24",
 				},
 			}},
 		{
