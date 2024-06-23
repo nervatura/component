@@ -70,7 +70,7 @@ func (fld *Field) Validation(propName string, propValue interface{}) interface{}
 			return fld.CheckEnumValue(ut.ToString(propValue, ""), FieldTypeString, FieldType)
 		},
 		"value": func() interface{} {
-			value := ut.SetIMValue(fld.Data, "", "")
+			value := ut.SetIMValue(fld.Value, "", "")
 			if imap, valid := propValue.(ut.IM); valid {
 				value = ut.MergeIM(value, imap)
 			}
@@ -275,6 +275,10 @@ func (fld *Field) getComponent() (res string, err error) {
 			return dti
 		},
 		FieldTypeSelect: func() ClientComponent {
+			options := []SelectOption{}
+			if values, found := fld.Value["options"].([]SelectOption); found {
+				options = values
+			}
 			sel := &Select{
 				BaseComponent: BaseComponent{
 					Id:           fld.Id + "_" + fld.Type,
@@ -283,7 +287,8 @@ func (fld *Field) getComponent() (res string, err error) {
 					RequestValue: fld.RequestValue,
 					RequestMap:   fld.RequestMap,
 				},
-				Full: true,
+				Options: options,
+				Full:    true,
 			}
 			setProperty(sel)
 			if _, found := fld.Value["value"]; found {

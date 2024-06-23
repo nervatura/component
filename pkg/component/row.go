@@ -114,13 +114,13 @@ func (row *Row) SetProperty(propName string, propValue interface{}) interface{} 
 func (row *Row) getComponent(index int, coltype string) (res string, err error) {
 	ccMap := map[string]func() ClientComponent{
 		"field": func() ClientComponent {
-			field := row.Columns[index].Value
+			field := &row.Columns[index].Value
 			field.Id = row.Id + "_" + ut.ToString(index, "") + "_" + field.Name
 			field.EventURL = row.EventURL
 			field.OnResponse = row.OnResponse
 			field.RequestValue = row.RequestValue
 			field.RequestMap = row.RequestMap
-			return &field
+			return field
 		},
 		"label": func() ClientComponent {
 			return &Label{
