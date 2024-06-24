@@ -197,6 +197,11 @@ func (bro *Browser) Validation(propName string, propValue interface{}) interface
 			if cols, valid := propValue.(map[string]bool); valid {
 				value = cols
 			}
+			if cols, valid := propValue.(map[string]interface{}); valid {
+				for key, ivalue := range cols {
+					value[key] = ut.ToBoolean(ivalue, false)
+				}
+			}
 
 			return value
 		},
@@ -204,6 +209,19 @@ func (bro *Browser) Validation(propName string, propValue interface{}) interface
 			value := bro.Filters
 			if filters, valid := propValue.([]BrowserFilter); valid {
 				value = filters
+			}
+			if filters, valid := propValue.([]interface{}); valid {
+				value = []BrowserFilter{}
+				for _, filter := range filters {
+					if filterMap, valid := filter.(ut.IM); valid {
+						value = append(value, BrowserFilter{
+							Or:    ut.ToBoolean(filterMap["or"], false),
+							Field: ut.ToString(filterMap["field"], ""),
+							Comp:  ut.ToString(filterMap["comp"], ""),
+							Value: ut.ToString(filterMap["value"], ""),
+						})
+					}
+				}
 			}
 			if value == nil {
 				value = make([]BrowserFilter, 0)
@@ -216,6 +234,16 @@ func (bro *Browser) Validation(propName string, propValue interface{}) interface
 				for fname, fvalue := range mFields {
 					fvalue.FieldType = bro.CheckEnumValue(fvalue.FieldType, TableFieldTypeString, TableMetaType)
 					fields[fname] = fvalue
+				}
+			}
+			if mFields, valid := propValue.(ut.IM); valid {
+				for fname, fvalue := range mFields {
+					if values, valid := fvalue.(ut.IM); valid {
+						fieldType := bro.CheckEnumValue(ut.ToString(values["field_type"], ""), TableFieldTypeString, TableMetaType)
+						fields[fname] = BrowserMetaField{
+							FieldType: fieldType, Label: ut.ToString(values["label"], ""),
+						}
+					}
 				}
 			}
 			return fields
@@ -885,7 +913,7 @@ func (bro *Browser) getComponent(name string, data ut.IM) (res string, err error
 				FilterPlaceholder: bro.msg("browser_placeholder"),
 				FilterValue:       bro.FilterValue,
 				AddItem:           bro.AddItem,
-				LabelAdd:          bro.msg("browser_label_new"),
+				LabelAdd:          ut.ToString(bro.LabelAdd, bro.msg("browser_label_new")),
 				AddIcon:           bro.AddIcon,
 				LabelYes:          bro.LabelYes,
 				LabelNo:           bro.LabelNo,

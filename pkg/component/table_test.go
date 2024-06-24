@@ -161,6 +161,18 @@ func TestTable_Validation(t *testing.T) {
 			},
 			want: int64(5),
 		},
+		{
+			name: "fields",
+			args: args{
+				propName: "fields",
+				propValue: []interface{}{
+					ut.IM{"name": "name"},
+				},
+			},
+			want: []TableField{
+				{Name: "name", FieldType: "string", Label: "", TextAlign: "left", VerticalAlign: "middle", Format: false},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

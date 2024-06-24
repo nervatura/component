@@ -130,7 +130,7 @@ type TableField struct {
 	in the case of a number field */
 	Format bool `json:"format"`
 	// Custom column definition
-	Column *TableColumn `json:"column"`
+	Column *TableColumn `json:"-"`
 }
 
 // [Table] column
@@ -199,6 +199,20 @@ func (tbl *Table) Validation(propName string, propValue interface{}) interface{}
 			fields := []TableField{}
 			if fd, valid := propValue.([]TableField); valid && (fd != nil) {
 				fields = fd
+			}
+			if tblFields, valid := propValue.([]interface{}); valid {
+				for _, tblField := range tblFields {
+					if values, valid := tblField.(ut.IM); valid {
+						fields = append(fields, TableField{
+							Name:          ut.ToString(values["name"], ""),
+							FieldType:     tbl.CheckEnumValue(ut.ToString(values["field_type"], ""), TableFieldTypeString, TableFieldType),
+							Label:         ut.ToString(values["label"], ""),
+							TextAlign:     tbl.CheckEnumValue(ut.ToString(values["text_align"], ""), TextAlignLeft, TextAlign),
+							VerticalAlign: tbl.CheckEnumValue(ut.ToString(values["vertical_align"], ""), VerticalAlignMiddle, VerticalAlign),
+							Format:        ut.ToBoolean(values["format"], false),
+						})
+					}
+				}
 			}
 			if len(fields) == 0 {
 				if len(tbl.Rows) > 0 {
@@ -383,6 +397,7 @@ func (tbl *Table) SortRows(fieldName, fieldType string, sortAsc bool) {
 func (tbl *Table) response(evt ResponseEvent) (re ResponseEvent) {
 	tblEvt := ResponseEvent{
 		Trigger: tbl, TriggerName: tbl.Name, Value: evt.Value,
+		Header: ut.SM{HeaderRetarget: "#" + tbl.Id},
 	}
 	switch evt.TriggerName {
 	case "top_pagination", "bottom_pagination":

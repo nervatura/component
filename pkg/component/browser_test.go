@@ -134,12 +134,42 @@ func TestBrowser_Validation(t *testing.T) {
 			want: []BrowserFilter{},
 		},
 		{
+			name: "filters2",
+			args: args{
+				propName: "filters",
+				propValue: []interface{}{
+					ut.IM{"or": false},
+				},
+			},
+			want: []BrowserFilter{
+				{Or: false, Field: "", Comp: "", Value: ""},
+			},
+		},
+		{
 			name: "visible_columns",
 			args: args{
 				propName:  "visible_columns",
 				propValue: []map[string]bool{{"fieldName": true}},
 			},
 			want: map[string]bool{"fieldName": true},
+		},
+		{
+			name: "visible_columns2",
+			args: args{
+				propName:  "visible_columns",
+				propValue: map[string]interface{}{"fieldName": true},
+			},
+			want: map[string]bool{"fieldName": true},
+		},
+		{
+			name: "meta_fields",
+			args: args{
+				propName:  "meta_fields",
+				propValue: ut.IM{"fieldName": ut.IM{"field_type": "string", "label": "Label"}},
+			},
+			want: map[string]BrowserMetaField{
+				"fieldName": {FieldType: "string", Label: "Label"},
+			},
 		},
 	}
 	for _, tt := range tests {
