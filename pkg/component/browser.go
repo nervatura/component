@@ -430,20 +430,9 @@ func (bro *Browser) response(evt ResponseEvent) (re ResponseEvent) {
 	case "btn_export":
 		return bro.exportData()
 
-	case "filter_value":
-		filterIndex := ut.ToInteger(evt.Trigger.GetProperty("data").(ut.IM)["index"], 0)
-		filters := bro.GetProperty("filters").([]BrowserFilter)
-		filters[filterIndex].Value = evt.Value
-		bro.SetProperty("filters", filters)
-		evt.Name = BrowserEventChangeFilter
-		evt.Header = ut.SM{
-			HeaderRetarget: "#" + ut.ToString(evt.Trigger.GetProperty("id"), ""),
-		}
-		broEvt = evt
-
 	case "hide_header", "btn_search", "btn_bookmark", "btn_help", "btn_views", "btn_columns",
 		"btn_filter", "btn_total", "menu_item", "col_item", "filter_delete", "btn_ok", "edit_row",
-		"filter_field", "filter_comp":
+		"filter_field", "filter_comp", "filter_value":
 		evtMap := map[string]func(){
 			"hide_header": func() {
 				broEvt.Name = BrowserEventChange
@@ -515,6 +504,13 @@ func (bro *Browser) response(evt ResponseEvent) (re ResponseEvent) {
 				filterIndex := ut.ToInteger(evt.Trigger.GetProperty("data").(ut.IM)["index"], 0)
 				filters := bro.GetProperty("filters").([]BrowserFilter)
 				filters[filterIndex].Comp = ut.ToString(evt.Value, "")
+				bro.SetProperty("filters", filters)
+			},
+			"filter_value": func() {
+				evt.Name = BrowserEventChangeFilter
+				filterIndex := ut.ToInteger(evt.Trigger.GetProperty("data").(ut.IM)["index"], 0)
+				filters := bro.GetProperty("filters").([]BrowserFilter)
+				filters[filterIndex].Value = evt.Value
 				bro.SetProperty("filters", filters)
 			},
 			"filter_delete": func() {
