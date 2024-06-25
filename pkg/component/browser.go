@@ -507,7 +507,7 @@ func (bro *Browser) response(evt ResponseEvent) (re ResponseEvent) {
 				bro.SetProperty("filters", filters)
 			},
 			"filter_value": func() {
-				evt.Name = BrowserEventChangeFilter
+				broEvt.Name = BrowserEventChangeFilter
 				filterIndex := ut.ToInteger(evt.Trigger.GetProperty("data").(ut.IM)["index"], 0)
 				filters := bro.GetProperty("filters").([]BrowserFilter)
 				filters[filterIndex].Value = evt.Value
