@@ -1,4 +1,4 @@
-## 1.3.1 - 1.3.9
+## 1.3.1 - 1.3.10
 - Browser BrowserEventChangeFilter bug fixes
 - Browser VisibleColumns, Filters, MetaFields validation bug fixes
 - Table Fields validation bug fixes
@@ -7,6 +7,7 @@
 - Table and List pagination bug fixes
 - Menubar SideBarVisibility and MenuBarEventSide bug fixes
 - Menubar sidebar bug fixes
+- List and Table indicator bug fixes
 
 ## 1.3.0
 - new Sidebar component

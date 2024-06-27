@@ -441,18 +441,18 @@ func (lst *List) Render() (res string, err error) {
 	<li class="list-row border-bottom">
 	{{ if $.EditItem }}<div id="{{ rowID $row $index "edit_item" }}" class="list-edit-cell" 
 	{{ if ne $.EventURL "" }} hx-post="{{ $.EventURL }}" hx-target="{{ $.Target }}" hx-swap="{{ $.Swap }}"{{ end }}
-	{{ if ne $.Indicator "" }} hx-indicator="#{{ $.Indicator }}"{{ end }}
+	{{ if ne $.Indicator "none" }} hx-indicator="#{{ $.Indicator }}"{{ end }}
 	>{{ listComponent "edit_icon" }}</div>{{ end }}
 	<div id="{{ rowID $row $index "edit_item" }}" class="list-value-cell {{ if $.EditItem }} cursor-pointer{{ end }}" 
 	{{ if ne $.EventURL "" }} hx-post="{{ $.EventURL }}" hx-target="{{ $.Target }}" hx-swap="{{ $.Swap }}"{{ end }}
-	{{ if ne $.Indicator "" }} hx-indicator="#{{ $.Indicator }}"{{ end }}
+	{{ if ne $.Indicator "none" }} hx-indicator="#{{ $.Indicator }}"{{ end }}
 	>
 	{{ if isValue $row $.LabelField }}<div class="border-bottom list-label" ><span>{{ rowValue $row $.LabelField }}</span></div>{{ end }}
   {{ if isValue $row $.LabelValue }}<div class="list-value" ><span>{{ rowValue $row $.LabelValue }}</span></div>{{ end }}
 	</div>
 	{{ if $.DeleteItem }}<div id="{{ rowID $row $index "delete_item" }}" class="list-delete-cell" 
 	{{ if ne $.EventURL "" }} hx-post="{{ $.EventURL }}" hx-target="{{ $.Target }}" hx-swap="{{ $.Swap }}"{{ end }}
-	{{ if ne $.Indicator "" }} hx-indicator="#{{ $.Indicator }}"{{ end }}
+	{{ if ne $.Indicator "none" }} hx-indicator="#{{ $.Indicator }}"{{ end }}
 	>{{ listComponent "delete_icon" }}</div>{{ end }}
 	</li>
 	{{ end }}

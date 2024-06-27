@@ -854,14 +854,14 @@ func (tbl *Table) Render() (res string, err error) {
 	<th id="{{ colID $col }}" name="header_cell" 
 	class="sort {{ sortClass $col.Id }}" 
 	{{ if ne $.EventURL "" }} hx-post="{{ $.EventURL }}" hx-target="{{ $.Target }}" hx-swap="{{ $.Swap }}"{{ end }}
-	{{ if ne $.Indicator "" }} hx-indicator="#{{ $.Indicator }}"{{ end }} 
+	{{ if ne $.Indicator "none" }} hx-indicator="#{{ $.Indicator }}"{{ end }} 
 	{{ if cellStyle $col.HeaderStyle }} style="{{ range $key, $value := $col.HeaderStyle }}{{ $key }}:{{ $value }};{{ end }}"{{ end }} 
 	>{{ $col.Header }}</th>
 	{{ end }}</tr></thead>
 	<tbody>{{ range $index, $row := pageRows }}
 	<tr id="{{ rowID $row $index }}" class="{{ pointerClass $row }}" 
 	{{ if and ($.RowSelected) (ne $.EventURL "") }} hx-post="{{ $.EventURL }}" hx-target="{{ $.Target }}" hx-swap="{{ $.Swap }}"{{ end }}
-	{{ if and ($.RowSelected) (ne $.Indicator "") }} hx-indicator="#{{ $.Indicator }}"{{ end }}
+	{{ if and ($.RowSelected) (ne $.Indicator "none") }} hx-indicator="#{{ $.Indicator }}"{{ end }}
 	>{{ range $icol, $col := cols }}<td
 	{{ if cellStyle $col.CellStyle }} style="{{ range $key, $value := $col.CellStyle }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}
 	>{{ cellValue $row $col }}</td>{{ end }}</tr>
