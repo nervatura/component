@@ -19,6 +19,7 @@ const (
 	TableEventAddItem      = "add_item"
 	TableEventEditCell     = "edit_cell"
 	TableEventRowSelected  = "row_selected"
+	TableEventSort         = "table_sort"
 
 	TableFieldTypeString   = "string"
 	TableFieldTypeInteger  = "integer"
@@ -417,6 +418,8 @@ func (tbl *Table) response(evt ResponseEvent) (re ResponseEvent) {
 		}
 		tbl.SetProperty("sort_col", sortCol)
 		tbl.SortRows(tbl.SortCol, fieldType, tbl.SortAsc)
+		tblEvt.Name = TableEventSort
+		tblEvt.Value = sortCol
 
 	case "filter", "btn_add", "link_cell", "data_row":
 		evtMap := map[string]func(){
