@@ -529,6 +529,7 @@ func TestList(cc ClientComponent) []TestComponent {
 					OnResponse:   testListResponse,
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
+					Indicator:    IndicatorSpinner,
 				},
 				Rows:        testListRows,
 				Pagination:  PaginationTypeTop,

@@ -89,7 +89,7 @@ func (app *Application) Validation(propName string, propValue interface{}) inter
 		"script": func() interface{} {
 			value := []string{
 				"https://unpkg.com/htmx.org@latest",
-				"https://unpkg.com/htmx.org/dist/ext/remove-me.js",
+				"https://unpkg.com/htmx-ext-remove-me@2.0.0/remove-me.js",
 				//"static/js/htmx.min.js",
 				//"static/js/remove-me.js",
 			}

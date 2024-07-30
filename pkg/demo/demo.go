@@ -101,6 +101,7 @@ var DemoMap map[string][]DemoView = map[string][]DemoView{
 		{ComponentType: ct.ComponentTypeLogin, TestData: ct.TestLogin},
 		{ComponentType: ct.ComponentTypeLocale, TestData: ct.TestLocale},
 		{ComponentType: ct.ComponentTypeBrowser, TestData: ct.TestBrowser},
+		{ComponentType: ct.ComponentTypeEditor, TestData: ct.TestEditor},
 	},
 }
 
