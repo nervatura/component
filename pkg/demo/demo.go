@@ -76,6 +76,7 @@ var ViewSize []string = []string{ViewSizeCentered, ViewSizeFull}
 var DemoMap map[string][]DemoView = map[string][]DemoView{
 	ComponentGroupAtom: {
 		{ComponentType: ct.ComponentTypeButton, TestData: ct.TestButton},
+		{ComponentType: ct.ComponentTypeLink, TestData: ct.TestLink},
 		{ComponentType: ct.ComponentTypeDateTime, TestData: ct.TestDateTime},
 		{ComponentType: ct.ComponentTypeField, TestData: ct.TestField},
 		{ComponentType: ct.ComponentTypeIcon, TestData: ct.TestIcon},
@@ -99,7 +100,6 @@ var DemoMap map[string][]DemoView = map[string][]DemoView{
 	},
 	ComponentGroupTemplate: {
 		{ComponentType: ct.ComponentTypeLogin, TestData: ct.TestLogin},
-		{ComponentType: ct.ComponentTypeLocale, TestData: ct.TestLocale},
 		{ComponentType: ct.ComponentTypeBrowser, TestData: ct.TestBrowser},
 		{ComponentType: ct.ComponentTypeEditor, TestData: ct.TestEditor},
 	},

@@ -9,6 +9,7 @@ const (
 	ComponentTypeField = "field"
 
 	FieldTypeButton   = "button"
+	FieldTypeUrlLink  = "url"
 	FieldTypeString   = InputTypeString
 	FieldTypeText     = InputTypeText
 	FieldTypeColor    = InputTypeColor
@@ -28,7 +29,7 @@ const (
 
 // [Field] Type values
 var FieldType []string = []string{
-	FieldTypeButton, FieldTypeString, FieldTypeText, FieldTypeColor, FieldTypePassword,
+	FieldTypeButton, FieldTypeUrlLink, FieldTypeString, FieldTypeText, FieldTypeColor, FieldTypePassword,
 	FieldTypeInteger, FieldTypeNumber, FieldTypeDate, FieldTypeTime, FieldTypeDateTime,
 	FieldTypeBool, FieldTypeSelect, FieldTypeLink, FieldTypeUpload, FieldTypeSelector,
 	FieldTypeList}
@@ -227,6 +228,16 @@ func (fld *Field) getComponent() (res string, err error) {
 					OnResponse:   fld.OnResponse,
 					RequestValue: fld.RequestValue,
 					RequestMap:   fld.RequestMap,
+				},
+				Full: true,
+			}
+			setProperty(btn)
+			return btn
+		},
+		FieldTypeUrlLink: func() ClientComponent {
+			btn := &Link{
+				BaseComponent: BaseComponent{
+					Id: fld.Id + "_" + fld.Type,
 				},
 				Full: true,
 			}
@@ -519,6 +530,23 @@ func TestField(cc ClientComponent) []TestComponent {
 					"button_style": ButtonStylePrimary,
 					"label":        "Primary",
 					"icon":         "Check",
+				},
+			}},
+		{
+			Label:         "URL link button, border and icon",
+			ComponentType: ComponentTypeField,
+			Component: &Field{
+				BaseComponent: BaseComponent{
+					Id: id + "_url_link",
+				},
+				Type: FieldTypeUrlLink,
+				Value: ut.IM{
+					"name":        "url_link",
+					"link_style":  LinkStyleBorder,
+					"label":       "Search",
+					"icon":        "Search",
+					"href":        "https://www.google.com",
+					"link_target": "_blank",
 				},
 			}},
 		{

@@ -210,11 +210,11 @@ func StringToDateTime(value string) (time.Time, error) {
 }
 
 func RandString(length int) string {
-	chars := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
-		"abcdefghijklmnopqrstuvwxyz" +
-		"0123456789")
+	chars := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789")
 	var b strings.Builder
-	for i := 0; i < length; i++ {
+	n, _ := rand.Int(rand.Reader, big.NewInt(int64(len(chars[:51]))))
+	b.WriteRune(chars[n.Int64()])
+	for i := 1; i < length; i++ {
 		n, _ := rand.Int(rand.Reader, big.NewInt(int64(len(chars))))
 		b.WriteRune(chars[n.Int64()])
 	}

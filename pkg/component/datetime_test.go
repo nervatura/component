@@ -237,6 +237,7 @@ func TestDateTime_OnRequest(t *testing.T) {
 						}
 						return evt
 					},
+					Swap: SwapInnerHTML,
 				},
 			},
 			args: args{

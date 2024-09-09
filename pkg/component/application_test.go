@@ -142,9 +142,9 @@ func TestApplication_Validation(t *testing.T) {
 			name: "main",
 			args: args{
 				propName:  "main",
-				propValue: &Locale{},
+				propValue: &Login{},
 			},
-			want: &Locale{},
+			want: &Login{},
 		},
 		{
 			name: "main_nil",
@@ -213,9 +213,9 @@ func TestApplication_SetProperty(t *testing.T) {
 			name: "main",
 			args: args{
 				propName:  "main",
-				propValue: &Locale{},
+				propValue: &Login{},
 			},
-			want: &Locale{},
+			want: &Login{},
 		},
 	}
 	for _, tt := range tests {
@@ -265,7 +265,7 @@ func TestApplication_OnRequest(t *testing.T) {
 			fields: fields{
 				BaseComponent: BaseComponent{
 					RequestMap: map[string]ClientComponent{
-						"ID12345": &Locale{},
+						"ID12345": &Login{},
 					},
 				},
 			},

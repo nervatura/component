@@ -367,7 +367,7 @@ func (bro *Browser) exportData() (re ResponseEvent) {
 		TriggerName: bro.Name,
 		Name:        BrowserEventExport,
 		Header: ut.SM{
-			HeaderReswap: PaginationTypeNone,
+			HeaderReswap: SwapNone,
 		},
 	}
 

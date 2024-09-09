@@ -10,11 +10,12 @@ import (
 const (
 	ComponentTypeSideBar = "sidebar"
 
-	SideBarItemTypeState     = "state"
-	SideBarItemTypeGroup     = "group"
-	SideBarItemTypeElement   = "element"
-	SideBarItemTypeStatic    = "static"
-	SideBarItemTypeSeparator = "separator"
+	SideBarItemTypeState       = "state"
+	SideBarItemTypeGroup       = "group"
+	SideBarItemTypeElement     = "element"
+	SideBarItemTypeElementLink = "link"
+	SideBarItemTypeStatic      = "static"
+	SideBarItemTypeSeparator   = "separator"
 
 	SideBarVisibilityAuto = "auto"
 	SideBarVisibilityShow = "show"
@@ -99,6 +100,22 @@ func (sbe *SideBarElement) GetValue() string {
 
 func (sbe *SideBarElement) GetSelected() bool {
 	return sbe.Selected
+}
+
+type SideBarElementLink struct {
+	SideBarElement
+	Href           string `json:"href"`
+	Download       string `json:"download"`
+	Media          string `json:"media"`
+	Ping           string `json:"ping"`
+	ReferrerPolicy string `json:"referrerpolicy"`
+	Rel            string `json:"rel"`
+	LinkTarget     string `json:"link_target"`
+	MediaType      string `json:"media_type"`
+}
+
+func (sbl *SideBarElementLink) ItemType() string {
+	return SideBarItemTypeElementLink
 }
 
 type SideBarStatic struct {
@@ -262,6 +279,20 @@ func (sb *SideBar) getComponent(index, groupIndex int) (res string, err error) {
 		}
 		return btn
 	}
+	ccLink := func(idx int, name string) *Link {
+		lnk := &Link{
+			BaseComponent: BaseComponent{
+				Id:   sb.Id + "_" + ut.ToString(idx, ""),
+				Name: name,
+				Data: ut.IM{"index": idx},
+				Style: ut.SM{
+					"border-radius": "0",
+					"border-color":  "rgba(var(--accent-1c), 0.2)"},
+			},
+			LinkStyle: LinkStylePrimary,
+		}
+		return lnk
+	}
 	ccMap := map[string]func(it interface{}) ClientComponent{
 		SideBarItemTypeState: func(it interface{}) ClientComponent {
 			st := it.(*SideBarState)
@@ -321,6 +352,25 @@ func (sb *SideBar) getComponent(index, groupIndex int) (res string, err error) {
 			btn.SetProperty("disabled", el.Disabled)
 			return btn
 		},
+		SideBarItemTypeElementLink: func(it interface{}) ClientComponent {
+			el := it.(*SideBarElementLink)
+			lnk := ccLink(index, el.Name)
+			lnk.SetProperty("icon", el.Icon)
+			lnk.SetProperty("label", el.Label)
+			lnk.SetProperty("align", ut.ToString(el.Align, TextAlignLeft))
+			lnk.SetProperty("full", !el.NotFull)
+			lnk.SetProperty("selected", el.Selected)
+			lnk.SetProperty("disabled", el.Disabled)
+			lnk.SetProperty("href", el.Href)
+			lnk.SetProperty("download", el.Download)
+			lnk.SetProperty("media", el.Media)
+			lnk.SetProperty("ping", el.Ping)
+			lnk.SetProperty("referrerpolicy", el.ReferrerPolicy)
+			lnk.SetProperty("rel", el.Rel)
+			lnk.SetProperty("link_target", el.LinkTarget)
+			lnk.SetProperty("media_type", el.MediaType)
+			return lnk
+		},
 		SideBarItemTypeStatic: func(it interface{}) ClientComponent {
 			lbl := &Label{
 				Value:    it.(*SideBarStatic).Label,
@@ -372,6 +422,7 @@ func (sb *SideBar) Render() (res string, err error) {
 	{{ if eq $stype "separator" }}<hr id="separator_{{ $index }}" class="separator" />{{ end }}
 	{{ if eq $stype "static" }}<div class="row full"><div id="static_{{ $index }}" class="static-label" >{{ sidebarComponent $index -1 }}</div></div>{{ end }}
 	{{ if eq $stype "element" }}{{ sidebarComponent $index -1 }}{{ end }}
+	{{ if eq $stype "link" }}{{ sidebarComponent $index -1 }}{{ end }}
 	{{ if eq $stype "group" }}<div class="row full">{{ sidebarComponent $index -1 }}</div>
 	{{ if selectedComponent $index }}<div class="row full sidebar-group" >
 	{{ range $groupIndex, $groupItem := $item.Items }}{{ sidebarComponent $index $groupIndex }}{{ end }}
@@ -471,6 +522,16 @@ func TestSidebar(cc ClientComponent) []TestComponent {
 						Label:    "Menu item",
 						Icon:     "Check",
 						Selected: true,
+					},
+					&SideBarElementLink{
+						SideBarElement: SideBarElement{
+							Name:  "link_element",
+							Value: "search_link",
+							Label: "URL link",
+							Icon:  "Search",
+						},
+						Href:       "https://www.google.com",
+						LinkTarget: "_blank",
 					},
 					&SideBarSeparator{},
 					&SideBarElement{
