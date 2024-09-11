@@ -1,3 +1,6 @@
+## 1.6.1
+- Browser component: add custom export data url and export file name
+
 ## 1.6.0
 - new Link component
 - Field component: add FieldTypeUrlLink

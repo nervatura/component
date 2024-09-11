@@ -111,8 +111,12 @@ type Browser struct {
 	HideBookmark bool `json:"hide_bookmark"`
 	// Show or hide the export button
 	HideExport bool `json:"hide_export"`
-	// Export limit of data rows. Limit the maximum character length of a URL.
+	// Export limit of data rows. Limit the maximum character length of a URL. Ignored if the ExportURL value is not empty
 	ExportLimit int64 `json:"export_limit"`
+	// Specifies the url for downloading data. If it is not specified, then the built-in limited csv export results
+	ExportURL string `json:"export_url"`
+	// Specifies the name of the file downloaded from ExportURL. Default value: data.csv
+	Download string `json:"download"`
 	// Show or hide the help button
 	HideHelp bool `json:"hide_help"`
 	// Editability of table rows
@@ -144,6 +148,8 @@ func (bro *Browser) Properties() ut.IM {
 			"hide_bookmark":   bro.HideBookmark,
 			"hide_export":     bro.HideExport,
 			"export_limit":    bro.ExportLimit,
+			"export_url":      bro.ExportURL,
+			"download":        bro.Download,
 			"readonly":        bro.ReadOnly,
 			"hide_help":       bro.HideHelp,
 			"visible_columns": bro.VisibleColumns,
@@ -324,6 +330,14 @@ func (bro *Browser) SetProperty(propName string, propValue interface{}) interfac
 		"export_limit": func() interface{} {
 			bro.ExportLimit = ut.ToInteger(propValue, BrowserExportLimit)
 			return bro.ExportLimit
+		},
+		"export_url": func() interface{} {
+			bro.ExportURL = ut.ToString(propValue, "")
+			return bro.ExportURL
+		},
+		"download": func() interface{} {
+			bro.Download = ut.ToString(propValue, "data.csv")
+			return bro.Download
 		},
 		"readonly": func() interface{} {
 			bro.ReadOnly = ut.ToBoolean(propValue, false)
@@ -630,6 +644,22 @@ func (bro *Browser) getComponent(name string, data ut.IM) (res string, err error
 		}
 		return btn
 	}
+	ccLnk := func() *Link {
+		return &Link{
+			BaseComponent: BaseComponent{
+				Id:    bro.Id + "_" + name + "_0",
+				Name:  name,
+				Style: ut.SM{"padding": "8px 12px", "margin": "0 1px"},
+			},
+			LinkStyle:  LinkStyleBorder,
+			Label:      bro.msg("browser_export"),
+			Icon:       "Download",
+			HideLabel:  true,
+			Href:       bro.ExportURL,
+			Download:   bro.Download,
+			LinkTarget: "_blank",
+		}
+	}
 	ccLbl := func(key, icoKey, label string, class []string) *Label {
 		return &Label{
 			Value:    label,
@@ -719,6 +749,9 @@ func (bro *Browser) getComponent(name string, data ut.IM) (res string, err error
 			return ccBtn("Star", "browser_bookmark", ButtonStyleBorder, "0")
 		},
 		"btn_export": func() ClientComponent {
+			if bro.ExportURL != "" {
+				return ccLnk()
+			}
 			return ccBtn("Download", "browser_export", ButtonStyleBorder, "0")
 		},
 		"btn_help": func() ClientComponent {
@@ -1306,6 +1339,8 @@ func TestBrowser(cc ClientComponent) []TestComponent {
 				Filters:        testBrowserFilters["meta"](),
 				MetaFields:     testBrowserMetaFields["meta"](),
 				ReadOnly:       true,
+				ExportURL:      "/export",
+				Download:       "export.csv",
 			}},
 		{
 			Label:         "Contact data",
