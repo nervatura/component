@@ -2,6 +2,7 @@ package component
 
 import (
 	"fmt"
+	"html/template"
 	"strings"
 
 	ut "github.com/nervatura/component/pkg/util"
@@ -13,6 +14,7 @@ const (
 
 	LoginEventChange = "change"
 	LoginEventLogin  = "login"
+	LoginEventAuth   = "auth"
 	LoginEventTheme  = "theme"
 	LoginEventLang   = "lang"
 )
@@ -69,6 +71,8 @@ type Login struct {
 	Lang string `json:"lang"`
 	// Show or hide the database input control
 	HideDatabase bool `json:"hide_database"`
+	// Show or hide password login
+	HidePassword bool `json:"hide_password"`
 	/*
 		The theme of the control.
 		[Theme] variable constants: [ThemeLight], [ThemeDark]. Default value: [ThemeLight]
@@ -78,6 +82,15 @@ type Login struct {
 	Labels ut.SM `json:"labels"`
 	// Selectable languages
 	Locales []SelectOption `json:"locales"`
+	// OAuth buttons
+	AuthButtons []LoginAuthButton `json:"auth_buttons"`
+}
+
+// OAuth button parameters
+type LoginAuthButton struct {
+	Id    string `json:"id"`
+	Label string `json:"label"`
+	Icon  string `json:"icon"`
 }
 
 /*
@@ -90,9 +103,11 @@ func (lgn *Login) Properties() ut.IM {
 			"version":       lgn.Version,
 			"lang":          lgn.Lang,
 			"hide_database": lgn.HideDatabase,
+			"hide_password": lgn.HidePassword,
 			"theme":         lgn.Theme,
 			"labels":        lgn.Labels,
 			"locales":       lgn.Locales,
+			"auth_buttons":  lgn.AuthButtons,
 		})
 }
 
@@ -132,6 +147,12 @@ func (lgn *Login) Validation(propName string, propValue interface{}) interface{}
 			}
 			return value
 		},
+		"auth_buttons": func() interface{} {
+			if options, valid := propValue.([]LoginAuthButton); valid && (options != nil) {
+				return options
+			}
+			return []LoginAuthButton{}
+		},
 		"target": func() interface{} {
 			lgn.SetProperty("id", lgn.Id)
 			value := ut.ToString(propValue, lgn.Id)
@@ -168,6 +189,10 @@ func (lgn *Login) SetProperty(propName string, propValue interface{}) interface{
 			lgn.HideDatabase = ut.ToBoolean(propValue, false)
 			return lgn.HideDatabase
 		},
+		"hide_password": func() interface{} {
+			lgn.HidePassword = ut.ToBoolean(propValue, false)
+			return lgn.HidePassword
+		},
 		"locales": func() interface{} {
 			lgn.Locales = lgn.Validation(propName, propValue).([]SelectOption)
 			return lgn.Locales
@@ -179,6 +204,10 @@ func (lgn *Login) SetProperty(propName string, propValue interface{}) interface{
 		"labels": func() interface{} {
 			lgn.Labels = lgn.Validation(propName, propValue).(ut.SM)
 			return lgn.Labels
+		},
+		"auth_buttons": func() interface{} {
+			lgn.AuthButtons = lgn.Validation(propName, propValue).([]LoginAuthButton)
+			return lgn.AuthButtons
 		},
 		"target": func() interface{} {
 			lgn.Target = lgn.Validation(propName, propValue).(string)
@@ -211,6 +240,11 @@ func (lgn *Login) response(evt ResponseEvent) (re ResponseEvent) {
 	case "login":
 		lgnEvt.Name = LoginEventLogin
 
+	case "auth":
+		value := ut.ToString(evt.Trigger.GetProperty("data").(ut.IM)["id"], "")
+		lgnEvt.Name = LoginEventAuth
+		lgnEvt.Value = value
+
 	case "lang":
 		lgnEvt.Name = LoginEventLang
 		lgn.SetProperty("lang", lgnEvt.Value)
@@ -223,7 +257,7 @@ func (lgn *Login) response(evt ResponseEvent) (re ResponseEvent) {
 	return lgnEvt
 }
 
-func (lgn *Login) getComponent(name string) (res string, err error) {
+func (lgn *Login) getComponent(name string, authIdx int) (html template.HTML, err error) {
 	var loginDisabled bool = ((ut.ToString(lgn.Data["username"], "") == "") || (ut.ToString(lgn.Data["database"], "") == ""))
 	if lgn.HideDatabase {
 		loginDisabled = (ut.ToString(lgn.Data["username"], "") == "")
@@ -250,6 +284,26 @@ func (lgn *Login) getComponent(name string) (res string, err error) {
 			Value: lgn.Labels[name],
 		}
 	}
+	ccBtn := func(id, label, icon string) *Button {
+		return &Button{
+			BaseComponent: BaseComponent{
+				Id:           lgn.Id + "_" + name + "_" + id,
+				Name:         name,
+				EventURL:     lgn.EventURL,
+				Target:       lgn.Target,
+				OnResponse:   lgn.response,
+				RequestValue: lgn.RequestValue,
+				RequestMap:   lgn.RequestMap,
+				Data: ut.IM{
+					"id": id,
+				},
+			},
+			ButtonStyle: ButtonStylePrimary,
+			Label:       label,
+			Icon:        icon,
+			Full:        true,
+		}
+	}
 	ccMap := map[string]func() ClientComponent{
 		"username": func() ClientComponent {
 			return ccInp(InputTypeString)
@@ -268,6 +322,10 @@ func (lgn *Login) getComponent(name string) (res string, err error) {
 		},
 		"login_database": func() ClientComponent {
 			return ccLbl()
+		},
+		"auth": func() ClientComponent {
+			btn := lgn.AuthButtons[authIdx]
+			return ccBtn(btn.Id, btn.Label, btn.Icon)
 		},
 		"login": func() ClientComponent {
 			return &Button{
@@ -318,8 +376,8 @@ func (lgn *Login) getComponent(name string) (res string, err error) {
 		},
 	}
 	cc := ccMap[name]()
-	res, err = cc.Render()
-	return res, err
+	html, err = cc.Render()
+	return html, err
 }
 
 func (lgn *Login) msg(labelID string) string {
@@ -332,7 +390,7 @@ func (lgn *Login) msg(labelID string) string {
 /*
 Based on the values, it will generate the html code of the [Login] or return with an error message.
 */
-func (lgn *Login) Render() (res string, err error) {
+func (lgn *Login) Render() (html template.HTML, err error) {
 	lgn.InitProps(lgn)
 
 	funcMap := map[string]any{
@@ -345,8 +403,20 @@ func (lgn *Login) Render() (res string, err error) {
 		"customClass": func() string {
 			return strings.Join(lgn.Class, " ")
 		},
-		"loginComponent": func(name string) (string, error) {
-			return lgn.getComponent(name)
+		"loginComponent": func(name string) (template.HTML, error) {
+			return lgn.getComponent(name, 0)
+		},
+		"authBtn": func(idx int) (template.HTML, error) {
+			return lgn.getComponent("auth", idx)
+		},
+		"even": func(idx int) bool {
+			return (idx%2 == 0)
+		},
+		"odd": func(idx int) bool {
+			return !(idx%2 == 0)
+		},
+		"buttons": func() bool {
+			return len(lgn.AuthButtons) > 0
 		},
 	}
 	tpl := `<div id="{{ .Id }}" class="login-modal {{ customClass }}" theme="{{ .Theme }}" 
@@ -356,12 +426,13 @@ func (lgn *Login) Render() (res string, err error) {
 	<div class="cell title-cell login-title-cell" ><span>{{ msg "title_login" }}</span></div>
 	<div class="cell version-cell" ><span>{{ .Version }}</span></div>
 	</div>
+	{{ if ne .HidePassword true }}
 	<div class="row full section-small" >
 	<div class="row full section-small" >
 	<div class="cell label-cell padding-normal mobile" >{{ loginComponent "login_username" }}</div>
 	<div class="cell container mobile" >{{ loginComponent "username" }}</div>
 	</div>
-	<div class="row full" >
+	<div class="row full {{ if .HideDatabase }}section-small-bottom{{ end }}" >
 	<div class="cell label-cell padding-normal mobile" >{{ loginComponent "login_password" }}</div>
 	<div class="cell container mobile" >{{ loginComponent "password" }}</div>
 	</div>
@@ -372,18 +443,28 @@ func (lgn *Login) Render() (res string, err error) {
 	</div>
 	{{ end }}
 	</div>
-	<div class="row full section buttons" >
-	<div class="cell section-small mobile" >
-	<div class="cell container" >
+	{{ end }}
+	{{ if buttons }}<div class="row full section border-top" >
+	{{ range $index, $auth := .AuthButtons }}
+	{{ if even $index }}<div class="row full container-small section-small" >{{ end }}
+	<div class="cell container-small mobile" >{{ authBtn $index }}</div>
+	{{ if odd $index }}</div>{{ end }}
+	{{ end }}
+	</div>{{ end }}
+  <div class="row full section buttons" >
+	{{ if ne .HidePassword true }}<div class="cell section-small mobile" >{{ end }}
+	<div class="cell container align-right" >
 	{{ loginComponent "theme" }}
 	</div>
 	<div class="cell" >
 	{{ loginComponent "lang" }}
 	</div>
-	</div>
+	{{ if ne .HidePassword true }}</div>{{ end }}
+	{{ if ne .HidePassword true }}
 	<div class="cell container section-small align-right mobile" >
 	{{ loginComponent "login" }}
 	</div>
+	{{ end }}
 	</div>
 	</div></div></div>`
 
@@ -404,13 +485,8 @@ var testLoginLabels map[string]ut.SM = map[string]ut.SM{
 }
 
 var testLoginResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt ResponseEvent) (re ResponseEvent) {
-	switch evt.Name {
-	case LoginEventLogin:
-		data := evt.Trigger.GetProperty("data").(ut.IM)
-		labels := evt.Trigger.GetProperty("labels").(ut.SM)
-		value := fmt.Sprintf(`%s: %s, %s: %s`,
-			labels["login_username"], data["username"], labels["login_database"], data["database"])
-		re = ResponseEvent{
+	toast := func(value string) ResponseEvent {
+		return ResponseEvent{
 			Trigger: &Toast{
 				Type:    ToastTypeSuccess,
 				Value:   value,
@@ -423,7 +499,16 @@ var testLoginResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt Resp
 				HeaderReswap:   SwapInnerHTML,
 			},
 		}
-		return re
+	}
+	switch evt.Name {
+	case LoginEventLogin:
+		data := evt.Trigger.GetProperty("data").(ut.IM)
+		labels := evt.Trigger.GetProperty("labels").(ut.SM)
+		value := fmt.Sprintf(`%s: %s, %s: %s`,
+			labels["login_username"], data["username"], labels["login_database"], data["database"])
+		return toast(value)
+	case LoginEventAuth:
+		return toast(ut.ToString(evt.Value, ""))
 	case LoginEventLang:
 		value := ut.ToString(evt.Value, "en")
 		labels := ut.MergeSM(nil, testLoginLabels[value])
@@ -488,6 +573,66 @@ func TestLogin(cc ClientComponent) []TestComponent {
 				Theme:        ThemeLight,
 				Labels:       ut.MergeSM(nil, testLoginLabels["en"]),
 				HideDatabase: true,
+			}},
+		{
+			Label:         "Auth buttons",
+			ComponentType: ComponentTypeLogin,
+			Component: &Login{
+				BaseComponent: BaseComponent{
+					Id:           id + "_login_auth",
+					EventURL:     eventURL,
+					OnResponse:   testLoginResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
+					Data: ut.IM{
+						"username": "admin",
+						"database": "demo",
+					},
+				},
+				Version: "6.0.0",
+				Lang:    "en",
+				Locales: []SelectOption{
+					{Value: "en", Text: "English"},
+					{Value: "de", Text: "Deutsch"},
+				},
+				Theme:        ThemeLight,
+				Labels:       ut.MergeSM(nil, testLoginLabels["en"]),
+				HideDatabase: true,
+				AuthButtons: []LoginAuthButton{
+					{Id: "google", Label: "Google", Icon: "Google"},
+					{Id: "facebook", Label: "Facebook", Icon: "Facebook"},
+					{Id: "github", Label: "Github", Icon: "Github"},
+					{Id: "microsoft", Label: "Microsoft", Icon: "Microsoft"},
+				},
+			}},
+		{
+			Label:         "Hide password",
+			ComponentType: ComponentTypeLogin,
+			Component: &Login{
+				BaseComponent: BaseComponent{
+					Id:           id + "_login_hide_passw",
+					EventURL:     eventURL,
+					OnResponse:   testLoginResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
+					Data:         ut.IM{},
+				},
+				Version: "6.0.0",
+				Lang:    "en",
+				Locales: []SelectOption{
+					{Value: "en", Text: "English"},
+					{Value: "de", Text: "Deutsch"},
+				},
+				Theme:        ThemeLight,
+				Labels:       ut.MergeSM(nil, testLoginLabels["en"]),
+				HideDatabase: true,
+				AuthButtons: []LoginAuthButton{
+					{Id: "google", Label: "Google", Icon: "Google"},
+					{Id: "facebook", Label: "Facebook", Icon: "Facebook"},
+					{Id: "github", Label: "Github", Icon: "Github"},
+					{Id: "microsoft", Label: "Microsoft", Icon: "Microsoft"},
+				},
+				HidePassword: true,
 			}},
 	}
 }

@@ -1,6 +1,7 @@
 package component
 
 import (
+	"html/template"
 	"strings"
 	"time"
 
@@ -210,7 +211,7 @@ func (dti *DateTime) OnRequest(te TriggerEvent) (re ResponseEvent) {
 /*
 Based on the values, it will generate the html code of the [DateTime] or return with an error message.
 */
-func (dti *DateTime) Render() (res string, err error) {
+func (dti *DateTime) Render() (html template.HTML, err error) {
 	dti.InitProps(dti)
 
 	funcMap := map[string]any{
@@ -233,10 +234,10 @@ func (dti *DateTime) Render() (res string, err error) {
 	{{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}
 	></input>`
 
-	if res, err = ut.TemplateBuilder("datetime", tpl, funcMap, dti); err == nil && dti.EventURL != "" {
+	if html, err = ut.TemplateBuilder("datetime", tpl, funcMap, dti); err == nil && dti.EventURL != "" {
 		dti.SetProperty("request_map", dti)
 	}
-	return res, nil
+	return html, nil
 }
 
 // [DateTime] test and demo data

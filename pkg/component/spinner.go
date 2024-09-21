@@ -1,6 +1,8 @@
 package component
 
 import (
+	"html/template"
+
 	ut "github.com/nervatura/component/pkg/util"
 )
 
@@ -14,7 +16,7 @@ type Spinner struct {
 /*
 Based on the values, it will generate the html code of the [Spinner] or return with an error message.
 */
-func (spn *Spinner) Render() (result string, err error) {
+func (spn *Spinner) Render() (html template.HTML, err error) {
 	spn.Id = ut.ToString(spn.Id, "spinner")
 	tpl := `<div id="{{ .Id }}" class="htmx-indicator{{ if eq .NoModal false }} modal{{ end }}" >
 	<div class="loading-middle" ><div class="loading">

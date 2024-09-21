@@ -4,10 +4,10 @@ package component
 
 import (
 	"crypto/rand"
+	"html/template"
 	"math/big"
 	"strconv"
 	"strings"
-	"text/template"
 	"time"
 )
 
@@ -235,19 +235,18 @@ func Contains(a []string, x string) bool {
 	return false
 }
 
-func TemplateBuilder(name, tpl string, funcMap map[string]any, data any) (res string, err error) {
+func TemplateBuilder(name, tpl string, funcMap map[string]any, data any) (html template.HTML, err error) {
 	var tmp *template.Template
 	if tmp, err = template.New(name).Funcs(funcMap).Parse(tpl); err != nil {
-		return res, err
+		return "", err
 	}
 
 	var sb strings.Builder
 	if err = tmp.Execute(&sb, data); err != nil {
-		return res, err
+		return "", err
 	}
 
-	res = strings.ReplaceAll(sb.String(), "\n\t", "")
-	return res, err
+	return template.HTML(strings.ReplaceAll(sb.String(), "\n\t", "")), err
 }
 
 // SetIMValue - safe IM value setting

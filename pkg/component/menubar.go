@@ -1,6 +1,7 @@
 package component
 
 import (
+	"html/template"
 	"strings"
 
 	ut "github.com/nervatura/component/pkg/util"
@@ -184,7 +185,7 @@ func (mnb *MenuBar) response(evt ResponseEvent) (re ResponseEvent) {
 	return mnbEvt
 }
 
-func (mnb *MenuBar) getComponent(name string, item MenuBarItem) (res string, err error) {
+func (mnb *MenuBar) getComponent(name string, item MenuBarItem) (html template.HTML, err error) {
 	ccMap := map[string]func() ClientComponent{
 		"sidebar": func() ClientComponent {
 			cclass := []string{"menu-label"}
@@ -262,14 +263,14 @@ func (mnb *MenuBar) getComponent(name string, item MenuBarItem) (res string, err
 		},
 	}
 	cc := ccMap[name]()
-	res, err = cc.Render()
-	return res, err
+	html, err = cc.Render()
+	return html, err
 }
 
 /*
 Based on the values, it will generate the html code of the [MenuBar] or return with an error message.
 */
-func (mnb *MenuBar) Render() (res string, err error) {
+func (mnb *MenuBar) Render() (html template.HTML, err error) {
 	mnb.InitProps(mnb)
 
 	funcMap := map[string]any{
@@ -279,13 +280,13 @@ func (mnb *MenuBar) Render() (res string, err error) {
 		"customClass": func() string {
 			return strings.Join(mnb.Class, " ")
 		},
-		"sideBar": func() (string, error) {
+		"sideBar": func() (template.HTML, error) {
 			return mnb.getComponent("sidebar", MenuBarItem{})
 		},
-		"menuItem": func(item MenuBarItem) (string, error) {
+		"menuItem": func(item MenuBarItem) (template.HTML, error) {
 			return mnb.getComponent("item", item)
 		},
-		"menuIcon": func(item MenuBarItem) (string, error) {
+		"menuIcon": func(item MenuBarItem) (template.HTML, error) {
 			return mnb.getComponent("icon", item)
 		},
 		"reverse": func(idx int) MenuBarItem {

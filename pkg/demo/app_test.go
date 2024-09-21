@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"html/template"
 	"io"
 	"io/fs"
 	"log"
@@ -329,9 +330,9 @@ func TestApp_respondMessage(t *testing.T) {
 		osReadFile func(name string) ([]byte, error)
 	}
 	type args struct {
-		w   http.ResponseWriter
-		res string
-		err error
+		w    http.ResponseWriter
+		html template.HTML
+		err  error
 	}
 	tests := []struct {
 		name   string
@@ -357,7 +358,7 @@ func TestApp_respondMessage(t *testing.T) {
 				osCreate:   tt.fields.osCreate,
 				osReadFile: tt.fields.osReadFile,
 			}
-			app.respondMessage(tt.args.w, tt.args.res, tt.args.err)
+			app.respondMessage(tt.args.w, tt.args.html, tt.args.err)
 		})
 	}
 }

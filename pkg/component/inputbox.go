@@ -1,6 +1,7 @@
 package component
 
 import (
+	"html/template"
 	"strings"
 
 	ut "github.com/nervatura/component/pkg/util"
@@ -158,7 +159,7 @@ func (ibx *InputBox) response(evt ResponseEvent) (re ResponseEvent) {
 	return ibxEvt
 }
 
-func (ibx *InputBox) getComponent(name string) (res string, err error) {
+func (ibx *InputBox) getComponent(name string) (html template.HTML, err error) {
 	ccBtn := func(btnStyle, label, icon string, focus bool) *Button {
 		return &Button{
 			BaseComponent: BaseComponent{
@@ -206,14 +207,14 @@ func (ibx *InputBox) getComponent(name string) (res string, err error) {
 		},
 	}
 	cc := ccMap[name]()
-	res, err = cc.Render()
-	return res, err
+	html, err = cc.Render()
+	return html, err
 }
 
 /*
 Based on the values, it will generate the html code of the [InputBox] or return with an error message.
 */
-func (ibx *InputBox) Render() (res string, err error) {
+func (ibx *InputBox) Render() (html template.HTML, err error) {
 	ibx.InitProps(ibx)
 
 	funcMap := map[string]any{
@@ -223,7 +224,7 @@ func (ibx *InputBox) Render() (res string, err error) {
 		"customClass": func() string {
 			return strings.Join(ibx.Class, " ")
 		},
-		"inputComponent": func(name string) (string, error) {
+		"inputComponent": func(name string) (template.HTML, error) {
 			return ibx.getComponent(name)
 		},
 	}

@@ -7,6 +7,7 @@ Detailed description and documentation:: https://nervatura.github.io/component
 package component
 
 import (
+	"html/template"
 	"net/url"
 	"strings"
 
@@ -127,7 +128,7 @@ type ClientComponent interface {
 		Checks the value of all properties of the component.
 		If a value is missing or invalid, it will set the default value. The Render function calls it automatically.
 	*/
-	Render() (res string, err error) /*
+	Render() (html template.HTML, err error) /*
 		Based on the values, it will generate the component's html code or return with an error message.
 		The InitProps function is automatically called at the beginning of the function.
 	*/
@@ -439,7 +440,7 @@ func (bcc *BaseComponent) InitProps(cc ClientComponent) {
 Based on the values, it will generate the html code of the [BaseComponent] or return with an error message.
 The [BaseComponent.InitProps] function is automatically called at the beginning of the function.
 */
-func (bcc *BaseComponent) Render() (res string, err error) {
+func (bcc *BaseComponent) Render() (html template.HTML, err error) {
 	bcc.InitProps(bcc)
 
 	funcMap := map[string]any{

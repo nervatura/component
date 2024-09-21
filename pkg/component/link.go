@@ -1,6 +1,7 @@
 package component
 
 import (
+	"html/template"
 	"strings"
 
 	ut "github.com/nervatura/component/pkg/util"
@@ -242,7 +243,7 @@ func (lnk *Link) SetProperty(propName string, propValue interface{}) interface{}
 	return propValue
 }
 
-func (lnk *Link) getComponent(name string) (string, error) {
+func (lnk *Link) getComponent(name string) (template.HTML, error) {
 	ccMap := map[string]func() ClientComponent{
 		"icon": func() ClientComponent {
 			return &Icon{Value: lnk.Icon, Width: 20}
@@ -257,7 +258,7 @@ func (lnk *Link) getComponent(name string) (string, error) {
 /*
 Based on the values, it will generate the html code of the [Link] or return with an error message.
 */
-func (lnk *Link) Render() (res string, err error) {
+func (lnk *Link) Render() (html template.HTML, err error) {
 	lnk.InitProps(lnk)
 
 	funcMap := map[string]any{
@@ -267,7 +268,7 @@ func (lnk *Link) Render() (res string, err error) {
 		"customClass": func() string {
 			return strings.Join(lnk.Class, " ")
 		},
-		"linkComponent": func(name string) (string, error) {
+		"linkComponent": func(name string) (template.HTML, error) {
 			return lnk.getComponent(name)
 		},
 	}

@@ -2,8 +2,10 @@ package component
 
 import (
 	"fmt"
+	"html/template"
 	"strings"
 
+	st "github.com/nervatura/component/pkg/static"
 	ut "github.com/nervatura/component/pkg/util"
 )
 
@@ -87,14 +89,12 @@ func (app *Application) Validation(propName string, propValue interface{}) inter
 			return value
 		},
 		"script": func() interface{} {
-			value := []string{
-				"https://unpkg.com/htmx.org@latest",
-				"https://unpkg.com/htmx-ext-remove-me@2.0.0/remove-me.js",
-				//"static/js/htmx.min.js",
-				//"static/js/remove-me.js",
-			}
+			value := []string{}
 			if script, valid := propValue.([]string); valid {
 				value = append(value, script...)
+			}
+			if len(value) == 0 {
+				value = append(value, st.JSLibs...)
 			}
 			return value
 		},
@@ -191,45 +191,45 @@ func (app *Application) OnRequest(te TriggerEvent) (re ResponseEvent) {
 	return re
 }
 
-func (app *Application) getComponent() (res string, err error) {
+func (app *Application) getComponent() (html template.HTML, err error) {
 	if app.MainComponent != nil {
 		return app.MainComponent.Render()
 	}
-	return res, err
+	return html, err
 }
 
 /*
 Based on the values, it will generate the html code of the [Application] or return with an error message.
 */
-func (app *Application) Render() (res string, err error) {
+func (app *Application) Render() (html template.HTML, err error) {
 	app.InitProps(app)
 	spinner := Spinner{}
 
 	funcMap := map[string]any{
-		"headerKeys": func() string {
-			values := []string{}
-			for key, value := range app.Header {
-				values = append(values, key, value)
-			}
-			if len(values) > 0 {
-				return fmt.Sprintf(`hx-headers='{"%s"}'`, strings.Join(values, `":"`))
-			}
-			return ""
-		},
 		"styleMap": func() bool {
 			return len(app.Style) > 0
 		},
 		"customClass": func() string {
 			return strings.Join(app.Class, " ")
 		},
-		"spinner": func() (string, error) {
+		"spinner": func() (template.HTML, error) {
 			return spinner.Render()
 		},
-		"main": func() (res string, err error) {
+		"main": func() (html template.HTML, err error) {
 			return app.getComponent()
 		},
 	}
-	tpl := `<!DOCTYPE html>
+	headerKeys := func() string {
+		values := []string{}
+		for key, value := range app.Header {
+			values = append(values, key, value)
+		}
+		if len(values) > 0 {
+			return fmt.Sprintf(`hx-headers='{"%s"}'`, strings.Join(values, `":"`))
+		}
+		return ""
+	}
+	tpl := fmt.Sprintf(`<!DOCTYPE html>
 	<html lang="en">
 		<head>
 			<meta charset="utf-8">
@@ -244,12 +244,12 @@ func (app *Application) Render() (res string, err error) {
 		<body>
 		<div id="{{ .Id }}" theme="{{ .Theme }}" 
 		{{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }} 
-		hx-ext="remove-me" {{ headerKeys }} class="{{ customClass }}">
+		hx-ext="remove-me" %s class="{{ customClass }}">
 		<div id="toast-msg"></div><div>{{ spinner }}</div>
 		{{ main }}
 		</div>
 		</body>
-	</html>`
+	</html>`, headerKeys())
 
 	return ut.TemplateBuilder("application", tpl, funcMap, app)
 }

@@ -31,6 +31,7 @@ import (
 	"database/sql"
 	"embed"
 	"errors"
+	"html/template"
 	"io"
 	"strings"
 
@@ -140,13 +141,13 @@ func New(version string, httpPort int64) {
 	}
 }
 
-func (app *App) respondMessage(w http.ResponseWriter, res string, err error) {
+func (app *App) respondMessage(w http.ResponseWriter, html template.HTML, err error) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.Write([]byte(res))
+	w.Write([]byte(html))
 }
 
 // Creates and returns an Application/[Demo] component.
@@ -159,6 +160,10 @@ func (app *App) HomeRoute(w http.ResponseWriter, r *http.Request) {
 	ccApp := &ct.Application{
 		Title:  "Nervatura components",
 		Header: ut.SM{"X-Session-Token": tokenID},
+		Script: []string{
+			"static/js/htmx.min.js",
+			"static/js/remove-me.js",
+		},
 		HeadLink: []ct.HeadLink{
 			{Rel: "icon", Href: "/static/favicon.svg", Type: "image/svg+xml"},
 			{Rel: "stylesheet", Href: "/public/demo.css"},
@@ -167,22 +172,22 @@ func (app *App) HomeRoute(w http.ResponseWriter, r *http.Request) {
 		MainComponent: demo,
 	}
 	var err error
-	var res string
-	if res, err = ccApp.Render(); err == nil {
+	var html template.HTML
+	if html, err = ccApp.Render(); err == nil {
 		if dataSave {
 			err = app.saveSession(sessionID, demo)
 		} else {
 			app.memSession[sessionID] = demo
 		}
 	}
-	app.respondMessage(w, res, err)
+	app.respondMessage(w, html, err)
 }
 
 // Receive the component event request.
 // Loads the Demo component based on the X-Session-Token identifier.
 func (app *App) AppEvent(w http.ResponseWriter, r *http.Request) {
 	var err error
-	var res string
+	var html template.HTML
 	var evt ct.ResponseEvent
 	var demo *Demo
 
@@ -243,19 +248,19 @@ func (app *App) AppEvent(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set(key, value)
 		}
 		if evt.Trigger != nil {
-			res, err = evt.Trigger.Render()
+			html, err = evt.Trigger.Render()
 		} else {
 			err = errors.New("missing component")
 		}
 	}
 
 	if err != nil {
-		res, _ = (&ct.Toast{
+		html, _ = (&ct.Toast{
 			Type: ct.ToastTypeError, Value: err.Error(),
 		}).Render()
 	}
 	if dataSave && (err == nil) {
 		app.saveSession(sessionID, demo)
 	}
-	app.respondMessage(w, res, nil)
+	app.respondMessage(w, html, nil)
 }

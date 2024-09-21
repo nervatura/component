@@ -1,6 +1,7 @@
 package component
 
 import (
+	"html/template"
 	"strings"
 
 	ut "github.com/nervatura/component/pkg/util"
@@ -111,7 +112,7 @@ func (row *Row) SetProperty(propName string, propValue interface{}) interface{} 
 	return propValue
 }
 
-func (row *Row) getComponent(index int, coltype string) (res string, err error) {
+func (row *Row) getComponent(index int, coltype string) (html template.HTML, err error) {
 	ccMap := map[string]func() ClientComponent{
 		"field": func() ClientComponent {
 			field := &row.Columns[index].Value
@@ -129,14 +130,14 @@ func (row *Row) getComponent(index int, coltype string) (res string, err error) 
 		},
 	}
 	cc := ccMap[coltype]()
-	res, err = cc.Render()
-	return res, err
+	html, err = cc.Render()
+	return html, err
 }
 
 /*
 Based on the values, it will generate the html code of the [Row] or return with an error message.
 */
-func (row *Row) Render() (res string, err error) {
+func (row *Row) Render() (html template.HTML, err error) {
 	row.InitProps(row)
 
 	funcMap := map[string]any{
@@ -146,7 +147,7 @@ func (row *Row) Render() (res string, err error) {
 		"customClass": func() string {
 			return strings.Join(row.Class, " ")
 		},
-		"rowComponent": func(index int, coltype string) (string, error) {
+		"rowComponent": func(index int, coltype string) (template.HTML, error) {
 			return row.getComponent(index, coltype)
 		},
 		"fieldCol": func() bool {

@@ -1,6 +1,7 @@
 package component
 
 import (
+	"html/template"
 	"strings"
 
 	ut "github.com/nervatura/component/pkg/util"
@@ -153,7 +154,7 @@ func (lbl *Label) OnRequest(te TriggerEvent) (re ResponseEvent) {
 	return evt
 }
 
-func (lbl *Label) getComponent(name string) (string, error) {
+func (lbl *Label) getComponent(name string) (template.HTML, error) {
 	ccMap := map[string]func() ClientComponent{
 		"left_icon": func() ClientComponent {
 			return &Icon{
@@ -178,7 +179,7 @@ func (lbl *Label) getComponent(name string) (string, error) {
 /*
 Based on the values, it will generate the html code of the [Label] or return with an error message.
 */
-func (lbl *Label) Render() (res string, err error) {
+func (lbl *Label) Render() (html template.HTML, err error) {
 	lbl.InitProps(lbl)
 
 	funcMap := map[string]any{
@@ -188,7 +189,7 @@ func (lbl *Label) Render() (res string, err error) {
 		"customClass": func() string {
 			return strings.Join(lbl.Class, " ")
 		},
-		"labelComponent": func(name string) (string, error) {
+		"labelComponent": func(name string) (template.HTML, error) {
 			return lbl.getComponent(name)
 		},
 	}
@@ -216,10 +217,10 @@ func (lbl *Label) Render() (res string, err error) {
 	>{{ .Value }}</span>{{ if .Border }}</div>{{ end }}
 	{{ end }}`
 
-	if res, err = ut.TemplateBuilder("label", tpl, funcMap, lbl); err == nil && lbl.EventURL != "" {
+	if html, err = ut.TemplateBuilder("label", tpl, funcMap, lbl); err == nil && lbl.EventURL != "" {
 		lbl.SetProperty("request_map", lbl)
 	}
-	return res, nil
+	return html, nil
 }
 
 var testLblResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt ResponseEvent) (re ResponseEvent) {

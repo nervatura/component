@@ -1,6 +1,7 @@
 package component
 
 import (
+	"html/template"
 	"math"
 	"strings"
 
@@ -197,7 +198,7 @@ func (inp *NumberInput) OnRequest(te TriggerEvent) (re ResponseEvent) {
 /*
 Based on the values, it will generate the html code of the [NumberInput] or return with an error message.
 */
-func (inp *NumberInput) Render() (res string, err error) {
+func (inp *NumberInput) Render() (html template.HTML, err error) {
 	inp.InitProps(inp)
 
 	funcMap := map[string]any{
@@ -222,10 +223,10 @@ func (inp *NumberInput) Render() (res string, err error) {
 	{{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}
 	></input>`
 
-	if res, err = ut.TemplateBuilder("number", tpl, funcMap, inp); err == nil && inp.EventURL != "" {
+	if html, err = ut.TemplateBuilder("number", tpl, funcMap, inp); err == nil && inp.EventURL != "" {
 		inp.SetProperty("request_map", inp)
 	}
-	return res, nil
+	return html, nil
 }
 
 // [NumberInput] test and demo data

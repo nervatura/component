@@ -1,6 +1,7 @@
 package component
 
 import (
+	"html/template"
 	"strings"
 
 	ut "github.com/nervatura/component/pkg/util"
@@ -188,7 +189,7 @@ func (sel *Select) OnRequest(te TriggerEvent) (re ResponseEvent) {
 /*
 Based on the values, it will generate the html code of the [Select] or return with an error message.
 */
-func (sel *Select) Render() (res string, err error) {
+func (sel *Select) Render() (html template.HTML, err error) {
 	sel.InitProps(sel)
 
 	funcMap := map[string]any{
@@ -211,10 +212,10 @@ func (sel *Select) Render() (res string, err error) {
 	{{ range $index, $option := .Options }}<option {{ if eq .Value $.Value }}selected{{ end }} key="{{ $index }}" value="{{ $option.Value }}" >{{ $option.Text }}</option>{{ end }}
 	</select>`
 
-	if res, err = ut.TemplateBuilder("button", tpl, funcMap, sel); err == nil && sel.EventURL != "" {
+	if html, err = ut.TemplateBuilder("button", tpl, funcMap, sel); err == nil && sel.EventURL != "" {
 		sel.SetProperty("request_map", sel)
 	}
-	return res, nil
+	return html, nil
 }
 
 // [Select] test and demo data

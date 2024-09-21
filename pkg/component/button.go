@@ -1,6 +1,7 @@
 package component
 
 import (
+	"html/template"
 	"strings"
 
 	ut "github.com/nervatura/component/pkg/util"
@@ -238,7 +239,7 @@ func (btn *Button) OnRequest(te TriggerEvent) (re ResponseEvent) {
 	return evt
 }
 
-func (btn *Button) getComponent(name string) (string, error) {
+func (btn *Button) getComponent(name string) (template.HTML, error) {
 	ccMap := map[string]func() ClientComponent{
 		"icon": func() ClientComponent {
 			return &Icon{Value: btn.Icon, Width: 20}
@@ -253,7 +254,7 @@ func (btn *Button) getComponent(name string) (string, error) {
 /*
 Based on the values, it will generate the html code of the [Button] or return with an error message.
 */
-func (btn *Button) Render() (res string, err error) {
+func (btn *Button) Render() (html template.HTML, err error) {
 	btn.InitProps(btn)
 
 	funcMap := map[string]any{
@@ -263,7 +264,7 @@ func (btn *Button) Render() (res string, err error) {
 		"customClass": func() string {
 			return strings.Join(btn.Class, " ")
 		},
-		"buttonComponent": func(name string) (string, error) {
+		"buttonComponent": func(name string) (template.HTML, error) {
 			return btn.getComponent(name)
 		},
 	}
@@ -282,10 +283,10 @@ func (btn *Button) Render() (res string, err error) {
 	{{ if .ShowBadge }}<span class="right" ><span class="badge{{ if .Selected }} selected-badge{{ end }}" >{{ .Badge }}</span></span>{{ end }}
 	</button>`
 
-	if res, err = ut.TemplateBuilder("button", tpl, funcMap, btn); err == nil && btn.EventURL != "" {
+	if html, err = ut.TemplateBuilder("button", tpl, funcMap, btn); err == nil && btn.EventURL != "" {
 		btn.SetProperty("request_map", btn)
 	}
-	return res, err
+	return html, err
 }
 
 var testBtnResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt ResponseEvent) (re ResponseEvent) {

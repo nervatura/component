@@ -1,6 +1,7 @@
 package component
 
 import (
+	"html/template"
 	"strings"
 
 	ut "github.com/nervatura/component/pkg/util"
@@ -103,7 +104,7 @@ func (tgl *Toggle) OnRequest(te TriggerEvent) (re ResponseEvent) {
 	return evt
 }
 
-func (tgl *Toggle) getComponent(name string) (string, error) {
+func (tgl *Toggle) getComponent(name string) (template.HTML, error) {
 	ccMap := map[string]func() ClientComponent{
 		"toggleOn": func() ClientComponent {
 			return &Icon{
@@ -132,7 +133,7 @@ func (tgl *Toggle) getComponent(name string) (string, error) {
 /*
 Based on the values, it will generate the html code of the [Toggle] or return with an error message.
 */
-func (tgl *Toggle) Render() (res string, err error) {
+func (tgl *Toggle) Render() (html template.HTML, err error) {
 	tgl.InitProps(tgl)
 
 	funcMap := map[string]any{
@@ -142,7 +143,7 @@ func (tgl *Toggle) Render() (res string, err error) {
 		"customClass": func() string {
 			return strings.Join(tgl.Class, " ")
 		},
-		"toggleComponent": func(name string) (string, error) {
+		"toggleComponent": func(name string) (template.HTML, error) {
 			return tgl.getComponent(name)
 		},
 	}
@@ -156,10 +157,10 @@ func (tgl *Toggle) Render() (res string, err error) {
 	{{ else }}{{ if .Value }}{{ toggleComponent "toggleOn" }}{{ else }}{{ toggleComponent "toggleOff" }}{{ end }}{{ end }}
 	</div>`
 
-	if res, err = ut.TemplateBuilder("toggle", tpl, funcMap, tgl); err == nil && tgl.EventURL != "" {
+	if html, err = ut.TemplateBuilder("toggle", tpl, funcMap, tgl); err == nil && tgl.EventURL != "" {
 		tgl.SetProperty("request_map", tgl)
 	}
-	return res, nil
+	return html, nil
 }
 
 // [Toggle] test and demo data

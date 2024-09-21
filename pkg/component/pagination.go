@@ -1,6 +1,7 @@
 package component
 
 import (
+	"html/template"
 	"strings"
 
 	ut "github.com/nervatura/component/pkg/util"
@@ -172,7 +173,7 @@ func (pgn *Pagination) response(evt ResponseEvent) (re ResponseEvent) {
 	return pgnEvt
 }
 
-func (pgn *Pagination) getComponent(name string) (res string, err error) {
+func (pgn *Pagination) getComponent(name string) (html template.HTML, err error) {
 	ccBtn := func(label, value string, disabled bool, style ut.SM) *Button {
 		return &Button{
 			BaseComponent: BaseComponent{
@@ -200,13 +201,13 @@ func (pgn *Pagination) getComponent(name string) (res string, err error) {
 		},
 		"pagination_btn_previous": func() ClientComponent {
 			return ccBtn(
-				"&#10094;", ut.ToString(pgn.Value-1, "1"), !(pgn.Value > 1),
+				"❮", ut.ToString(pgn.Value-1, "1"), !(pgn.Value > 1),
 				ut.SM{"padding": "5px 6px 8px", "font-size": "15px", "margin": "1px 0 2px"},
 			)
 		},
 		"pagination_btn_next": func() ClientComponent {
 			return ccBtn(
-				"&#10095;", ut.ToString(pgn.Value+1, "1"), !(pgn.Value < pgn.PageCount),
+				"❯", ut.ToString(pgn.Value+1, "1"), !(pgn.Value < pgn.PageCount),
 				ut.SM{"padding": "5px 6px 8px", "font-size": "15px", "margin": "1px 1px 2px 0px"},
 			)
 		},
@@ -263,14 +264,14 @@ func (pgn *Pagination) getComponent(name string) (res string, err error) {
 		},
 	}
 	cc := ccMap[name]()
-	res, err = cc.Render()
-	return res, err
+	html, err = cc.Render()
+	return html, err
 }
 
 /*
 Based on the values, it will generate the html code of the [Pagination] or return with an error message.
 */
-func (pgn *Pagination) Render() (res string, err error) {
+func (pgn *Pagination) Render() (html template.HTML, err error) {
 	pgn.InitProps(pgn)
 
 	funcMap := map[string]any{
@@ -280,7 +281,7 @@ func (pgn *Pagination) Render() (res string, err error) {
 		"customClass": func() string {
 			return strings.Join(pgn.Class, " ")
 		},
-		"paginationComponent": func(name string) (string, error) {
+		"paginationComponent": func(name string) (template.HTML, error) {
 			return pgn.getComponent(name)
 		},
 	}

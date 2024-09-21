@@ -1,6 +1,7 @@
 package component
 
 import (
+	"html/template"
 	"strings"
 
 	ut "github.com/nervatura/component/pkg/util"
@@ -238,7 +239,7 @@ func (sel *Selector) response(evt ResponseEvent) (re ResponseEvent) {
 	return selEvt
 }
 
-func (sel *Selector) getComponent(name string) (res string, err error) {
+func (sel *Selector) getComponent(name string) (html template.HTML, err error) {
 	ccBtn := func(icon string, focus bool) *Button {
 		return &Button{
 			BaseComponent: BaseComponent{
@@ -344,14 +345,14 @@ func (sel *Selector) getComponent(name string) (res string, err error) {
 		},
 	}
 	cc := ccMap[name]()
-	res, err = cc.Render()
-	return res, err
+	html, err = cc.Render()
+	return html, err
 }
 
 /*
 Based on the values, it will generate the html code of the [Selector] or return with an error message.
 */
-func (sel *Selector) Render() (res string, err error) {
+func (sel *Selector) Render() (html template.HTML, err error) {
 	sel.InitProps(sel)
 
 	funcMap := map[string]any{
@@ -361,7 +362,7 @@ func (sel *Selector) Render() (res string, err error) {
 		"customClass": func() string {
 			return strings.Join(sel.Class, " ")
 		},
-		"selectorComponent": func(name string) (string, error) {
+		"selectorComponent": func(name string) (template.HTML, error) {
 			return sel.getComponent(name)
 		},
 	}

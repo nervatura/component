@@ -1,6 +1,7 @@
 package component
 
 import (
+	"html/template"
 	"strings"
 
 	ut "github.com/nervatura/component/pkg/util"
@@ -119,7 +120,7 @@ func (upl *Upload) OnRequest(te TriggerEvent) (re ResponseEvent) {
 	return evt
 }
 
-func (upl *Upload) getComponent(name string) (res string, err error) {
+func (upl *Upload) getComponent(name string) (html template.HTML, err error) {
 	ccMap := map[string]func() ClientComponent{
 		"submit": func() ClientComponent {
 			return &Button{
@@ -134,14 +135,14 @@ func (upl *Upload) getComponent(name string) (res string, err error) {
 		},
 	}
 	cc := ccMap[name]()
-	res, err = cc.Render()
-	return res, err
+	html, err = cc.Render()
+	return html, err
 }
 
 /*
 Based on the values, it will generate the html code of the [Upload] or return with an error message.
 */
-func (upl *Upload) Render() (res string, err error) {
+func (upl *Upload) Render() (html template.HTML, err error) {
 	upl.InitProps(upl)
 
 	funcMap := map[string]any{
@@ -151,7 +152,7 @@ func (upl *Upload) Render() (res string, err error) {
 		"customClass": func() string {
 			return strings.Join(upl.Class, " ")
 		},
-		"uploadComponent": func(name string) (string, error) {
+		"uploadComponent": func(name string) (template.HTML, error) {
 			return upl.getComponent(name)
 		},
 	}
@@ -207,10 +208,10 @@ func (upl *Upload) Render() (res string, err error) {
   });
   </script>`
 
-	if res, err = ut.TemplateBuilder("upload", tpl, funcMap, upl); err == nil && upl.EventURL != "" {
+	if html, err = ut.TemplateBuilder("upload", tpl, funcMap, upl); err == nil && upl.EventURL != "" {
 		upl.SetProperty("request_map", upl)
 	}
-	return res, nil
+	return html, nil
 }
 
 // [Upload] test and demo data

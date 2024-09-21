@@ -1,6 +1,7 @@
 package component
 
 import (
+	"html/template"
 	"math"
 	"strings"
 
@@ -278,7 +279,7 @@ func (lst *List) response(evt ResponseEvent) (re ResponseEvent) {
 	return lstEvt
 }
 
-func (lst *List) getComponent(name string, pageCount int64) (res string, err error) {
+func (lst *List) getComponent(name string, pageCount int64) (html template.HTML, err error) {
 	ccPgn := func() *Pagination {
 		return &Pagination{
 			BaseComponent: BaseComponent{
@@ -346,8 +347,8 @@ func (lst *List) getComponent(name string, pageCount int64) (res string, err err
 		},
 	}
 	cc := ccMap[name]()
-	res, err = cc.Render()
-	return res, err
+	html, err = cc.Render()
+	return html, err
 }
 
 func (lst *List) filterRows() (rows []ut.IM) {
@@ -374,7 +375,7 @@ func (lst *List) filterRows() (rows []ut.IM) {
 /*
 Based on the values, it will generate the html code of the [List] or return with an error message.
 */
-func (lst *List) Render() (res string, err error) {
+func (lst *List) Render() (html template.HTML, err error) {
 	lst.InitProps(lst)
 
 	rows := lst.filterRows()
@@ -393,7 +394,7 @@ func (lst *List) Render() (res string, err error) {
 		"bottomPagination": func() bool {
 			return ((pageCount > 1) && ((lst.Pagination == PaginationTypeBottom) || lst.Pagination == PaginationTypeAll))
 		},
-		"listComponent": func(name string) (string, error) {
+		"listComponent": func(name string) (template.HTML, error) {
 			return lst.getComponent(name, pageCount)
 		},
 		"listRows": func() []ut.IM {

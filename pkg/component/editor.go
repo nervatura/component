@@ -1,6 +1,7 @@
 package component
 
 import (
+	"html/template"
 	"strings"
 
 	ut "github.com/nervatura/component/pkg/util"
@@ -179,7 +180,7 @@ func (edi *Editor) response(evt ResponseEvent) (re ResponseEvent) {
 	return admEvt
 }
 
-func (edi *Editor) getComponent(name string, view EditorView, index int) (res string, err error) {
+func (edi *Editor) getComponent(name string, view EditorView, index int) (html template.HTML, err error) {
 	ccMap := map[string]func() ClientComponent{
 		"title": func() ClientComponent {
 			return &Label{
@@ -235,14 +236,14 @@ func (edi *Editor) getComponent(name string, view EditorView, index int) (res st
 		},
 	}
 	cc := ccMap[name]()
-	res, err = cc.Render()
-	return res, err
+	html, err = cc.Render()
+	return html, err
 }
 
 /*
 Based on the values, it will generate the html code of the [Editor] or return with an error message.
 */
-func (edi *Editor) Render() (res string, err error) {
+func (edi *Editor) Render() (html template.HTML, err error) {
 	edi.InitProps(edi)
 
 	funcMap := map[string]any{
@@ -252,10 +253,10 @@ func (edi *Editor) Render() (res string, err error) {
 		"customClass": func() string {
 			return strings.Join(edi.Class, " ")
 		},
-		"editorComponent": func(name string) (string, error) {
+		"editorComponent": func(name string) (template.HTML, error) {
 			return edi.getComponent(name, EditorView{}, 0)
 		},
-		"viewComponent": func(name string, view EditorView, index int) (string, error) {
+		"viewComponent": func(name string, view EditorView, index int) (template.HTML, error) {
 			return edi.getComponent(name, view, index)
 		},
 	}

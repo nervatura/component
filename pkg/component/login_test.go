@@ -14,6 +14,7 @@ func TestTestLogin(t *testing.T) {
 		})
 	}
 	testLoginResponse(ResponseEvent{Name: LoginEventLogin, Trigger: &Login{}})
+	testLoginResponse(ResponseEvent{Name: LoginEventAuth, Trigger: &Login{}})
 	testLoginResponse(ResponseEvent{Name: LoginEventLang, Trigger: &Login{}})
 	testLoginResponse(ResponseEvent{Name: LoginEventTheme, Trigger: &Login{}})
 }
@@ -190,6 +191,20 @@ func TestLogin_response(t *testing.T) {
 				evt: ResponseEvent{
 					TriggerName: "login",
 					Name:        LoginEventLogin,
+				},
+			},
+		},
+		{
+			name: "auth",
+			args: args{
+				evt: ResponseEvent{
+					TriggerName: "auth",
+					Name:        LoginEventAuth,
+					Trigger: &Button{
+						BaseComponent: BaseComponent{
+							Data: ut.IM{},
+						},
+					},
 				},
 			},
 		},

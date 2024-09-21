@@ -1,6 +1,7 @@
 package component
 
 import (
+	"html/template"
 	"strings"
 
 	ut "github.com/nervatura/component/pkg/util"
@@ -259,7 +260,7 @@ func (sb *SideBar) response(evt ResponseEvent) (re ResponseEvent) {
 	return sbEvt
 }
 
-func (sb *SideBar) getComponent(index, groupIndex int) (res string, err error) {
+func (sb *SideBar) getComponent(index, groupIndex int) (html template.HTML, err error) {
 	ccBtn := func(idx int, name string) *Button {
 		btn := &Button{
 			BaseComponent: BaseComponent{
@@ -384,14 +385,14 @@ func (sb *SideBar) getComponent(index, groupIndex int) (res string, err error) {
 		},
 	}
 	cc := ccMap[sb.Items[index].ItemType()](sb.Items[index])
-	res, err = cc.Render()
-	return res, err
+	html, err = cc.Render()
+	return html, err
 }
 
 /*
 Based on the values, it will generate the html code of the [SideBar] or return with an error message.
 */
-func (sb *SideBar) Render() (res string, err error) {
+func (sb *SideBar) Render() (html template.HTML, err error) {
 	sb.InitProps(sb)
 
 	funcMap := map[string]any{
@@ -410,7 +411,7 @@ func (sb *SideBar) Render() (res string, err error) {
 		"validState": func(index int) bool {
 			return index <= 1
 		},
-		"sidebarComponent": func(index, groupIndex int) (string, error) {
+		"sidebarComponent": func(index, groupIndex int) (template.HTML, error) {
 			return sb.getComponent(index, groupIndex)
 		},
 	}

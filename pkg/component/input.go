@@ -1,6 +1,8 @@
 package component
 
 import (
+	"fmt"
+	"html/template"
 	"strings"
 
 	ut "github.com/nervatura/component/pkg/util"
@@ -196,7 +198,7 @@ func (inp *Input) OnRequest(te TriggerEvent) (re ResponseEvent) {
 /*
 Based on the values, it will generate the html code of the [Input] or return with an error message.
 */
-func (inp *Input) Render() (res string, err error) {
+func (inp *Input) Render() (html template.HTML, err error) {
 	inp.InitProps(inp)
 
 	funcMap := map[string]any{
@@ -206,17 +208,17 @@ func (inp *Input) Render() (res string, err error) {
 		"customClass": func() string {
 			return strings.Join(inp.Class, " ")
 		},
-		"tagEl": func() string {
-			if inp.Type == InputTypeText {
-				return "textarea"
-			}
-			return "input"
-		},
 		"inputEl": func() bool {
 			return (inp.Type != InputTypeText)
 		},
 	}
-	tpl := `<{{ tagEl }} id="{{ .Id }}" name="{{ .Name }}" 
+	tagEl := "input"
+	value := ""
+	if inp.Type == InputTypeText {
+		tagEl = "textarea"
+		value = inp.Value
+	}
+	tpl := fmt.Sprintf(`<%s id="{{ .Id }}" name="{{ .Name }}" 
 	{{ if inputEl }} type="{{ .Type }}" value="{{ .Value }}"{{ end }}
 	{{ if ne .EventURL "" }} hx-post="{{ .EventURL }}" hx-target="{{ .Target }}" hx-swap="{{ .Swap }}"{{ end }}
 	{{ if ne .Indicator "none" }} hx-indicator="#{{ .Indicator }}"{{ end }}
@@ -230,12 +232,12 @@ func (inp *Input) Render() (res string, err error) {
 	{{ if and (gt .Rows 0) (ne inputEl true) }} rows="{{ .Rows }}"{{ end }}
 	 class="{{ if .Full }} full{{ end }}{{ if .Invalid }} invalid{{ end }} {{ customClass }}"
 	{{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}
-	>{{ if ne inputEl true }}{{ .Value }}{{ end }}</{{ tagEl }}>`
+	>%s</%s>`, tagEl, value, tagEl)
 
-	if res, err = ut.TemplateBuilder("input", tpl, funcMap, inp); err == nil && inp.EventURL != "" {
+	if html, err = ut.TemplateBuilder("input", tpl, funcMap, inp); err == nil && inp.EventURL != "" {
 		inp.SetProperty("request_map", inp)
 	}
-	return res, nil
+	return html, nil
 }
 
 var testInputResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt ResponseEvent) (re ResponseEvent) {

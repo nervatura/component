@@ -1,6 +1,7 @@
 package component
 
 import (
+	"html/template"
 	"strings"
 
 	ut "github.com/nervatura/component/pkg/util"
@@ -107,7 +108,7 @@ func (tst *Toast) SetProperty(propName string, propValue interface{}) interface{
 	return propValue
 }
 
-func (tst *Toast) getComponent(name string) (string, error) {
+func (tst *Toast) getComponent(name string) (template.HTML, error) {
 	iconMap := ut.SM{
 		"info":    "InfoCircle",
 		"error":   "ExclamationTriangle",
@@ -129,7 +130,7 @@ func (tst *Toast) getComponent(name string) (string, error) {
 /*
 Based on the values, it will generate the html code of the [Toast] or return with an error message.
 */
-func (tst *Toast) Render() (res string, err error) {
+func (tst *Toast) Render() (html template.HTML, err error) {
 	tst.InitProps(tst)
 
 	funcMap := map[string]any{
@@ -139,7 +140,7 @@ func (tst *Toast) Render() (res string, err error) {
 		"customClass": func() string {
 			return strings.Join(tst.Class, " ")
 		},
-		"toastComponent": func(name string) (string, error) {
+		"toastComponent": func(name string) (template.HTML, error) {
 			return tst.getComponent(name)
 		},
 	}
@@ -205,7 +206,7 @@ func TestToast(cc ClientComponent) []TestComponent {
 				BaseComponent: BaseComponent{
 					Id: id + "_toast_error",
 					Data: ut.IM{
-						"toast-type": "error", "toast-value": "<i>This is an error message.</i>", "toast-timeout": "0",
+						"toast-type": "error", "toast-value": "This is an error message.", "toast-timeout": "0",
 					},
 					EventURL:     eventURL,
 					OnResponse:   testToastResponse,

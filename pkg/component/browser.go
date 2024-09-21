@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/csv"
+	"html/template"
 	"strings"
 	"time"
 
@@ -603,7 +604,7 @@ func (bro *Browser) setTotalValues() []BrowserTotalField {
 	return total
 }
 
-func (bro *Browser) getComponent(name string, data ut.IM) (res string, err error) {
+func (bro *Browser) getComponent(name string, data ut.IM) (html template.HTML, err error) {
 	ccSel := func(options []SelectOption, index, value string) *Select {
 		sel := &Select{
 			BaseComponent: BaseComponent{
@@ -911,8 +912,8 @@ func (bro *Browser) getComponent(name string, data ut.IM) (res string, err error
 					Id:        "edit_row",
 					Header:    "",
 					CellStyle: ut.SM{"width": "25px", "padding": "7px 3px 3px 8px"},
-					Cell: func(row ut.IM, col TableColumn, value interface{}) string {
-						var ico string
+					Cell: func(row ut.IM, col TableColumn, value interface{}) template.HTML {
+						var ico template.HTML
 						ico, _ = bro.getComponent("edit_row", row)
 						return ico
 					}}},
@@ -955,8 +956,8 @@ func (bro *Browser) getComponent(name string, data ut.IM) (res string, err error
 		},
 	}
 	cc := ccMap[name]()
-	res, err = cc.Render()
-	return res, err
+	html, err = cc.Render()
+	return html, err
 }
 
 func (bro *Browser) msg(labelID string) string {
@@ -969,7 +970,7 @@ func (bro *Browser) msg(labelID string) string {
 /*
 Based on the values, it will generate the html code of the [Browser] or return with an error message.
 */
-func (bro *Browser) Render() (res string, err error) {
+func (bro *Browser) Render() (html template.HTML, err error) {
 	bro.InitProps(bro)
 	if bro.ShowTotal {
 		bro.totalFields = bro.setTotalValues()
@@ -988,16 +989,16 @@ func (bro *Browser) Render() (res string, err error) {
 		"customClass": func() string {
 			return strings.Join(bro.Class, " ")
 		},
-		"browserComponent": func(name string) (string, error) {
+		"browserComponent": func(name string) (template.HTML, error) {
 			return bro.getComponent(name, ut.IM{})
 		},
-		"menuItem": func(key, value string) (string, error) {
+		"menuItem": func(key, value string) (template.HTML, error) {
 			return bro.getComponent("menu_item", ut.IM{"key": key, "value": value})
 		},
-		"colItem": func(key, value string) (string, error) {
+		"colItem": func(key, value string) (template.HTML, error) {
 			return bro.getComponent("col_item", ut.IM{"key": key, "value": value})
 		},
-		"filter": func(filterKey string, index int, filterItem BrowserFilter) (string, error) {
+		"filter": func(filterKey string, index int, filterItem BrowserFilter) (template.HTML, error) {
 			return bro.getComponent(filterKey,
 				ut.IM{"index": index, "field": filterItem.Field, "comp": filterItem.Comp, "value": filterItem.Value})
 		},
@@ -1007,10 +1008,10 @@ func (bro *Browser) Render() (res string, err error) {
 		"totalFields": func() []BrowserTotalField {
 			return bro.totalFields
 		},
-		"totalLabel": func(label string) (string, error) {
+		"totalLabel": func(label string) (template.HTML, error) {
 			return bro.getComponent("total_label", ut.IM{"label": label})
 		},
-		"totalValue": func(total float64) (string, error) {
+		"totalValue": func(total float64) (template.HTML, error) {
 			return bro.getComponent("total_value", ut.IM{"total": total})
 		},
 	}

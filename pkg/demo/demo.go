@@ -2,6 +2,7 @@ package demo
 
 import (
 	"fmt"
+	"html/template"
 	"strings"
 
 	ct "github.com/nervatura/component/pkg/component"
@@ -301,7 +302,7 @@ func (sto *Demo) response(evt ct.ResponseEvent) (re ct.ResponseEvent) {
 	return stoEvt
 }
 
-func (sto *Demo) getComponent(name string) (res string, err error) {
+func (sto *Demo) getComponent(name string) (html template.HTML, err error) {
 	propValue := ut.SM{
 		"theme": sto.Theme, "view_size": sto.ViewSize,
 		"selected_group": sto.SelectedGroup, "selected_type": ut.ToString(sto.SelectedType, ""),
@@ -365,14 +366,14 @@ func (sto *Demo) getComponent(name string) (res string, err error) {
 		},
 	}
 	cc := ccMap[name]()
-	res, err = cc.Render()
-	return res, err
+	html, err = cc.Render()
+	return html, err
 }
 
 /*
 Based on the values, it will generate the html code of the [Demo] or return with an error message.
 */
-func (sto *Demo) Render() (res string, err error) {
+func (sto *Demo) Render() (html template.HTML, err error) {
 	sto.InitProps(sto)
 
 	funcMap := map[string]any{
@@ -382,16 +383,16 @@ func (sto *Demo) Render() (res string, err error) {
 		"customClass": func() string {
 			return strings.Join(sto.Class, " ")
 		},
-		"demoComponent": func(name string) (string, error) {
+		"demoComponent": func(name string) (template.HTML, error) {
 			return sto.getComponent(name)
 		},
-		"label": func(value string) (string, error) {
+		"label": func(value string) (template.HTML, error) {
 			return (&ct.Label{
 				BaseComponent: ct.BaseComponent{Style: ut.SM{"color": "brown"}},
 				Value:         value,
 			}).Render()
 		},
-		"clientComponent": func(cc ct.ClientComponent) (string, error) {
+		"clientComponent": func(cc ct.ClientComponent) (template.HTML, error) {
 			res, err := cc.Render()
 			return res, err
 		},

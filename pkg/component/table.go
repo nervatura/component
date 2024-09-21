@@ -2,6 +2,7 @@ package component
 
 import (
 	"fmt"
+	"html/template"
 	"math"
 	"sort"
 	"strings"
@@ -147,7 +148,7 @@ type TableColumn struct {
 	// Original field definition
 	Field TableField `json:"field"`
 	// The cell generator function of the table
-	Cell func(row ut.IM, col TableColumn, value interface{}) string `json:"-"`
+	Cell func(row ut.IM, col TableColumn, value interface{}) template.HTML `json:"-"`
 }
 
 /*
@@ -449,7 +450,7 @@ func (tbl *Table) response(evt ResponseEvent) (re ResponseEvent) {
 	return tblEvt
 }
 
-func (tbl *Table) getComponent(name string, pageCount int64, data ut.IM) (res string, err error) {
+func (tbl *Table) getComponent(name string, pageCount int64, data ut.IM) (html template.HTML, err error) {
 	ccPgn := func() *Pagination {
 		return &Pagination{
 			BaseComponent: BaseComponent{
@@ -522,8 +523,8 @@ func (tbl *Table) getComponent(name string, pageCount int64, data ut.IM) (res st
 		},
 	}
 	cc := ccMap[name]()
-	res, err = cc.Render()
-	return res, err
+	html, err = cc.Render()
+	return html, err
 }
 
 func (tbl *Table) getStyle(styleMap ut.SM) string {
@@ -538,15 +539,15 @@ func (tbl *Table) getStyle(styleMap ut.SM) string {
 }
 
 func (tbl *Table) columns() (cols []TableColumn) {
-	numberCell := func(value float64, label string, style ut.SM) string {
-		return fmt.Sprintf(
+	numberCell := func(value float64, label string, style ut.SM) template.HTML {
+		return template.HTML(fmt.Sprintf(
 			`<div class="number-cell">
 	    <span class="cell-label">%s</span>
 	    <span %s >%s</span>
-    </div>`, label, tbl.getStyle(style), ut.ToString(value, "0"))
+    </div>`, label, tbl.getStyle(style), ut.ToString(value, "0")))
 	}
 
-	dateCell := func(value interface{}, label, dateType string) string {
+	dateCell := func(value interface{}, label, dateType string) template.HTML {
 		var fmtValue string
 		dateFormat := map[string]func(tm time.Time) string{
 			TableFieldTypeDate: func(tm time.Time) string {
@@ -566,36 +567,36 @@ func (tbl *Table) columns() (cols []TableColumn) {
 		case time.Time:
 			fmtValue = dateFormat[dateType](v)
 		}
-		return fmt.Sprintf(`<span class="cell-label">%s</span><span>%s</span>`, label, fmtValue)
+		return template.HTML(fmt.Sprintf(`<span class="cell-label">%s</span><span>%s</span>`, label, fmtValue))
 	}
 
-	boolCell := func(value interface{}, label string) string {
+	boolCell := func(value interface{}, label string) template.HTML {
 		if (value == 1) || (value == "true") || (value == true) {
-			return fmt.Sprintf(
+			return template.HTML(fmt.Sprintf(
 				`<span class="cell-label">%s</span>
 			  <form-icon iconKey="CheckSquare" ></form-icon>
-			  <span class="middle"> %s</span>`, label, tbl.LabelYes)
+			  <span class="middle"> %s</span>`, label, tbl.LabelYes))
 		}
-		return fmt.Sprintf(
+		return template.HTML(fmt.Sprintf(
 			`<span class="cell-label">%s</span>
 			<form-icon iconKey="SquareEmpty" ></form-icon>
-			<span class="middle"> %s</span>`, label, tbl.LabelNo)
+			<span class="middle"> %s</span>`, label, tbl.LabelNo))
 	}
 
-	linkCell := func(value, label, fieldname string, resultValue interface{}, rowData ut.IM) string {
+	linkCell := func(value, label, fieldname string, resultValue interface{}, rowData ut.IM) template.HTML {
 		linkLabel := fmt.Sprintf(
 			`<span class="cell-label">%s</span>`, label)
-		var link string
+		var link template.HTML
 		link, _ = tbl.getComponent("link_cell", 0, ut.IM{
 			"value": value, "fieldname": fieldname, "result": resultValue, "row": rowData,
 		})
-		return linkLabel + link
+		return template.HTML(linkLabel + string(link))
 	}
 
-	stringCell := func(value string, label string, style ut.SM) string {
-		return fmt.Sprintf(
+	stringCell := func(value string, label string, style ut.SM) template.HTML {
+		return template.HTML(fmt.Sprintf(
 			`<span class="cell-label">%s</span>
-			<span %s >%s</span>`, label, tbl.getStyle(style), value)
+			<span %s >%s</span>`, label, tbl.getStyle(style), value))
 	}
 
 	getFieldType := func(fType string) string {
@@ -632,7 +633,7 @@ func (tbl *Table) columns() (cols []TableColumn) {
 			setFieldType := map[string]func(){
 				TableFieldTypeNumber: func() {
 					coldef.HeaderStyle["text-align"] = TextAlignRight
-					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}) string {
+					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}) template.HTML {
 						style := ut.SM{}
 						if col.Field.Format {
 							style["font-weight"] = "bold"
@@ -648,35 +649,35 @@ func (tbl *Table) columns() (cols []TableColumn) {
 					}
 				},
 				TableFieldTypeDateTime: func() {
-					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}) string {
+					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}) template.HTML {
 						return dateCell(value, col.Field.Label, col.Field.FieldType)
 					}
 				},
 				TableFieldTypeBool: func() {
-					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}) string {
+					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}) template.HTML {
 						return boolCell(value, col.Field.Label)
 					}
 				},
 				TableFieldTypeLink: func() {
-					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}) string {
+					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}) template.HTML {
 						return linkCell(ut.ToString(value, ""), col.Field.Label,
 							col.Field.Name, row[col.Field.Name], row)
 					}
 				},
 				TableFieldTypeMeta: func() {
-					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}) string {
+					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}) template.HTML {
 						fieldType := tbl.CheckEnumValue(ut.ToString(row[field.Name+"_meta"], ""), TableFieldTypeString, TableMetaType)
-						mResult := map[string]func() string{
-							TableFieldTypeBool: func() string {
+						mResult := map[string]func() template.HTML{
+							TableFieldTypeBool: func() template.HTML {
 								return boolCell(value, col.Field.Label)
 							},
-							TableFieldTypeInteger: func() string {
+							TableFieldTypeInteger: func() template.HTML {
 								return numberCell(ut.ToFloat(value, 0), col.Field.Label, ut.SM{})
 							},
-							TableFieldTypeNumber: func() string {
+							TableFieldTypeNumber: func() template.HTML {
 								return numberCell(ut.ToFloat(value, 0), col.Field.Label, ut.SM{})
 							},
-							TableFieldTypeLink: func() string {
+							TableFieldTypeLink: func() template.HTML {
 								return linkCell(ut.ToString(value, ""), col.Field.Label,
 									field.Name, row[field.Name], row)
 							},
@@ -688,7 +689,7 @@ func (tbl *Table) columns() (cols []TableColumn) {
 					}
 				},
 				TableFieldTypeString: func() {
-					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}) string {
+					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}) template.HTML {
 						style := ut.SM{}
 						if color, found := row[col.Field.Name+"_color"].(string); found {
 							style["color"] = color
@@ -746,7 +747,7 @@ func (tbl *Table) filterRows() (rows []ut.IM) {
 /*
 Based on the values, it will generate the html code of the [Table] or return with an error message.
 */
-func (tbl *Table) Render() (res string, err error) {
+func (tbl *Table) Render() (html template.HTML, err error) {
 	tbl.InitProps(tbl)
 
 	cols := tbl.columns()
@@ -766,7 +767,7 @@ func (tbl *Table) Render() (res string, err error) {
 		"bottomPagination": func() bool {
 			return ((pageCount > 1) && ((tbl.Pagination == PaginationTypeBottom) || tbl.Pagination == PaginationTypeAll))
 		},
-		"tableComponent": func(name string) (string, error) {
+		"tableComponent": func(name string) (template.HTML, error) {
 			return tbl.getComponent(name, pageCount, ut.IM{})
 		},
 		"pageRows": func() []ut.IM {
@@ -837,11 +838,11 @@ func (tbl *Table) Render() (res string, err error) {
 		"cellStyle": func(styleMap ut.SM) bool {
 			return len(styleMap) > 0
 		},
-		"cellValue": func(row ut.IM, col TableColumn) string {
+		"cellValue": func(row ut.IM, col TableColumn) template.HTML {
 			if col.Cell != nil {
 				return col.Cell(row, col, row[col.Id])
 			}
-			return ut.ToString(row[col.Id], "")
+			return template.HTML(ut.ToString(row[col.Id], ""))
 		},
 	}
 	tpl := `<div id="{{ .Id }}" name="{{ .Name }}" class="responsive {{ customClass }}">
@@ -886,7 +887,7 @@ var testTableFields []TableField = []TableField{
 	{Name: "product", FieldType: TableFieldTypeLink, Label: "Product"},
 	{Name: "deffield", FieldType: TableFieldTypeMeta, Label: "Multiple type"},
 	{Column: &TableColumn{Id: "editor", Header: "Custom",
-		Cell: func(row ut.IM, col TableColumn, value interface{}) string {
+		Cell: func(row ut.IM, col TableColumn, value interface{}) template.HTML {
 			btn := Button{
 				ButtonStyle: ButtonStylePrimary, Label: "Hello", Disabled: ut.ToBoolean(row["disabled"], false), Small: true}
 			res, _ := btn.Render()
