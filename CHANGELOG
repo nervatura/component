@@ -1,4 +1,4 @@
-## 2.0.1
+## 1.7.0
 - TemplateBuilder: change golang "text/template" to "html/template" package
 - ClientComponent interface: the result type of the Render function has changed from string to template.HTML
 - Login component: option to add customized OAuth login buttons
