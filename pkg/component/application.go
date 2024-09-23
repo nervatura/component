@@ -222,10 +222,10 @@ func (app *Application) Render() (html template.HTML, err error) {
 	headerKeys := func() string {
 		values := []string{}
 		for key, value := range app.Header {
-			values = append(values, key, value)
+			values = append(values, fmt.Sprintf(`"%s":"%s"`, key, value))
 		}
 		if len(values) > 0 {
-			return fmt.Sprintf(`hx-headers='{"%s"}'`, strings.Join(values, `","`))
+			return fmt.Sprintf(`hx-headers='{%s}'`, strings.Join(values, `,`))
 		}
 		return ""
 	}
