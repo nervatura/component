@@ -225,7 +225,7 @@ func (app *Application) Render() (html template.HTML, err error) {
 			values = append(values, key, value)
 		}
 		if len(values) > 0 {
-			return fmt.Sprintf(`hx-headers='{"%s"}'`, strings.Join(values, `":"`))
+			return fmt.Sprintf(`hx-headers='{"%s"}'`, strings.Join(values, `","`))
 		}
 		return ""
 	}

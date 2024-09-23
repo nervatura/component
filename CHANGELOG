@@ -1,3 +1,7 @@
+## 1.7.1
+- Application component: hx-headers bug fixes
+- removed util Contains function (change to slices.Contains)
+
 ## 1.7.0
 - TemplateBuilder: change golang "text/template" to "html/template" package
 - ClientComponent interface: the result type of the Render function has changed from string to template.HTML

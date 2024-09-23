@@ -476,42 +476,6 @@ func TestRandString(t *testing.T) {
 	}
 }
 
-func TestContains(t *testing.T) {
-	type args struct {
-		a []string
-		x string
-	}
-	tests := []struct {
-		name string
-		args args
-		want bool
-	}{
-		{
-			name: "found",
-			args: args{
-				a: []string{"abba", "baba", "aabb"},
-				x: "baba",
-			},
-			want: true,
-		},
-		{
-			name: "not_found",
-			args: args{
-				a: []string{"abba", "baba", "aabb"},
-				x: "bbaa",
-			},
-			want: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := Contains(tt.args.a, tt.args.x); got != tt.want {
-				t.Errorf("Contains() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestGetComponentID(t *testing.T) {
 	tests := []struct {
 		name string

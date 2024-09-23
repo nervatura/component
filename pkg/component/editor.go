@@ -2,6 +2,7 @@ package component
 
 import (
 	"html/template"
+	"slices"
 	"strings"
 
 	ut "github.com/nervatura/component/pkg/util"
@@ -163,7 +164,7 @@ func (edi *Editor) response(evt ResponseEvent) (re ResponseEvent) {
 		admEvt.Name = EditorEventView
 
 	case "view_table":
-		if ut.Contains([]string{TableEventAddItem, TableEventEditCell, TableEventRowSelected}, evt.Name) {
+		if slices.Contains([]string{TableEventAddItem, TableEventEditCell, TableEventRowSelected}, evt.Name) {
 			admEvt.Name = EditorEventField
 			admEvt.Value = ut.IM{"name": evt.Name, "value": evt.Value, "data": evt.Trigger.GetProperty("data").(ut.IM)}
 		} else {

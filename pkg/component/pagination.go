@@ -2,6 +2,7 @@ package component
 
 import (
 	"html/template"
+	"slices"
 	"strings"
 
 	ut "github.com/nervatura/component/pkg/util"
@@ -90,7 +91,7 @@ func (pgn *Pagination) Validation(propName string, propValue interface{}) interf
 			for _, ps := range ValidPageSize {
 				pageSize = append(pageSize, ut.ToString(ps, ""))
 			}
-			if !ut.Contains(pageSize, ut.ToString(value, "")) {
+			if !slices.Contains(pageSize, ut.ToString(value, "")) {
 				value = ValidPageSize[0]
 			}
 			return value

@@ -9,6 +9,7 @@ package component
 import (
 	"html/template"
 	"net/url"
+	"slices"
 	"strings"
 
 	ut "github.com/nervatura/component/pkg/util"
@@ -260,7 +261,7 @@ func (bcc *BaseComponent) Properties() ut.IM {
 Checking the value of an enum type. In case of an invalid value, the function returns the value specified in defaultValue
 */
 func (bcc *BaseComponent) CheckEnumValue(value, defaultValue string, enums []string) string {
-	if ut.Contains(enums, value) {
+	if slices.Contains(enums, value) {
 		return value
 	}
 	return defaultValue
@@ -411,7 +412,7 @@ The function sets the value of a changed property of the component in the Reques
 [BaseComponent.SetProperty] calls this function as well at the end of processing.
 */
 func (bcc *BaseComponent) SetRequestValue(propName string, propValue interface{}, staticFields []string) interface{} {
-	if !ut.Contains(staticFields, propName) && bcc.Id != "" && !bcc.init {
+	if !slices.Contains(staticFields, propName) && bcc.Id != "" && !bcc.init {
 		bcc.RequestValue = bcc.Validation("request_value", map[string]ut.IM{bcc.Id: {propName: propValue}}).(map[string]ut.IM)
 	}
 	return propValue

@@ -3,6 +3,7 @@ package component
 import (
 	"html/template"
 	"math"
+	"slices"
 	"strings"
 
 	ut "github.com/nervatura/component/pkg/util"
@@ -125,7 +126,7 @@ func (lst *List) Validation(propName string, propValue interface{}) interface{} 
 			for _, ps := range ValidPageSize {
 				pageSize = append(pageSize, ut.ToString(ps, ""))
 			}
-			if !ut.Contains(pageSize, ut.ToString(value, "")) {
+			if !slices.Contains(pageSize, ut.ToString(value, "")) {
 				value = ValidPageSize[0]
 			}
 			return value

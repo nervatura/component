@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"math"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -247,7 +248,7 @@ func (tbl *Table) Validation(propName string, propValue interface{}) interface{}
 			for _, ps := range ValidPageSize {
 				pageSize = append(pageSize, ut.ToString(ps, ""))
 			}
-			if !ut.Contains(pageSize, ut.ToString(value, "")) {
+			if !slices.Contains(pageSize, ut.ToString(value, "")) {
 				value = ValidPageSize[0]
 			}
 			return value
@@ -682,7 +683,7 @@ func (tbl *Table) columns() (cols []TableColumn) {
 									field.Name, row[field.Name], row)
 							},
 						}
-						if ut.Contains([]string{TableFieldTypeBool, TableFieldTypeInteger, TableFieldTypeNumber, TableFieldTypeLink}, fieldType) {
+						if slices.Contains([]string{TableFieldTypeBool, TableFieldTypeInteger, TableFieldTypeNumber, TableFieldTypeLink}, fieldType) {
 							return mResult[fieldType]()
 						}
 						return stringCell(ut.ToString(value, ""), col.Field.Label, ut.SM{})

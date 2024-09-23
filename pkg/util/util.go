@@ -225,16 +225,6 @@ func GetComponentID() string {
 	return "ID" + RandString(16)
 }
 
-// Contains tells whether a contains x.
-func Contains(a []string, x string) bool {
-	for _, n := range a {
-		if x == n {
-			return true
-		}
-	}
-	return false
-}
-
 func TemplateBuilder(name, tpl string, funcMap map[string]any, data any) (html template.HTML, err error) {
 	var tmp *template.Template
 	if tmp, err = template.New(name).Funcs(funcMap).Parse(tpl); err != nil {

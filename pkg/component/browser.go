@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/csv"
 	"html/template"
+	"slices"
 	"strings"
 	"time"
 
@@ -579,7 +580,7 @@ func (bro *Browser) getFilterType(fieldName string) string {
 func (bro *Browser) setTotalFields() []BrowserTotalField {
 	total := []BrowserTotalField{}
 	for _, field := range bro.Fields {
-		if ut.Contains([]string{TableFieldTypeInteger, TableFieldTypeNumber, TableFieldTypeMeta}, field.FieldType) {
+		if slices.Contains([]string{TableFieldTypeInteger, TableFieldTypeNumber, TableFieldTypeMeta}, field.FieldType) {
 			total = append(total,
 				BrowserTotalField{Name: field.Name, FieldType: field.FieldType, Label: field.Label, Total: 0})
 		}
@@ -595,7 +596,7 @@ func (bro *Browser) setTotalValues() []BrowserTotalField {
 				total[index].Total += ut.ToFloat(value, 0)
 			}
 			if value, found := row[field.Name]; found && (field.FieldType == TableFieldTypeMeta) {
-				if ut.Contains([]string{TableFieldTypeInteger, TableFieldTypeNumber}, ut.ToString(row[field.Name+"_meta"], "")) {
+				if slices.Contains([]string{TableFieldTypeInteger, TableFieldTypeNumber}, ut.ToString(row[field.Name+"_meta"], "")) {
 					total[index].Total += ut.ToFloat(value, 0)
 				}
 			}
@@ -802,7 +803,7 @@ func (bro *Browser) getComponent(name string, data ut.IM) (html template.HTML, e
 		},
 		"filter_comp": func() ClientComponent {
 			options := func(ftype string) []SelectOption {
-				if !ut.Contains([]string{
+				if !slices.Contains([]string{
 					TableFieldTypeDate, TableFieldTypeDateTime, TableFieldTypeTime, TableFieldTypeInteger,
 					TableFieldTypeNumber}, ftype) {
 					return browserFilterComp[0:2]
@@ -826,10 +827,10 @@ func (bro *Browser) getComponent(name string, data ut.IM) (html template.HTML, e
 					{Value: "1", Text: bro.msg("browser_label_yes")}}
 				return ccSel(options, index, value)
 			}
-			if ut.Contains([]string{TableFieldTypeNumber, TableFieldTypeInteger}, fieldType) {
+			if slices.Contains([]string{TableFieldTypeNumber, TableFieldTypeInteger}, fieldType) {
 				return ccNum(index, value)
 			}
-			if ut.Contains([]string{
+			if slices.Contains([]string{
 				TableFieldTypeDate, TableFieldTypeDateTime, TableFieldTypeTime}, fieldType) {
 				dtmap := ut.SM{
 					TableFieldTypeDate:     DateTimeTypeDate,
