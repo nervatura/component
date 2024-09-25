@@ -1,3 +1,7 @@
+## 1.7.3
+- List component: filter value case sensitive option
+- Table component: filter value case sensitive option
+
 ## 1.7.1 - 1.7.2
 - Application component: hx-headers bug fixes
 - removed util Contains function (change to slices.Contains)

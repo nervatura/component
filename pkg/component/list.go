@@ -49,6 +49,8 @@ type List struct {
 	FilterPlaceholder string `json:"filter_placeholder"`
 	// Filter input value
 	FilterValue string `json:"filter_value"`
+	// The filter is case sensitive
+	CaseSensitive bool `json:"case_sensitive"`
 	// Add item button caption Default empty string
 	LabelAdd string `json:"label_add"`
 	// Valid [Icon] component value. See more [IconKey] variable values.
@@ -81,6 +83,7 @@ func (lst *List) Properties() ut.IM {
 			"delete_item":         lst.DeleteItem,
 			"filter_placeholder":  lst.FilterPlaceholder,
 			"filter_value":        lst.FilterValue,
+			"case_sensitive":      lst.CaseSensitive,
 			"label_add":           lst.LabelAdd,
 			"add_icon":            lst.AddIcon,
 			"edit_icon":           lst.EditIcon,
@@ -204,6 +207,10 @@ func (lst *List) SetProperty(propName string, propValue interface{}) interface{}
 		"filter_value": func() interface{} {
 			lst.FilterValue = ut.ToString(propValue, "")
 			return lst.FilterValue
+		},
+		"case_sensitive": func() interface{} {
+			lst.CaseSensitive = ut.ToBoolean(propValue, false)
+			return lst.CaseSensitive
 		},
 		"label_add": func() interface{} {
 			lst.LabelAdd = ut.ToString(propValue, "")
@@ -354,9 +361,25 @@ func (lst *List) getComponent(name string, pageCount int64) (html template.HTML,
 
 func (lst *List) filterRows() (rows []ut.IM) {
 	rows = []ut.IM{}
-	getValidRow := func(row ut.IM, filter string) bool {
-		for field := range row {
-			if strings.Contains(ut.ToString(row[field], ""), filter) {
+	caseValue := func(value string) string {
+		if !lst.CaseSensitive {
+			return strings.ToLower(value)
+		}
+		return value
+	}
+	filterFields := func() (fields []string) {
+		fields = []string{}
+		if lst.LabelField != "" {
+			fields = append(fields, lst.LabelField)
+		}
+		if lst.LabelValue != "" {
+			fields = append(fields, lst.LabelValue)
+		}
+		return fields
+	}
+	getValidRow := func(row ut.IM, fields []string, filter string) bool {
+		for _, field := range fields {
+			if strings.Contains(caseValue(ut.ToString(row[field], "")), filter) {
 				return true
 			}
 		}
@@ -365,8 +388,9 @@ func (lst *List) filterRows() (rows []ut.IM) {
 	if lst.FilterValue == "" {
 		return lst.Rows
 	}
+	resFields := filterFields()
 	for _, row := range lst.Rows {
-		if getValidRow(row, lst.FilterValue) {
+		if getValidRow(row, resFields, caseValue(lst.FilterValue)) {
 			rows = append(rows, row)
 		}
 	}
@@ -467,12 +491,12 @@ func (lst *List) Render() (html template.HTML, err error) {
 
 var testListRows []ut.IM = []ut.IM{
 	{"lslabel": "Label 1", "lsvalue": "Value row 1"},
-	{"lslabel": "Label 2", "lsvalue": "Value row 2"},
+	{"lslabel": "Label 2", "lsvalue": "Value Row 2"},
 	{"lslabel": "", "lsvalue": "Value row 3"},
 	{"lslabel": "", "lsvalue": "Value row 6"},
 	{"lslabel": "Label 5", "lsvalue": "Value row 6"},
 	{"lslabel": "Label 6", "lsvalue": "Value row 6"},
-	{"lslabel": "Label 7", "lsvalue": "Value row 7"},
+	{"lslabel": "Label 7", "lsvalue": "Value Row 7"},
 	{"lslabel": "Label 8", "lsvalue": "Value row 8"},
 	{"lslabel": "Label 9", "lsvalue": "Value row 9"},
 }
@@ -577,15 +601,38 @@ func TestList(cc ClientComponent) []TestComponent {
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 				},
-				Rows:        testListRows,
-				Pagination:  PaginationTypeTop,
-				PageSize:    5,
-				ListFilter:  true,
-				FilterValue: "6",
-				LabelAdd:    "Add new",
-				AddItem:     true,
-				EditItem:    true,
-				DeleteItem:  true,
+				Rows:          testListRows,
+				Pagination:    PaginationTypeTop,
+				PageSize:      5,
+				ListFilter:    true,
+				FilterValue:   "6",
+				CaseSensitive: false,
+				LabelAdd:      "Add new",
+				AddItem:       true,
+				EditItem:      true,
+				DeleteItem:    true,
+			}},
+		{
+			Label:         "Filtered CaseSensitive",
+			ComponentType: ComponentTypeList,
+			Component: &List{
+				BaseComponent: BaseComponent{
+					Id:           id + "_list_filtered",
+					EventURL:     eventURL,
+					OnResponse:   testListResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
+				},
+				Rows:          testListRows,
+				Pagination:    PaginationTypeTop,
+				PageSize:      5,
+				ListFilter:    true,
+				FilterValue:   "Row",
+				CaseSensitive: true,
+				LabelAdd:      "Add new",
+				AddItem:       true,
+				EditItem:      true,
+				DeleteItem:    true,
 			}},
 	}
 }

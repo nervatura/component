@@ -92,6 +92,8 @@ type Table struct {
 	FilterPlaceholder string `json:"filter_placeholder"`
 	// Filter input value
 	FilterValue string `json:"filter_value"`
+	// The filter is case sensitive
+	CaseSensitive bool `json:"case_sensitive"`
 	// A true value caption in the table cell. Default value: YES
 	LabelYes string `json:"label_yes"`
 	// A false value caption in the table cell. Default value: NO
@@ -170,6 +172,7 @@ func (tbl *Table) Properties() ut.IM {
 			"add_item":            tbl.AddItem,
 			"filter_placeholder":  tbl.FilterPlaceholder,
 			"filter_value":        tbl.FilterValue,
+			"case_sensitive":      tbl.CaseSensitive,
 			"label_yes":           tbl.LabelYes,
 			"label_no":            tbl.LabelNo,
 			"label_add":           tbl.LabelAdd,
@@ -320,6 +323,10 @@ func (tbl *Table) SetProperty(propName string, propValue interface{}) interface{
 		"filter_value": func() interface{} {
 			tbl.FilterValue = ut.ToString(propValue, "")
 			return tbl.FilterValue
+		},
+		"case_sensitive": func() interface{} {
+			tbl.CaseSensitive = ut.ToBoolean(propValue, false)
+			return tbl.CaseSensitive
 		},
 		"label_yes": func() interface{} {
 			tbl.LabelYes = ut.ToString(propValue, "YES")
@@ -726,9 +733,15 @@ func (tbl *Table) columns() (cols []TableColumn) {
 
 func (tbl *Table) filterRows() (rows []ut.IM) {
 	rows = []ut.IM{}
+	caseValue := func(value string) string {
+		if !tbl.CaseSensitive {
+			return strings.ToLower(value)
+		}
+		return value
+	}
 	getValidRow := func(row ut.IM, filter string) bool {
 		for field := range row {
-			if strings.Contains(ut.ToString(row[field], ""), filter) {
+			if strings.Contains(caseValue(ut.ToString(row[field], "")), filter) {
 				return true
 			}
 		}
@@ -738,7 +751,7 @@ func (tbl *Table) filterRows() (rows []ut.IM) {
 		return tbl.Rows
 	}
 	for _, row := range tbl.Rows {
-		if getValidRow(row, tbl.FilterValue) {
+		if getValidRow(row, caseValue(tbl.FilterValue)) {
 			rows = append(rows, row)
 		}
 	}
@@ -902,7 +915,7 @@ var testTableRows []ut.IM = []ut.IM{
 		"date": "2000-03-06", "start": "2019-04-23T05:30:00+02:00", "stamp": "2020-04-20T10:30:00+02:00",
 		"name_color": "red", "product": "Product1",
 		"deffield": "Customer 1", "deffield_meta": TableFieldTypeLink},
-	{"id": 2, "name": "Name2", "name_link": "Name link",
+	{"id": 2, "name": "Name2", "name_link": "Name Link",
 		"levels": 20, "valid": 1,
 		"date": "2008-04-07", "start": "2019-04-23T11:30:00+02:00", "stamp": "2020-04-25T10:30:00+02:00",
 		"name_color": "red", "edited": true, "product": "Product2",
@@ -918,7 +931,7 @@ var testTableRows []ut.IM = []ut.IM{
 	{"id": 5, "name": "Name5", "levels": 401234.345, "valid": 0,
 		"date": "2015-07-26", "start": "", "stamp": time.Now(),
 		"name_color": "orange", "product": "Product3",
-		"deffield": "value", "deffield_meta": TableFieldTypeString},
+		"deffield": "value Orange", "deffield_meta": TableFieldTypeString},
 	{"id": 6, "name": "Name6", "levels": 40, "valid": false,
 		"date": "1999-11-07", "start": "2019-04-23T10:30:00+02:00", "stamp": "2020-04-11T10:30:00+02:00",
 		"product": "Product1", "deffield": "Customer 2", "deffield_meta": TableFieldTypeLink},
@@ -1038,16 +1051,40 @@ func TestTable(cc ClientComponent) []TestComponent {
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 				},
-				Rows:        testTableRows,
-				Fields:      testTableFields,
-				Pagination:  PaginationTypeAll,
-				CurrentPage: 1,
-				TableFilter: true,
-				FilterValue: "123",
-				LabelAdd:    "Add new",
-				AddItem:     true,
-				SortCol:     "name",
-				SortAsc:     true,
+				Rows:          testTableRows,
+				Fields:        testTableFields,
+				Pagination:    PaginationTypeAll,
+				CurrentPage:   1,
+				TableFilter:   true,
+				FilterValue:   "123",
+				CaseSensitive: false,
+				LabelAdd:      "Add new",
+				AddItem:       true,
+				SortCol:       "name",
+				SortAsc:       true,
+			}},
+		{
+			Label:         "Filtered CaseSensitive",
+			ComponentType: ComponentTypeTable,
+			Component: &Table{
+				BaseComponent: BaseComponent{
+					Id:           id + "_table_filtered_cs",
+					EventURL:     eventURL,
+					OnResponse:   testTableResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
+				},
+				Rows:          testTableRows,
+				Fields:        testTableFields,
+				Pagination:    PaginationTypeAll,
+				CurrentPage:   1,
+				TableFilter:   true,
+				FilterValue:   "Orange",
+				CaseSensitive: true,
+				LabelAdd:      "Add new",
+				AddItem:       true,
+				SortCol:       "name",
+				SortAsc:       true,
 			}},
 	}
 }
