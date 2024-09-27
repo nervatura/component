@@ -413,7 +413,7 @@ func (lgn *Login) Render() (html template.HTML, err error) {
 			return (idx%2 == 0)
 		},
 		"odd": func(idx int) bool {
-			return !(idx%2 == 0)
+			return !(idx%2 == 0) || (len(lgn.AuthButtons)-1 == idx)
 		},
 		"buttons": func() bool {
 			return len(lgn.AuthButtons) > 0
@@ -629,7 +629,6 @@ func TestLogin(cc ClientComponent) []TestComponent {
 				AuthButtons: []LoginAuthButton{
 					{Id: "google", Label: "Google", Icon: "Google"},
 					{Id: "facebook", Label: "Facebook", Icon: "Facebook"},
-					{Id: "github", Label: "Github", Icon: "Github"},
 					{Id: "microsoft", Label: "Microsoft", Icon: "Microsoft"},
 				},
 				HidePassword: true,

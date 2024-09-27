@@ -1,3 +1,6 @@
+## 1.7.4
+- Login component: OAuth login button bug fixes
+
 ## 1.7.3
 - List component: filter value case sensitive option
 - Table component: filter value case sensitive option
