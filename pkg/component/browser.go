@@ -217,7 +217,7 @@ func (bro *Browser) Validation(propName string, propValue interface{}) interface
 			return value
 		},
 		"hide_filters": func() interface{} {
-			value := bro.VisibleColumns
+			value := bro.HideFilters
 			if len(value) == 0 {
 				value = make(map[string]bool)
 			}
