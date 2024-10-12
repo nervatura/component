@@ -1,3 +1,6 @@
+## 1.7.5
+- Browser component: add no filterable table fields option (HideFilters)
+
 ## 1.7.4
 - Login component: OAuth login button bug fixes
 

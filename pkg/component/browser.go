@@ -127,6 +127,8 @@ type Browser struct {
 	VisibleColumns map[string]bool `json:"visible_columns"`
 	// List of filter criteria
 	Filters []BrowserFilter `json:"filters"`
+	// Unfilterable table fields. These field names will not be included in the list
+	HideFilters map[string]bool `json:"hide_filters"`
 	// Multiple type column filter definitions
 	MetaFields map[string]BrowserMetaField `json:"meta_fields"`
 	// The texts of the labels of the controls
@@ -156,6 +158,7 @@ func (bro *Browser) Properties() ut.IM {
 			"hide_help":       bro.HideHelp,
 			"visible_columns": bro.VisibleColumns,
 			"filters":         bro.Filters,
+			"hide_filters":    bro.HideFilters,
 			"meta_fields":     bro.MetaFields,
 			"labels":          bro.Labels,
 		})
@@ -191,6 +194,29 @@ func (bro *Browser) Validation(propName string, propValue interface{}) interface
 			return value
 		},
 		"visible_columns": func() interface{} {
+			value := bro.VisibleColumns
+			if len(value) == 0 {
+				value = make(map[string]bool)
+			}
+			if cols, valid := propValue.([]map[string]bool); valid {
+				for _, values := range cols {
+					for key, bvalue := range values {
+						value[key] = bvalue
+					}
+				}
+			}
+			if cols, valid := propValue.(map[string]bool); valid {
+				value = cols
+			}
+			if cols, valid := propValue.(map[string]interface{}); valid {
+				for key, ivalue := range cols {
+					value[key] = ut.ToBoolean(ivalue, false)
+				}
+			}
+
+			return value
+		},
+		"hide_filters": func() interface{} {
 			value := bro.VisibleColumns
 			if len(value) == 0 {
 				value = make(map[string]bool)
@@ -300,6 +326,10 @@ func (bro *Browser) SetProperty(propName string, propValue interface{}) interfac
 		"filters": func() interface{} {
 			bro.Filters = bro.Validation(propName, propValue).([]BrowserFilter)
 			return bro.Filters
+		},
+		"hide_filters": func() interface{} {
+			bro.HideFilters = bro.Validation(propName, propValue).(map[string]bool)
+			return bro.HideFilters
 		},
 		"meta_fields": func() interface{} {
 			bro.MetaFields = bro.Validation(propName, propValue).(map[string]BrowserMetaField)
@@ -786,15 +816,17 @@ func (bro *Browser) getComponent(name string, data ut.IM) (html template.HTML, e
 			options := []SelectOption{}
 			metaField := false
 			for _, field := range bro.Fields {
-				if field.FieldType == TableFieldTypeMeta {
-					if !metaField {
-						for fName, fValue := range bro.MetaFields {
-							options = append(options, SelectOption{Value: fName, Text: fValue.Label})
+				if !bro.HideFilters[field.Name] {
+					if field.FieldType == TableFieldTypeMeta {
+						if !metaField {
+							for fName, fValue := range bro.MetaFields {
+								options = append(options, SelectOption{Value: fName, Text: fValue.Label})
+							}
+							metaField = true
 						}
-						metaField = true
+					} else {
+						options = append(options, SelectOption{Value: field.Name, Text: field.Label})
 					}
-				} else {
-					options = append(options, SelectOption{Value: field.Name, Text: field.Label})
 				}
 			}
 			index := ut.ToString(data["index"], "0")
@@ -1311,6 +1343,7 @@ func TestBrowser(cc ClientComponent) []TestComponent {
 				VisibleColumns: testBrowserColumns["customer"](),
 				Filters:        testBrowserFilters["customer"](),
 				MetaFields:     testBrowserMetaFields["customer"](),
+				HideFilters:    map[string]bool{"inactive": true},
 			}},
 		{
 			Label:         "Meta data",

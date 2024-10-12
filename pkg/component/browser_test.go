@@ -162,6 +162,22 @@ func TestBrowser_Validation(t *testing.T) {
 			want: map[string]bool{"fieldName": true},
 		},
 		{
+			name: "hide_filters",
+			args: args{
+				propName:  "hide_filters",
+				propValue: []map[string]bool{{"fieldName": true}},
+			},
+			want: map[string]bool{"fieldName": true},
+		},
+		{
+			name: "hide_filters2",
+			args: args{
+				propName:  "hide_filters",
+				propValue: map[string]interface{}{"fieldName": true},
+			},
+			want: map[string]bool{"fieldName": true},
+		},
+		{
 			name: "meta_fields",
 			args: args{
 				propName:  "meta_fields",
