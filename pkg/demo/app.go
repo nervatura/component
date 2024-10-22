@@ -161,7 +161,7 @@ func (app *App) HomeRoute(w http.ResponseWriter, r *http.Request) {
 		Title:  "Nervatura components",
 		Header: ut.SM{"X-Session-Token": tokenID},
 		Script: []string{
-			"static/js/htmx.min.js",
+			"static/js/htmx.v1.min.js",
 			"static/js/remove-me.js",
 		},
 		HeadLink: []ct.HeadLink{

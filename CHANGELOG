@@ -1,3 +1,6 @@
+## 1.7.7
+- new Search component
+
 ## 1.7.5-1.7.6
 - Browser component: add no filterable table fields option (HideFilters)
 

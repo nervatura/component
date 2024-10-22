@@ -103,6 +103,7 @@ var DemoMap map[string][]DemoView = map[string][]DemoView{
 		{ComponentType: ct.ComponentTypeLogin, TestData: ct.TestLogin},
 		{ComponentType: ct.ComponentTypeBrowser, TestData: ct.TestBrowser},
 		{ComponentType: ct.ComponentTypeEditor, TestData: ct.TestEditor},
+		{ComponentType: ct.ComponentTypeSearch, TestData: ct.TestSearch},
 	},
 }
 
