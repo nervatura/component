@@ -34,7 +34,6 @@ func TestSelector_Validation(t *testing.T) {
 		Fields            []TableField
 		Title             string
 		FilterPlaceholder string
-		FilterValue       string
 		Link              bool
 		IsNull            bool
 		Disabled          bool
@@ -107,7 +106,6 @@ func TestSelector_Validation(t *testing.T) {
 				Fields:            tt.fields.Fields,
 				Title:             tt.fields.Title,
 				FilterPlaceholder: tt.fields.FilterPlaceholder,
-				FilterValue:       tt.fields.FilterValue,
 				Link:              tt.fields.Link,
 				IsNull:            tt.fields.IsNull,
 				Disabled:          tt.fields.Disabled,
@@ -130,7 +128,6 @@ func TestSelector_SetProperty(t *testing.T) {
 		Fields            []TableField
 		Title             string
 		FilterPlaceholder string
-		FilterValue       string
 		Link              bool
 		IsNull            bool
 		Disabled          bool
@@ -174,7 +171,6 @@ func TestSelector_SetProperty(t *testing.T) {
 				Fields:            tt.fields.Fields,
 				Title:             tt.fields.Title,
 				FilterPlaceholder: tt.fields.FilterPlaceholder,
-				FilterValue:       tt.fields.FilterValue,
 				Link:              tt.fields.Link,
 				IsNull:            tt.fields.IsNull,
 				Disabled:          tt.fields.Disabled,
@@ -197,7 +193,6 @@ func TestSelector_response(t *testing.T) {
 		Fields            []TableField
 		Title             string
 		FilterPlaceholder string
-		FilterValue       string
 		Link              bool
 		IsNull            bool
 		Disabled          bool
@@ -255,10 +250,10 @@ func TestSelector_response(t *testing.T) {
 			},
 		},
 		{
-			name: "filter",
+			name: "filter_value",
 			args: args{
 				evt: ResponseEvent{
-					TriggerName: "filter",
+					TriggerName: "filter_value",
 				},
 			},
 		},
@@ -309,13 +304,13 @@ func TestSelector_response(t *testing.T) {
 				Fields:            tt.fields.Fields,
 				Title:             tt.fields.Title,
 				FilterPlaceholder: tt.fields.FilterPlaceholder,
-				FilterValue:       tt.fields.FilterValue,
-				Link:              tt.fields.Link,
-				IsNull:            tt.fields.IsNull,
-				Disabled:          tt.fields.Disabled,
-				AutoFocus:         tt.fields.AutoFocus,
-				Full:              tt.fields.Full,
-				ShowModal:         tt.fields.ShowModal,
+
+				Link:      tt.fields.Link,
+				IsNull:    tt.fields.IsNull,
+				Disabled:  tt.fields.Disabled,
+				AutoFocus: tt.fields.AutoFocus,
+				Full:      tt.fields.Full,
+				ShowModal: tt.fields.ShowModal,
 			}
 			sel.response(tt.args.evt)
 		})
@@ -330,7 +325,6 @@ func TestSelector_getComponent(t *testing.T) {
 		Fields            []TableField
 		Title             string
 		FilterPlaceholder string
-		FilterValue       string
 		Link              bool
 		IsNull            bool
 		Disabled          bool
@@ -360,9 +354,9 @@ func TestSelector_getComponent(t *testing.T) {
 			},
 		},
 		{
-			name: "filter",
+			name: "filter_value",
 			args: args{
-				name: "filter",
+				name: "filter_value",
 			},
 		},
 		{
@@ -381,7 +375,6 @@ func TestSelector_getComponent(t *testing.T) {
 				Fields:            tt.fields.Fields,
 				Title:             tt.fields.Title,
 				FilterPlaceholder: tt.fields.FilterPlaceholder,
-				FilterValue:       tt.fields.FilterValue,
 				Link:              tt.fields.Link,
 				IsNull:            tt.fields.IsNull,
 				Disabled:          tt.fields.Disabled,

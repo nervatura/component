@@ -28,8 +28,6 @@ type Search struct {
 	Title string `json:"title"`
 	// Specifies a short hint that describes the expected value of the input element
 	FilterPlaceholder string `json:"filter_placeholder"`
-	// Filter input value
-	FilterValue string `json:"filter_value"`
 	// Specifies that the input element should automatically get focus when the page loads
 	AutoFocus bool `json:"auto_focus"`
 	// Full width input (100%)
@@ -47,7 +45,6 @@ func (sea *Search) Properties() ut.IM {
 			"fields":             sea.Fields,
 			"title":              sea.Title,
 			"filter_placeholder": sea.FilterPlaceholder,
-			"filter_value":       sea.FilterValue,
 			"auto_focus":         sea.AutoFocus,
 			"full":               sea.Full,
 		})
@@ -123,10 +120,6 @@ func (sea *Search) SetProperty(propName string, propValue interface{}) interface
 			sea.FilterPlaceholder = ut.ToString(propValue, "")
 			return sea.FilterPlaceholder
 		},
-		"filter_value": func() interface{} {
-			sea.FilterValue = ut.ToString(propValue, "")
-			return sea.FilterValue
-		},
 		"auto_focus": func() interface{} {
 			sea.AutoFocus = ut.ToBoolean(propValue, false)
 			return sea.AutoFocus
@@ -162,11 +155,13 @@ func (sea *Search) response(evt ResponseEvent) (re ResponseEvent) {
 			HeaderRetarget: "#" + sea.Id,
 		}
 
-	case "filter":
+	case "filter_value":
 		selEvt.Name = SearchEventSearch
-		sea.SetProperty("filter_value", evt.Value)
+		selEvt.Value = evt.Value
+		sea.SetProperty("data", ut.IM{evt.TriggerName: evt.Value})
 
 	case "btn_search":
+		selEvt.Value = ut.ToString(sea.Data["filter_value"], "")
 		selEvt.Name = SearchEventSearch
 
 	default:
@@ -194,28 +189,32 @@ func (sea *Search) getComponent(name string) (html template.HTML, err error) {
 			Icon:        icon,
 		}
 	}
+	ccInp := func(value string) *Input {
+		inp := &Input{
+			BaseComponent: BaseComponent{
+				Id: sea.Id + "_" + name, Name: name,
+				Style:        ut.SM{"border-radius": "0", "margin": "1px 0 2px"},
+				EventURL:     sea.EventURL,
+				Target:       sea.Target,
+				OnResponse:   sea.response,
+				RequestValue: sea.RequestValue,
+				RequestMap:   sea.RequestMap,
+			},
+			Type:        InputTypeString,
+			Label:       sea.FilterPlaceholder,
+			Placeholder: sea.FilterPlaceholder,
+			Full:        true,
+			AutoFocus:   sea.AutoFocus,
+		}
+		inp.SetProperty("value", value)
+		return inp
+	}
 	ccMap := map[string]func() ClientComponent{
 		"btn_search": func() ClientComponent {
 			return ccBtn("Search")
 		},
-		"filter": func() ClientComponent {
-			return &Input{
-				BaseComponent: BaseComponent{
-					Id: sea.Id + "_" + name, Name: name,
-					Style:        ut.SM{"border-radius": "0", "margin": "1px 0 2px"},
-					EventURL:     sea.EventURL,
-					Target:       sea.Target,
-					OnResponse:   sea.response,
-					RequestValue: sea.RequestValue,
-					RequestMap:   sea.RequestMap,
-				},
-				Type:        InputTypeString,
-				Label:       sea.FilterPlaceholder,
-				Placeholder: sea.FilterPlaceholder,
-				Value:       sea.FilterValue,
-				Full:        true,
-				AutoFocus:   sea.AutoFocus,
-			}
+		"filter_value": func() ClientComponent {
+			return ccInp(ut.ToString(sea.Data["filter_value"], ""))
 		},
 		"search_result": func() ClientComponent {
 			return &Table{
@@ -266,7 +265,7 @@ func (sea *Search) Render() (html template.HTML, err error) {
 	<div class="cell title-cell"><span>{{ .Title }}</span></div></div>
 	<div class="section" >
 	<div class="row full container" >
-	<div class="cell">{{ searchComponent "filter" }}</div>
+	<div class="cell">{{ searchComponent "filter_value" }}</div>
 	<div class="cell" style="width: 20px;" >{{ searchComponent "btn_search" }}</div></div>
 	<div class="row full container" >{{ searchComponent "search_result" }}</div>
 	</div></div></div>`
@@ -291,7 +290,7 @@ var testSearchResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt Res
 		}
 	}
 	if evt.Name == SearchEventSearch {
-		return toast(ut.ToString(evt.Trigger.GetProperty("filter_value"), ""))
+		return toast(ut.ToString(evt.Value, ""))
 	}
 
 	row := evt.Value.(ut.IM)["row"].(ut.IM)
@@ -350,6 +349,26 @@ func TestSearch(cc ClientComponent) []TestComponent {
 					OnResponse:   testSearchResponse,
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
+				},
+				Fields:            testSearchFields,
+				Rows:              testSearchRows,
+				FilterPlaceholder: "Customer Name, Number, City, Steet...",
+				AutoFocus:         true,
+			},
+		},
+		{
+			Label:         "Filter default value",
+			ComponentType: ComponentTypeList,
+			Component: &Search{
+				BaseComponent: BaseComponent{
+					Id:           id + "_search_filter_default",
+					EventURL:     eventURL,
+					OnResponse:   testSearchResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
+					Data: ut.IM{
+						"filter_value": "DMCUST",
+					},
 				},
 				Fields:    testSearchFields,
 				Rows:      testSearchRows,

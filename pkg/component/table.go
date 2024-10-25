@@ -474,6 +474,26 @@ func (tbl *Table) getComponent(name string, pageCount int64, data ut.IM) (html t
 			HidePageSize: tbl.HidePaginatonSize,
 		}
 	}
+	ccInp := func(value string) *Input {
+		inp := &Input{
+			BaseComponent: BaseComponent{
+				Id: tbl.Id + "_" + name, Name: name,
+				Style:        ut.SM{"border-radius": "0", "margin": "1px 0 2px"},
+				EventURL:     tbl.EventURL,
+				Target:       tbl.Target,
+				OnResponse:   tbl.response,
+				RequestValue: tbl.RequestValue,
+				RequestMap:   tbl.RequestMap,
+			},
+			Type:        InputTypeString,
+			Label:       tbl.FilterPlaceholder,
+			Placeholder: tbl.FilterPlaceholder,
+			Value:       tbl.FilterValue,
+			Full:        true,
+		}
+		inp.SetProperty("value", value)
+		return inp
+	}
 	ccMap := map[string]func() ClientComponent{
 		"top_pagination": func() ClientComponent {
 			return ccPgn()
@@ -482,22 +502,7 @@ func (tbl *Table) getComponent(name string, pageCount int64, data ut.IM) (html t
 			return ccPgn()
 		},
 		"filter": func() ClientComponent {
-			return &Input{
-				BaseComponent: BaseComponent{
-					Id: tbl.Id + "_" + name, Name: name,
-					Style:        ut.SM{"border-radius": "0", "margin": "1px 0 2px"},
-					EventURL:     tbl.EventURL,
-					Target:       tbl.Target,
-					OnResponse:   tbl.response,
-					RequestValue: tbl.RequestValue,
-					RequestMap:   tbl.RequestMap,
-				},
-				Type:        InputTypeString,
-				Label:       tbl.FilterPlaceholder,
-				Placeholder: tbl.FilterPlaceholder,
-				Value:       tbl.FilterValue,
-				Full:        true,
-			}
+			return ccInp(tbl.FilterValue)
 		},
 		"btn_add": func() ClientComponent {
 			return &Button{

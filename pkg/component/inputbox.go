@@ -179,6 +179,26 @@ func (ibx *InputBox) getComponent(name string) (html template.HTML, err error) {
 			Selected:    focus,
 		}
 	}
+	ccInp := func(value string) *Input {
+		inp := &Input{
+			BaseComponent: BaseComponent{
+				Id:           ibx.Id + "_" + name,
+				Name:         name,
+				Style:        ut.SM{"border-radius": "0", "margin": "1px 0 2px"},
+				EventURL:     ibx.EventURL,
+				Target:       ibx.Target,
+				OnResponse:   ibx.response,
+				RequestValue: ibx.RequestValue,
+				RequestMap:   ibx.RequestMap,
+			},
+			Type:      InputTypeString,
+			Label:     ibx.Message,
+			AutoFocus: true,
+			Full:      true,
+		}
+		inp.SetProperty("value", value)
+		return inp
+	}
 	ccMap := map[string]func() ClientComponent{
 		"btn_ok": func() ClientComponent {
 			return ccBtn(ButtonStylePrimary, ibx.LabelOK, "Check", ibx.DefaultOK)
@@ -187,23 +207,7 @@ func (ibx *InputBox) getComponent(name string) (html template.HTML, err error) {
 			return ccBtn(ButtonStyleDefault, ibx.LabelCancel, "Times", false)
 		},
 		"input_value": func() ClientComponent {
-			return &Input{
-				BaseComponent: BaseComponent{
-					Id:           ibx.Id + "_" + name,
-					Name:         name,
-					Style:        ut.SM{"border-radius": "0", "margin": "1px 0 2px"},
-					EventURL:     ibx.EventURL,
-					Target:       ibx.Target,
-					OnResponse:   ibx.response,
-					RequestValue: ibx.RequestValue,
-					RequestMap:   ibx.RequestMap,
-				},
-				Type:      InputTypeString,
-				Label:     ibx.Message,
-				Value:     ibx.Value,
-				AutoFocus: true,
-				Full:      true,
-			}
+			return ccInp(ibx.Value)
 		},
 	}
 	cc := ccMap[name]()

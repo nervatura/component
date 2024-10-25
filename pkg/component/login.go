@@ -264,7 +264,7 @@ func (lgn *Login) getComponent(name string, authIdx int) (html template.HTML, er
 	}
 
 	ccInp := func(itype string) *Input {
-		return &Input{
+		inp := &Input{
 			BaseComponent: BaseComponent{
 				Id: lgn.Id + "_" + name, Name: name,
 				EventURL:     lgn.EventURL,
@@ -275,9 +275,10 @@ func (lgn *Login) getComponent(name string, authIdx int) (html template.HTML, er
 			},
 			Type:  itype,
 			Label: lgn.Labels["login_"+name],
-			Value: ut.ToString(lgn.Data[name], ""),
 			Full:  true,
 		}
+		inp.SetProperty("value", ut.ToString(lgn.Data[name], ""))
+		return inp
 	}
 	ccLbl := func() *Label {
 		return &Label{

@@ -303,6 +303,25 @@ func (lst *List) getComponent(name string, pageCount int64) (html template.HTML,
 			HidePageSize: lst.HidePaginatonSize,
 		}
 	}
+	ccInp := func(value string) *Input {
+		inp := &Input{
+			BaseComponent: BaseComponent{
+				Id: lst.Id + "_" + name, Name: name,
+				Style:        ut.SM{"border-radius": "0", "margin": "1px 0 2px"},
+				EventURL:     lst.EventURL,
+				Target:       lst.Target,
+				OnResponse:   lst.response,
+				RequestValue: lst.RequestValue,
+				RequestMap:   lst.RequestMap,
+			},
+			Type:        InputTypeString,
+			Label:       lst.FilterPlaceholder,
+			Placeholder: lst.FilterPlaceholder,
+			Full:        true,
+		}
+		inp.SetProperty("value", value)
+		return inp
+	}
 	ccMap := map[string]func() ClientComponent{
 		"top_pagination": func() ClientComponent {
 			return ccPgn()
@@ -311,22 +330,7 @@ func (lst *List) getComponent(name string, pageCount int64) (html template.HTML,
 			return ccPgn()
 		},
 		"filter": func() ClientComponent {
-			return &Input{
-				BaseComponent: BaseComponent{
-					Id: lst.Id + "_" + name, Name: name,
-					Style:        ut.SM{"border-radius": "0", "margin": "1px 0 2px"},
-					EventURL:     lst.EventURL,
-					Target:       lst.Target,
-					OnResponse:   lst.response,
-					RequestValue: lst.RequestValue,
-					RequestMap:   lst.RequestMap,
-				},
-				Type:        InputTypeString,
-				Label:       lst.FilterPlaceholder,
-				Placeholder: lst.FilterPlaceholder,
-				Value:       lst.FilterValue,
-				Full:        true,
-			}
+			return ccInp(lst.FilterValue)
 		},
 		"btn_add": func() ClientComponent {
 			return &Button{

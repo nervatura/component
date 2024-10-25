@@ -35,8 +35,6 @@ type Selector struct {
 	Title string `json:"title"`
 	// Specifies a short hint that describes the expected value of the input element
 	FilterPlaceholder string `json:"filter_placeholder"`
-	// Filter input value
-	FilterValue string `json:"filter_value"`
 	// The displayed text is a link
 	Link bool `json:"link"`
 	// Show/hide clear button
@@ -64,7 +62,6 @@ func (sel *Selector) Properties() ut.IM {
 			"title":              sel.Title,
 			"link":               sel.Link,
 			"filter_placeholder": sel.FilterPlaceholder,
-			"filter_value":       sel.FilterValue,
 			"is_null":            sel.IsNull,
 			"disabled":           sel.Disabled,
 			"auto_focus":         sel.AutoFocus,
@@ -153,10 +150,6 @@ func (sel *Selector) SetProperty(propName string, propValue interface{}) interfa
 			sel.FilterPlaceholder = ut.ToString(propValue, "")
 			return sel.FilterPlaceholder
 		},
-		"filter_value": func() interface{} {
-			sel.FilterValue = ut.ToString(propValue, "")
-			return sel.FilterValue
-		},
 		"link": func() interface{} {
 			sel.Link = ut.ToBoolean(propValue, false)
 			return sel.Link
@@ -221,14 +214,16 @@ func (sel *Selector) response(evt ResponseEvent) (re ResponseEvent) {
 		selEvt.Name = SelectorEventShowModal
 		sel.SetProperty("show_modal", false)
 
-	case "filter":
-		selEvt.Name = SelectorEventFilterChange
-		sel.SetProperty("filter_value", evt.Value)
+	case "filter_value":
+		selEvt.Name = SelectorEventSearch
+		selEvt.Value = evt.Value
+		sel.SetProperty("data", ut.IM{evt.TriggerName: evt.Value})
 
 	case "selector_text":
 		selEvt.Name = SelectorEventLink
 
 	case "btn_search":
+		selEvt.Value = ut.ToString(sel.Data["filter_value"], "")
 		selEvt.Name = SelectorEventSearch
 
 	default:
@@ -257,6 +252,26 @@ func (sel *Selector) getComponent(name string) (html template.HTML, err error) {
 			Disabled:    sel.Disabled,
 			AutoFocus:   focus,
 		}
+	}
+	ccInp := func(value string) *Input {
+		inp := &Input{
+			BaseComponent: BaseComponent{
+				Id: sel.Id + "_" + name, Name: name,
+				Style:        ut.SM{"border-radius": "0", "margin": "1px 0 2px"},
+				EventURL:     sel.EventURL,
+				Target:       sel.Target,
+				OnResponse:   sel.response,
+				RequestValue: sel.RequestValue,
+				RequestMap:   sel.RequestMap,
+			},
+			Type:        InputTypeString,
+			Label:       sel.FilterPlaceholder,
+			Placeholder: sel.FilterPlaceholder,
+			AutoFocus:   true,
+			Full:        true,
+		}
+		inp.SetProperty("value", value)
+		return inp
 	}
 	ccMap := map[string]func() ClientComponent{
 		"btn_modal": func() ClientComponent {
@@ -305,23 +320,8 @@ func (sel *Selector) getComponent(name string) (html template.HTML, err error) {
 				Value: "Times",
 			}
 		},
-		"filter": func() ClientComponent {
-			return &Input{
-				BaseComponent: BaseComponent{
-					Id: sel.Id + "_" + name, Name: name,
-					Style:        ut.SM{"border-radius": "0", "margin": "1px 0 2px"},
-					EventURL:     sel.EventURL,
-					Target:       sel.Target,
-					OnResponse:   sel.response,
-					RequestValue: sel.RequestValue,
-					RequestMap:   sel.RequestMap,
-				},
-				Type:        InputTypeString,
-				Label:       sel.FilterPlaceholder,
-				Placeholder: sel.FilterPlaceholder,
-				Value:       sel.FilterValue,
-				Full:        true,
-			}
+		"filter_value": func() ClientComponent {
+			return ccInp(ut.ToString(sel.Data["filter_value"], ""))
 		},
 		"selector_result": func() ClientComponent {
 			return &Table{
@@ -378,7 +378,7 @@ func (sel *Selector) Render() (html template.HTML, err error) {
 	</div>
 	<div class="section" >
 	<div class="row full container" >
-	<div class="cell">{{ selectorComponent "filter" }}</div>
+	<div class="cell">{{ selectorComponent "filter_value" }}</div>
 	<div class="cell" style="width: 20px;" >{{ selectorComponent "btn_search" }}</div>
 	</div>
 	<div class="row full container" >{{ selectorComponent "selector_result" }}</div>
@@ -407,7 +407,7 @@ var testSelectorResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt R
 	}
 	switch evt.Name {
 	case SelectorEventSearch:
-		return toast(ut.ToString(evt.Trigger.GetProperty("filter_value"), ""))
+		return toast(ut.ToString(evt.Value, ""))
 	case SelectorEventLink:
 		return toast(evt.Value.(SelectOption).Text)
 	case SelectorEventSelected:
@@ -476,6 +476,9 @@ func TestSelector(cc ClientComponent) []TestComponent {
 					OnResponse:   testSelectorResponse,
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
+					Data: ut.IM{
+						"filter_value": "default value",
+					},
 				},
 				Value:  SelectOption{Value: "12345", Text: "Customer Name"},
 				Fields: testSelectorFields,

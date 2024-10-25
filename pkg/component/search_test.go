@@ -29,7 +29,6 @@ func TestSearch_Validation(t *testing.T) {
 		Fields            []TableField
 		Title             string
 		FilterPlaceholder string
-		FilterValue       string
 		AutoFocus         bool
 		Full              bool
 	}
@@ -89,7 +88,6 @@ func TestSearch_Validation(t *testing.T) {
 				Fields:            tt.fields.Fields,
 				Title:             tt.fields.Title,
 				FilterPlaceholder: tt.fields.FilterPlaceholder,
-				FilterValue:       tt.fields.FilterValue,
 				AutoFocus:         tt.fields.AutoFocus,
 				Full:              tt.fields.Full,
 			}
@@ -107,7 +105,6 @@ func TestSearch_SetProperty(t *testing.T) {
 		Fields            []TableField
 		Title             string
 		FilterPlaceholder string
-		FilterValue       string
 		AutoFocus         bool
 		Full              bool
 	}
@@ -146,7 +143,6 @@ func TestSearch_SetProperty(t *testing.T) {
 				Fields:            tt.fields.Fields,
 				Title:             tt.fields.Title,
 				FilterPlaceholder: tt.fields.FilterPlaceholder,
-				FilterValue:       tt.fields.FilterValue,
 				AutoFocus:         tt.fields.AutoFocus,
 				Full:              tt.fields.Full,
 			}
@@ -164,7 +160,6 @@ func TestSearch_response(t *testing.T) {
 		Fields            []TableField
 		Title             string
 		FilterPlaceholder string
-		FilterValue       string
 		AutoFocus         bool
 		Full              bool
 	}
@@ -194,10 +189,10 @@ func TestSearch_response(t *testing.T) {
 			},
 		},
 		{
-			name: "filter",
+			name: "filter_value",
 			args: args{
 				evt: ResponseEvent{
-					TriggerName: "filter",
+					TriggerName: "filter_value",
 				},
 			},
 		},
@@ -239,7 +234,6 @@ func TestSearch_response(t *testing.T) {
 				Fields:            tt.fields.Fields,
 				Title:             tt.fields.Title,
 				FilterPlaceholder: tt.fields.FilterPlaceholder,
-				FilterValue:       tt.fields.FilterValue,
 				AutoFocus:         tt.fields.AutoFocus,
 				Full:              tt.fields.Full,
 			}
