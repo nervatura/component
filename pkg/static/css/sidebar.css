@@ -51,6 +51,16 @@
   padding: 2px 8px 3px;
 }
 
+.selected-item {
+  color: rgb(var(--functional-green))!important;
+  fill: rgb(var(--functional-green))!important;
+}
+
+.sidebar-border {
+  border-radius: 0;
+	border-color:  rgba(var(--accent-1c), 0.2);
+}
+
 @media (min-width:769px){
   .sidebar{
     display: block!important;

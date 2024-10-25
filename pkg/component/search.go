@@ -2,6 +2,7 @@ package component
 
 import (
 	"html/template"
+	"slices"
 	"strings"
 
 	ut "github.com/nervatura/component/pkg/util"
@@ -26,6 +27,16 @@ type Search struct {
 	Fields []TableField `json:"fields"`
 	// Search window title
 	Title string `json:"title"`
+	// Pagination component [PageSize] variable constants: 5, 10, 20, 50, 100. Default value: 10
+	PageSize int64 `json:"page_size"`
+	// [Pagination] component show/hide page size selector
+	HidePaginatonSize bool `json:"hide_paginaton_size"`
+	// Show/hide table add item button
+	AddItem bool `json:"add_item"`
+	// Add item button caption Default empty string
+	LabelAdd string `json:"label_add"`
+	// Valid [Icon] component value. See more [IconKey] variable values.
+	AddIcon string `json:"add_icon"`
 	// Specifies a short hint that describes the expected value of the input element
 	FilterPlaceholder string `json:"filter_placeholder"`
 	// Specifies that the input element should automatically get focus when the page loads
@@ -41,12 +52,17 @@ func (sea *Search) Properties() ut.IM {
 	return ut.MergeIM(
 		sea.BaseComponent.Properties(),
 		ut.IM{
-			"rows":               sea.Rows,
-			"fields":             sea.Fields,
-			"title":              sea.Title,
-			"filter_placeholder": sea.FilterPlaceholder,
-			"auto_focus":         sea.AutoFocus,
-			"full":               sea.Full,
+			"rows":                sea.Rows,
+			"fields":              sea.Fields,
+			"title":               sea.Title,
+			"page_size":           sea.PageSize,
+			"hide_paginaton_size": sea.HidePaginatonSize,
+			"add_item":            sea.AddItem,
+			"filter_placeholder":  sea.FilterPlaceholder,
+			"label_add":           sea.LabelAdd,
+			"add_icon":            sea.AddIcon,
+			"auto_focus":          sea.AutoFocus,
+			"full":                sea.Full,
 		})
 }
 
@@ -79,6 +95,17 @@ func (sea *Search) Validation(propName string, propValue interface{}) interface{
 				}
 			}
 			return fields
+		},
+		"page_size": func() interface{} {
+			value := ut.ToInteger(propValue, 10)
+			pageSize := []string{}
+			for _, ps := range ValidPageSize {
+				pageSize = append(pageSize, ut.ToString(ps, ""))
+			}
+			if !slices.Contains(pageSize, ut.ToString(value, "")) {
+				value = ValidPageSize[0]
+			}
+			return value
 		},
 		"target": func() interface{} {
 			sea.SetProperty("id", sea.Id)
@@ -116,9 +143,29 @@ func (sea *Search) SetProperty(propName string, propValue interface{}) interface
 			sea.Title = ut.ToString(propValue, SearchDefaultTitle)
 			return sea.Title
 		},
+		"page_size": func() interface{} {
+			sea.PageSize = sea.Validation(propName, propValue).(int64)
+			return sea.PageSize
+		},
+		"hide_paginaton_size": func() interface{} {
+			sea.HidePaginatonSize = ut.ToBoolean(propValue, false)
+			return sea.HidePaginatonSize
+		},
+		"add_item": func() interface{} {
+			sea.AddItem = ut.ToBoolean(propValue, false)
+			return sea.AddItem
+		},
 		"filter_placeholder": func() interface{} {
 			sea.FilterPlaceholder = ut.ToString(propValue, "")
 			return sea.FilterPlaceholder
+		},
+		"label_add": func() interface{} {
+			sea.LabelAdd = ut.ToString(propValue, "")
+			return sea.LabelAdd
+		},
+		"add_icon": func() interface{} {
+			sea.AddIcon = ut.ToString(propValue, "Plus")
+			return sea.AddIcon
 		},
 		"auto_focus": func() interface{} {
 			sea.AutoFocus = ut.ToBoolean(propValue, false)
@@ -229,10 +276,12 @@ func (sea *Search) getComponent(name string) (html template.HTML, err error) {
 				Rows:              sea.Rows,
 				Fields:            sea.Fields,
 				Pagination:        PaginationTypeTop,
-				PageSize:          5,
-				HidePaginatonSize: true,
+				PageSize:          sea.PageSize,
+				HidePaginatonSize: sea.HidePaginatonSize,
 				TableFilter:       false,
-				AddItem:           false,
+				AddItem:           sea.AddItem,
+				LabelAdd:          sea.LabelAdd,
+				AddIcon:           sea.AddIcon,
 				RowSelected:       true,
 			}
 		},
@@ -320,13 +369,36 @@ var testSearchRows []ut.IM = []ut.IM{
 		"id":         "customer-3",
 		"label":      "Second Customer Name",
 		"street":     "street 3.",
-		"deleted":    1,
 	},
 	{
 		"city":       "City4",
 		"custname":   "Third Customer Foundation",
 		"custnumber": "DMCUST/00003",
 		"id":         "customer-4",
+		"label":      "Third Customer Foundation",
+		"street":     "street 4.",
+	},
+	{
+		"city":       "City5",
+		"custname":   "First Customer Co.",
+		"custnumber": "DMCUST/00004",
+		"id":         "customer-5",
+		"label":      "First Customer Co.",
+		"street":     "street 1.",
+	},
+	{
+		"city":       "City3",
+		"custname":   "Second Customer Name",
+		"custnumber": "DMCUST/00005",
+		"id":         "customer-6",
+		"label":      "Second Customer Name",
+		"street":     "street 3.",
+	},
+	{
+		"city":       "City4",
+		"custname":   "Third Customer Foundation",
+		"custnumber": "DMCUST/00006",
+		"id":         "customer-7",
 		"label":      "Third Customer Foundation",
 		"street":     "street 4.",
 	},
@@ -353,6 +425,7 @@ func TestSearch(cc ClientComponent) []TestComponent {
 				Fields:            testSearchFields,
 				Rows:              testSearchRows,
 				FilterPlaceholder: "Customer Name, Number, City, Steet...",
+				PageSize:          5,
 				AutoFocus:         true,
 			},
 		},

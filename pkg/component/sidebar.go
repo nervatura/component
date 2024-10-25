@@ -264,12 +264,10 @@ func (sb *SideBar) getComponent(index, groupIndex int) (html template.HTML, err 
 	ccBtn := func(idx int, name string) *Button {
 		btn := &Button{
 			BaseComponent: BaseComponent{
-				Id:   sb.Id + "_" + ut.ToString(idx, ""),
-				Name: name,
-				Data: ut.IM{"index": idx},
-				Style: ut.SM{
-					"border-radius": "0",
-					"border-color":  "rgba(var(--accent-1c), 0.2)"},
+				Id:           sb.Id + "_" + ut.ToString(idx, ""),
+				Name:         name,
+				Data:         ut.IM{"index": idx},
+				Class:        []string{"sidebar-border"},
 				EventURL:     sb.EventURL,
 				Target:       sb.Target,
 				OnResponse:   sb.response,
@@ -283,12 +281,10 @@ func (sb *SideBar) getComponent(index, groupIndex int) (html template.HTML, err 
 	ccLink := func(idx int, name string) *Link {
 		lnk := &Link{
 			BaseComponent: BaseComponent{
-				Id:   sb.Id + "_" + ut.ToString(idx, ""),
-				Name: name,
-				Data: ut.IM{"index": idx},
-				Style: ut.SM{
-					"border-radius": "0",
-					"border-color":  "rgba(var(--accent-1c), 0.2)"},
+				Id:    sb.Id + "_" + ut.ToString(idx, ""),
+				Name:  name,
+				Data:  ut.IM{"index": idx},
+				Class: []string{"sidebar-border"},
 			},
 			LinkStyle: LinkStylePrimary,
 		}
@@ -326,10 +322,9 @@ func (sb *SideBar) getComponent(index, groupIndex int) (html template.HTML, err 
 				btn.SetProperty("data", ut.MergeIM(btn.Data, ut.IM{
 					"group_index": groupIndex,
 				}))
-				btn.SetProperty("style", ut.MergeSM(btn.Style, ut.SM{
-					"color": "rgb(var(--functional-blue))",
-					"fill":  "rgb(var(--functional-blue))",
-				}))
+				if el.Selected {
+					btn.SetProperty("class", []string{"selected-item"})
+				}
 			} else {
 				gr := it.(*SideBarGroup)
 				btn = ccBtn(index, gr.Name)
@@ -563,10 +558,11 @@ func TestSidebar(cc ClientComponent) []TestComponent {
 						Selected: true,
 						Items: []SideBarElement{
 							{
-								Name:  "quick_search",
-								Value: "quick_search",
-								Label: "Quick Search",
-								Icon:  "Bolt",
+								Name:     "quick_search",
+								Value:    "quick_search",
+								Label:    "Quick Search",
+								Icon:     "Bolt",
+								Selected: true,
 							},
 							{
 								Name:  "browser",

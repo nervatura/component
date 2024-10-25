@@ -1,5 +1,9 @@
+## 1.7.9
+- Search components: add PageSize, HidePaginatonSize, AddItem, LabelAdd, AddIcon options
+- SideBar components: element and border color bug fixes
+
 ## 1.7.8
-- Search and Selectot components: move the default FilterValue Data["filter_value"]
+- Search and Selector components: move the default FilterValue Data["filter_value"]
 - Stability fixes
 
 ## 1.7.7

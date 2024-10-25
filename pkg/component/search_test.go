@@ -67,6 +67,14 @@ func TestSearch_Validation(t *testing.T) {
 			want: []ut.IM{},
 		},
 		{
+			name: "page_size",
+			args: args{
+				propName:  "page_size",
+				propValue: 3,
+			},
+			want: int64(5),
+		},
+		{
 			name: "fields",
 			fields: fields{
 				Rows: []ut.IM{{"field": "value"}},
@@ -238,6 +246,61 @@ func TestSearch_response(t *testing.T) {
 				Full:              tt.fields.Full,
 			}
 			sea.response(tt.args.evt)
+		})
+	}
+}
+
+func TestSearch_GetProperty(t *testing.T) {
+	type fields struct {
+		BaseComponent     BaseComponent
+		Rows              []ut.IM
+		Fields            []TableField
+		Title             string
+		PageSize          int64
+		HidePaginatonSize bool
+		AddItem           bool
+		LabelAdd          string
+		AddIcon           string
+		FilterPlaceholder string
+		AutoFocus         bool
+		Full              bool
+	}
+	type args struct {
+		propName string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   interface{}
+	}{
+		{
+			name: "hide_paginaton_size",
+			args: args{
+				propName: "hide_paginaton_size",
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sea := &Search{
+				BaseComponent:     tt.fields.BaseComponent,
+				Rows:              tt.fields.Rows,
+				Fields:            tt.fields.Fields,
+				Title:             tt.fields.Title,
+				PageSize:          tt.fields.PageSize,
+				HidePaginatonSize: tt.fields.HidePaginatonSize,
+				AddItem:           tt.fields.AddItem,
+				LabelAdd:          tt.fields.LabelAdd,
+				AddIcon:           tt.fields.AddIcon,
+				FilterPlaceholder: tt.fields.FilterPlaceholder,
+				AutoFocus:         tt.fields.AutoFocus,
+				Full:              tt.fields.Full,
+			}
+			if got := sea.GetProperty(tt.args.propName); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Search.GetProperty() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
