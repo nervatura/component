@@ -14,6 +14,7 @@ func TestTestSearch(t *testing.T) {
 		})
 	}
 	testSearchResponse(ResponseEvent{Name: SearchEventSearch, Trigger: &Search{}})
+	testSearchResponse(ResponseEvent{Name: SearchEventHelp, Trigger: &Search{}})
 	testSearchResponse(ResponseEvent{
 		Name: SearchEventSelected, Trigger: &Search{},
 		Value: ut.IM{
@@ -258,9 +259,6 @@ func TestSearch_GetProperty(t *testing.T) {
 		Title             string
 		PageSize          int64
 		HidePaginatonSize bool
-		AddItem           bool
-		LabelAdd          string
-		AddIcon           string
 		FilterPlaceholder string
 		AutoFocus         bool
 		Full              bool
@@ -291,9 +289,6 @@ func TestSearch_GetProperty(t *testing.T) {
 				Title:             tt.fields.Title,
 				PageSize:          tt.fields.PageSize,
 				HidePaginatonSize: tt.fields.HidePaginatonSize,
-				AddItem:           tt.fields.AddItem,
-				LabelAdd:          tt.fields.LabelAdd,
-				AddIcon:           tt.fields.AddIcon,
 				FilterPlaceholder: tt.fields.FilterPlaceholder,
 				AutoFocus:         tt.fields.AutoFocus,
 				Full:              tt.fields.Full,

@@ -23,6 +23,8 @@ type MenuBarItem struct {
 	Label string `json:"label"`
 	// Valid [Icon] component value. See more [IconKey] variable values.
 	Icon string `json:"icon"`
+	// Specifies the url for menu. If it is not specified, then the built-in value event
+	ItemURL string `json:"item_url"`
 }
 
 /*
@@ -186,6 +188,20 @@ func (mnb *MenuBar) response(evt ResponseEvent) (re ResponseEvent) {
 }
 
 func (mnb *MenuBar) getComponent(name string, item MenuBarItem) (html template.HTML, err error) {
+	ccLnk := func(label, linkStyle string) *Link {
+		return &Link{
+			BaseComponent: BaseComponent{
+				Id:   mnb.Id + "_" + item.Value,
+				Name: name,
+			},
+			LinkStyle:  linkStyle,
+			Label:      label,
+			Icon:       item.Icon,
+			HideLabel:  true,
+			Href:       item.ItemURL,
+			LinkTarget: "_blank",
+		}
+	}
 	ccMap := map[string]func() ClientComponent{
 		"sidebar": func() ClientComponent {
 			cclass := []string{"menu-label"}
@@ -222,6 +238,9 @@ func (mnb *MenuBar) getComponent(name string, item MenuBarItem) (html template.H
 			if item.Value == "logout" {
 				cclass = append(cclass, "exit")
 			}
+			if item.ItemURL != "" {
+				return ccLnk(item.Label, LinkStyleMenuItem)
+			}
 			return &Label{
 				BaseComponent: BaseComponent{
 					Id:           mnb.Id + "_" + item.Value,
@@ -245,6 +264,9 @@ func (mnb *MenuBar) getComponent(name string, item MenuBarItem) (html template.H
 			}
 			if item.Value == "logout" {
 				cclass = append(cclass, "exit")
+			}
+			if item.ItemURL != "" {
+				return ccLnk("", LinkStyleMenuIcon)
 			}
 			return &Icon{
 				BaseComponent: BaseComponent{
@@ -305,7 +327,7 @@ func (mnb *MenuBar) Render() (html template.HTML, err error) {
 	<div class="cell container">
 	{{ range $index, $item := .Items }}{{ $reverseItem := reverse $index }}
 	<div id="mnu_{{ $item.Value }}_medium" class="right hide-large menuitem">
-	<span class="hide-small">{{ menuItem $reverseItem }}</span>
+	<span class="hide-small menu-text">{{ menuItem $reverseItem }}</span>
 	<span class="menu-label hide-medium">{{ menuIcon $reverseItem }}</span>
 	</div>
 	{{ end }}
@@ -337,7 +359,7 @@ func TestMenuBar(cc ClientComponent) []TestComponent {
 					{Value: "edit", Label: "Edit", Icon: "Edit"},
 					{Value: "setting", Label: "Setting", Icon: "Cog"},
 					{Value: "bookmark", Label: "Bookmark", Icon: "Star"},
-					{Value: "help", Label: "Help", Icon: "QuestionCircle"},
+					{Value: "help", Label: "Help", Icon: "QuestionCircle", ItemURL: "https://google.com"},
 					{Value: "logout", Label: "Logout", Icon: "Exit"},
 				},
 				Value:   "search",

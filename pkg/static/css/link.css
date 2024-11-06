@@ -93,6 +93,34 @@ a[link-type='border'] {
   box-sizing: border-box;
 }
 
+a[link-type='menu_item'] {
+  color: rgba(var(--accent-1c), 0.85);
+  fill: rgba(var(--accent-1c), 0.85);
+  cursor: pointer;
+  font-weight: bold;
+  vertical-align: text-top;
+  display: inline;
+  padding: 0;
+}
+
+a[link-type='menu_icon'] {
+  fill: rgba(var(--accent-1c), 0.85);
+  cursor: pointer;
+  vertical-align: text-middle;
+  display: inline;
+  padding: 0;
+}
+
+a[link-type='menu_item']:hover {
+  color: rgb(var(--functional-yellow));
+  fill: rgb(var(--functional-yellow));
+}
+
+a[link-type='menu_icon']:hover {
+  color: rgb(var(--functional-yellow));
+  fill: rgb(var(--functional-yellow));
+}
+
 a[disabled] {
   pointer-events: none;
   opacity: 0.3;

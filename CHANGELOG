@@ -1,3 +1,11 @@
+## 1.7.10
+- Search components: remove AddItem, LabelAdd, AddIcon options
+- App component: SpinnerNotModal option
+- Browser component: add custom help url
+- MenuBar component: add ItemUrl option
+- Search component: add ShowHelp and HelpURL options
+- Login component: add ShowHelp and HelpURL options
+
 ## 1.7.9
 - Search components: add PageSize, HidePaginatonSize, AddItem, LabelAdd, AddIcon options
 - SideBar components: element and border color bug fixes

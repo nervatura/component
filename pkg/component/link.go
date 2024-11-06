@@ -13,14 +13,16 @@ const (
 
 	LinkEventClick = "click"
 
-	LinkStyleDefault = ""
-	LinkStyleButton  = "button"
-	LinkStylePrimary = "primary"
-	LinkStyleBorder  = "border"
+	LinkStyleDefault  = ""
+	LinkStyleButton   = "button"
+	LinkStylePrimary  = "primary"
+	LinkStyleBorder   = "border"
+	LinkStyleMenuItem = "menu_item"
+	LinkStyleMenuIcon = "menu_icon"
 )
 
 // [Link] LinkStyle values
-var LinkStyle []string = []string{LinkStyleDefault, LinkStyleButton, LinkStylePrimary, LinkStyleBorder}
+var LinkStyle []string = []string{LinkStyleDefault, LinkStyleButton, LinkStylePrimary, LinkStyleBorder, LinkStyleMenuItem, LinkStyleMenuIcon}
 
 // It defines a hyperlink, which is used to link from one page to another.
 type Link struct {

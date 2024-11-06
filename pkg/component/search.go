@@ -13,6 +13,7 @@ const (
 
 	SearchEventSearch   = "search"
 	SearchEventSelected = "selected"
+	SearchEventHelp     = "help"
 
 	SearchDefaultPlaceholder = "Search conditions"
 	SearchDefaultTitle       = "Search for data"
@@ -31,18 +32,16 @@ type Search struct {
 	PageSize int64 `json:"page_size"`
 	// [Pagination] component show/hide page size selector
 	HidePaginatonSize bool `json:"hide_paginaton_size"`
-	// Show/hide table add item button
-	AddItem bool `json:"add_item"`
-	// Add item button caption Default empty string
-	LabelAdd string `json:"label_add"`
-	// Valid [Icon] component value. See more [IconKey] variable values.
-	AddIcon string `json:"add_icon"`
 	// Specifies a short hint that describes the expected value of the input element
 	FilterPlaceholder string `json:"filter_placeholder"`
 	// Specifies that the input element should automatically get focus when the page loads
 	AutoFocus bool `json:"auto_focus"`
 	// Full width input (100%)
 	Full bool `json:"full"`
+	// Show or hide the help button
+	ShowHelp bool `json:"hide_help"`
+	// Specifies the url for help. If it is not specified, then the built-in button event
+	HelpURL string `json:"help_url"`
 }
 
 /*
@@ -57,12 +56,11 @@ func (sea *Search) Properties() ut.IM {
 			"title":               sea.Title,
 			"page_size":           sea.PageSize,
 			"hide_paginaton_size": sea.HidePaginatonSize,
-			"add_item":            sea.AddItem,
 			"filter_placeholder":  sea.FilterPlaceholder,
-			"label_add":           sea.LabelAdd,
-			"add_icon":            sea.AddIcon,
 			"auto_focus":          sea.AutoFocus,
 			"full":                sea.Full,
+			"show_help":           sea.ShowHelp,
+			"help_url":            sea.HelpURL,
 		})
 }
 
@@ -151,21 +149,9 @@ func (sea *Search) SetProperty(propName string, propValue interface{}) interface
 			sea.HidePaginatonSize = ut.ToBoolean(propValue, false)
 			return sea.HidePaginatonSize
 		},
-		"add_item": func() interface{} {
-			sea.AddItem = ut.ToBoolean(propValue, false)
-			return sea.AddItem
-		},
 		"filter_placeholder": func() interface{} {
 			sea.FilterPlaceholder = ut.ToString(propValue, "")
 			return sea.FilterPlaceholder
-		},
-		"label_add": func() interface{} {
-			sea.LabelAdd = ut.ToString(propValue, "")
-			return sea.LabelAdd
-		},
-		"add_icon": func() interface{} {
-			sea.AddIcon = ut.ToString(propValue, "Plus")
-			return sea.AddIcon
 		},
 		"auto_focus": func() interface{} {
 			sea.AutoFocus = ut.ToBoolean(propValue, false)
@@ -178,6 +164,14 @@ func (sea *Search) SetProperty(propName string, propValue interface{}) interface
 		"target": func() interface{} {
 			sea.Target = sea.Validation(propName, propValue).(string)
 			return sea.Target
+		},
+		"show_help": func() interface{} {
+			sea.ShowHelp = ut.ToBoolean(propValue, false)
+			return sea.ShowHelp
+		},
+		"help_url": func() interface{} {
+			sea.HelpURL = ut.ToString(propValue, "")
+			return sea.HelpURL
 		},
 	}
 	if _, found := pm[propName]; found {
@@ -211,6 +205,9 @@ func (sea *Search) response(evt ResponseEvent) (re ResponseEvent) {
 		selEvt.Value = ut.ToString(sea.Data["filter_value"], "")
 		selEvt.Name = SearchEventSearch
 
+	case "btn_help":
+		selEvt.Name = SearchEventHelp
+
 	default:
 	}
 	if sea.OnResponse != nil {
@@ -234,6 +231,20 @@ func (sea *Search) getComponent(name string) (html template.HTML, err error) {
 			},
 			ButtonStyle: ButtonStyleBorder,
 			Icon:        icon,
+		}
+	}
+	ccLnk := func() *Link {
+		return &Link{
+			BaseComponent: BaseComponent{
+				Id:    sea.Id + "_" + name,
+				Name:  name,
+				Style: ut.SM{"padding": "8px", "margin": "1px 0 2px 1px"},
+			},
+			LinkStyle:  LinkStyleBorder,
+			Icon:       "QuestionCircle",
+			HideLabel:  true,
+			Href:       sea.HelpURL,
+			LinkTarget: "_blank",
 		}
 	}
 	ccInp := func(value string) *Input {
@@ -260,6 +271,12 @@ func (sea *Search) getComponent(name string) (html template.HTML, err error) {
 		"btn_search": func() ClientComponent {
 			return ccBtn("Search")
 		},
+		"btn_help": func() ClientComponent {
+			if sea.HelpURL != "" {
+				return ccLnk()
+			}
+			return ccBtn("QuestionCircle")
+		},
 		"filter_value": func() ClientComponent {
 			return ccInp(ut.ToString(sea.Data["filter_value"], ""))
 		},
@@ -279,9 +296,6 @@ func (sea *Search) getComponent(name string) (html template.HTML, err error) {
 				PageSize:          sea.PageSize,
 				HidePaginatonSize: sea.HidePaginatonSize,
 				TableFilter:       false,
-				AddItem:           sea.AddItem,
-				LabelAdd:          sea.LabelAdd,
-				AddIcon:           sea.AddIcon,
 				RowSelected:       true,
 			}
 		},
@@ -315,7 +329,9 @@ func (sea *Search) Render() (html template.HTML, err error) {
 	<div class="section" >
 	<div class="row full container" >
 	<div class="cell">{{ searchComponent "filter_value" }}</div>
-	<div class="cell" style="width: 20px;" >{{ searchComponent "btn_search" }}</div></div>
+	<div class="cell" style="width: 20px;" >{{ searchComponent "btn_search" }}</div>
+	{{ if .ShowHelp }}<div class="cell" style="width: 20px;" >{{ searchComponent "btn_help" }}</div>{{ end }}
+	</div>
 	<div class="row full container" >{{ searchComponent "search_result" }}</div>
 	</div></div></div>`
 
@@ -340,6 +356,9 @@ var testSearchResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt Res
 	}
 	if evt.Name == SearchEventSearch {
 		return toast(ut.ToString(evt.Value, ""))
+	}
+	if evt.Name == SearchEventHelp {
+		return toast("Help!!!")
 	}
 
 	row := evt.Value.(ut.IM)["row"].(ut.IM)
@@ -446,6 +465,25 @@ func TestSearch(cc ClientComponent) []TestComponent {
 				Fields:    testSearchFields,
 				Rows:      testSearchRows,
 				AutoFocus: true,
+				ShowHelp:  true,
+			},
+		},
+		{
+			Label:         "Help URL",
+			ComponentType: ComponentTypeList,
+			Component: &Search{
+				BaseComponent: BaseComponent{
+					Id:           id + "_search_help",
+					EventURL:     eventURL,
+					OnResponse:   testSearchResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
+				},
+				Fields:    testSearchFields,
+				Rows:      testSearchRows,
+				AutoFocus: true,
+				ShowHelp:  true,
+				HelpURL:   "https://www.google.com",
 			},
 		},
 	}

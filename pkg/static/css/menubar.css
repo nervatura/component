@@ -17,7 +17,7 @@
   text-align: center;
   padding: 8px 6px;
   font-weight: bold;
-  vertical-align: middle;
+  vertical-align: top;
   width: auto;
   display: table-cell;
   cursor: pointer;
@@ -27,6 +27,9 @@
   -moz-user-select:none;
   -ms-user-select:none;
   user-select:none;
+}
+.menu-text {
+  vertical-align: bottom;
 }
 .exit:hover {
   color: rgb(var(--functional-red))!important;

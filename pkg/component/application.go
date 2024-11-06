@@ -48,6 +48,8 @@ type Application struct {
 	HeadLink []HeadLink `json:"head_link"`
 	// The main component of the application, to which all other components belong.
 	MainComponent ClientComponent `json:"main_component"`
+	// Modal spinner appearance by default, other elements of the page are not available
+	SpinnerNotModal bool `json:"spinner_notmodal"`
 }
 
 /*
@@ -57,12 +59,13 @@ func (app *Application) Properties() ut.IM {
 	return ut.MergeIM(
 		app.BaseComponent.Properties(),
 		ut.IM{
-			"title":  app.Title,
-			"theme":  app.Theme,
-			"header": app.Header,
-			"script": app.Script,
-			"link":   app.HeadLink,
-			"main":   app.MainComponent,
+			"title":            app.Title,
+			"theme":            app.Theme,
+			"header":           app.Header,
+			"script":           app.Script,
+			"link":             app.HeadLink,
+			"main":             app.MainComponent,
+			"spinner_notmodal": app.SpinnerNotModal,
 		})
 }
 
@@ -156,6 +159,10 @@ func (app *Application) SetProperty(propName string, propValue interface{}) inte
 			}
 			return app.MainComponent
 		},
+		"spinner_notmodal": func() interface{} {
+			app.SpinnerNotModal = ut.ToBoolean(propValue, false)
+			return app.SpinnerNotModal
+		},
 	}
 	if _, found := pm[propName]; found {
 		return pm[propName]()
@@ -203,7 +210,7 @@ Based on the values, it will generate the html code of the [Application] or retu
 */
 func (app *Application) Render() (html template.HTML, err error) {
 	app.InitProps(app)
-	spinner := Spinner{}
+	spinner := Spinner{NoModal: app.SpinnerNotModal}
 
 	funcMap := map[string]any{
 		"styleMap": func() bool {

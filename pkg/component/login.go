@@ -17,6 +17,7 @@ const (
 	LoginEventAuth   = "auth"
 	LoginEventTheme  = "theme"
 	LoginEventLang   = "lang"
+	LoginEventHelp   = "help"
 )
 
 var loginDefaultLabel ut.SM = ut.SM{
@@ -27,6 +28,7 @@ var loginDefaultLabel ut.SM = ut.SM{
 	"login_lang":     "Language",
 	"login_login":    "Login",
 	"login_theme":    "Theme",
+	"login_help":     "Help",
 }
 
 var loginThemeMap map[string][]string = map[string][]string{
@@ -84,6 +86,10 @@ type Login struct {
 	Locales []SelectOption `json:"locales"`
 	// OAuth buttons
 	AuthButtons []LoginAuthButton `json:"auth_buttons"`
+	// Show or hide the help button
+	ShowHelp bool `json:"hide_help"`
+	// Specifies the url for help. If it is not specified, then the built-in button event
+	HelpURL string `json:"help_url"`
 }
 
 // OAuth button parameters
@@ -108,6 +114,8 @@ func (lgn *Login) Properties() ut.IM {
 			"labels":        lgn.Labels,
 			"locales":       lgn.Locales,
 			"auth_buttons":  lgn.AuthButtons,
+			"show_help":     lgn.ShowHelp,
+			"help_url":      lgn.HelpURL,
 		})
 }
 
@@ -213,6 +221,14 @@ func (lgn *Login) SetProperty(propName string, propValue interface{}) interface{
 			lgn.Target = lgn.Validation(propName, propValue).(string)
 			return lgn.Target
 		},
+		"show_help": func() interface{} {
+			lgn.ShowHelp = ut.ToBoolean(propValue, false)
+			return lgn.ShowHelp
+		},
+		"help_url": func() interface{} {
+			lgn.HelpURL = ut.ToString(propValue, "")
+			return lgn.HelpURL
+		},
 	}
 	if _, found := pm[propName]; found {
 		return lgn.SetRequestValue(propName, pm[propName](), []string{})
@@ -248,6 +264,9 @@ func (lgn *Login) response(evt ResponseEvent) (re ResponseEvent) {
 	case "lang":
 		lgnEvt.Name = LoginEventLang
 		lgn.SetProperty("lang", lgnEvt.Value)
+
+	case "help":
+		lgnEvt.Name = LoginEventHelp
 
 	default:
 	}
@@ -359,6 +378,34 @@ func (lgn *Login) getComponent(name string, authIdx int) (html template.HTML, er
 				LabelComponent: &Icon{Value: loginThemeMap[lgn.Theme][1], Width: 18, Height: 18},
 			}
 		},
+		"help": func() ClientComponent {
+			if lgn.HelpURL != "" {
+				return &Link{
+					BaseComponent: BaseComponent{
+						Id:   lgn.Id + "_" + name,
+						Name: name,
+					},
+					LinkStyle:  LinkStyleBorder,
+					Icon:       "QuestionCircle",
+					HideLabel:  true,
+					Href:       lgn.HelpURL,
+					LinkTarget: "_blank",
+				}
+			}
+			return &Button{
+				BaseComponent: BaseComponent{
+					Id: lgn.Id + "_" + name, Name: name,
+					EventURL:     lgn.EventURL,
+					Target:       lgn.Target,
+					OnResponse:   lgn.response,
+					RequestValue: lgn.RequestValue,
+					RequestMap:   lgn.RequestMap,
+				},
+				ButtonStyle:    ButtonStyleBorder,
+				Label:          lgn.Labels["login_"+name],
+				LabelComponent: &Icon{Value: "QuestionCircle", Width: 18, Height: 18},
+			}
+		},
 		"lang": func() ClientComponent {
 			return &Select{
 				BaseComponent: BaseComponent{
@@ -454,12 +501,15 @@ func (lgn *Login) Render() (html template.HTML, err error) {
 	</div>{{ end }}
   <div class="row full section buttons" >
 	{{ if ne .HidePassword true }}<div class="cell section-small mobile" >{{ end }}
-	<div class="cell container align-right" >
+	<div class="cell container-left align-right" >
 	{{ loginComponent "theme" }}
 	</div>
-	<div class="cell" >
+	<div class="cell container-left" >
 	{{ loginComponent "lang" }}
 	</div>
+	{{ if .ShowHelp }} <div class="cell container-left" >
+	{{ loginComponent "help" }}
+	</div>{{ end }}
 	{{ if ne .HidePassword true }}</div>{{ end }}
 	{{ if ne .HidePassword true }}
 	<div class="cell container section-small align-right mobile" >
@@ -510,6 +560,8 @@ var testLoginResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt Resp
 		return toast(value)
 	case LoginEventAuth:
 		return toast(ut.ToString(evt.Value, ""))
+	case LoginEventHelp:
+		return toast("Help!!!")
 	case LoginEventLang:
 		value := ut.ToString(evt.Value, "en")
 		labels := ut.MergeSM(nil, testLoginLabels[value])
@@ -574,6 +626,7 @@ func TestLogin(cc ClientComponent) []TestComponent {
 				Theme:        ThemeLight,
 				Labels:       ut.MergeSM(nil, testLoginLabels["en"]),
 				HideDatabase: true,
+				ShowHelp:     true,
 			}},
 		{
 			Label:         "Auth buttons",
@@ -599,6 +652,8 @@ func TestLogin(cc ClientComponent) []TestComponent {
 				Theme:        ThemeLight,
 				Labels:       ut.MergeSM(nil, testLoginLabels["en"]),
 				HideDatabase: true,
+				ShowHelp:     true,
+				HelpURL:      "http://gooogle.com",
 				AuthButtons: []LoginAuthButton{
 					{Id: "google", Label: "Google", Icon: "Google"},
 					{Id: "facebook", Label: "Facebook", Icon: "Facebook"},

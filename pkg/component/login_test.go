@@ -17,6 +17,7 @@ func TestTestLogin(t *testing.T) {
 	testLoginResponse(ResponseEvent{Name: LoginEventAuth, Trigger: &Login{}})
 	testLoginResponse(ResponseEvent{Name: LoginEventLang, Trigger: &Login{}})
 	testLoginResponse(ResponseEvent{Name: LoginEventTheme, Trigger: &Login{}})
+	testLoginResponse(ResponseEvent{Name: LoginEventHelp, Trigger: &Login{}})
 }
 
 func TestLogin_Validation(t *testing.T) {
@@ -191,6 +192,15 @@ func TestLogin_response(t *testing.T) {
 				evt: ResponseEvent{
 					TriggerName: "login",
 					Name:        LoginEventLogin,
+				},
+			},
+		},
+		{
+			name: "help",
+			args: args{
+				evt: ResponseEvent{
+					TriggerName: "help",
+					Name:        LoginEventHelp,
 				},
 			},
 		},

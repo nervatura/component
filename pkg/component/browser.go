@@ -121,6 +121,8 @@ type Browser struct {
 	Download string `json:"download"`
 	// Show or hide the help button
 	HideHelp bool `json:"hide_help"`
+	// Specifies the url for help. If it is not specified, then the built-in button event
+	HelpURL string `json:"help_url"`
 	// Editability of table rows
 	ReadOnly bool `json:"readonly"`
 	// The name of the columns to be displayed from the data source
@@ -156,6 +158,7 @@ func (bro *Browser) Properties() ut.IM {
 			"download":        bro.Download,
 			"readonly":        bro.ReadOnly,
 			"hide_help":       bro.HideHelp,
+			"help_url":        bro.HelpURL,
 			"visible_columns": bro.VisibleColumns,
 			"filters":         bro.Filters,
 			"hide_filters":    bro.HideFilters,
@@ -378,6 +381,10 @@ func (bro *Browser) SetProperty(propName string, propValue interface{}) interfac
 		"hide_help": func() interface{} {
 			bro.HideHelp = ut.ToBoolean(propValue, false)
 			return bro.HideHelp
+		},
+		"help_url": func() interface{} {
+			bro.HelpURL = ut.ToString(propValue, "")
+			return bro.HelpURL
 		},
 		"labels": func() interface{} {
 			bro.Labels = bro.Validation(propName, propValue).(ut.SM)
@@ -676,7 +683,7 @@ func (bro *Browser) getComponent(name string, data ut.IM) (html template.HTML, e
 		}
 		return btn
 	}
-	ccLnk := func() *Link {
+	ccLnk := func(icoKey, label, hrefURL, download string) *Link {
 		return &Link{
 			BaseComponent: BaseComponent{
 				Id:    bro.Id + "_" + name + "_0",
@@ -684,11 +691,11 @@ func (bro *Browser) getComponent(name string, data ut.IM) (html template.HTML, e
 				Style: ut.SM{"padding": "8px 12px", "margin": "0 1px"},
 			},
 			LinkStyle:  LinkStyleBorder,
-			Label:      bro.msg("browser_export"),
-			Icon:       "Download",
+			Label:      bro.msg(label),
+			Icon:       icoKey,
 			HideLabel:  true,
-			Href:       bro.ExportURL,
-			Download:   bro.Download,
+			Href:       hrefURL,
+			Download:   download,
 			LinkTarget: "_blank",
 		}
 	}
@@ -782,11 +789,14 @@ func (bro *Browser) getComponent(name string, data ut.IM) (html template.HTML, e
 		},
 		"btn_export": func() ClientComponent {
 			if bro.ExportURL != "" {
-				return ccLnk()
+				return ccLnk("Download", "browser_export", bro.ExportURL, bro.Download)
 			}
 			return ccBtn("Download", "browser_export", ButtonStyleBorder, "0")
 		},
 		"btn_help": func() ClientComponent {
+			if bro.HelpURL != "" {
+				return ccLnk("QuestionCircle", "browser_help", bro.HelpURL, "")
+			}
 			return ccBtn("QuestionCircle", "browser_help", ButtonStyleBorder, "0")
 		},
 		"btn_views": func() ClientComponent {
@@ -1376,6 +1386,7 @@ func TestBrowser(cc ClientComponent) []TestComponent {
 				ReadOnly:       true,
 				ExportURL:      "/export",
 				Download:       "export.csv",
+				HelpURL:        "https://www.google.com",
 			}},
 		{
 			Label:         "Contact data",
