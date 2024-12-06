@@ -3,12 +3,15 @@ package component
 import (
 	"reflect"
 	"testing"
+
+	ut "github.com/nervatura/component/pkg/util"
 )
 
 func TestInputBox_Render(t *testing.T) {
 	type fields struct {
 		BaseComponent BaseComponent
 		Value         string
+		ValueOptions  []SelectOption
 		Title         string
 		Message       string
 		Info          string
@@ -30,12 +33,25 @@ func TestInputBox_Render(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "options",
+			fields: fields{
+				ShowValue: true,
+				ValueOptions: []SelectOption{
+					{Text: "Option 1", Value: "option1"},
+					{Text: "Option 2", Value: "option2"},
+					{Text: "Option 3", Value: "option3"},
+				},
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ibx := &InputBox{
 				BaseComponent: tt.fields.BaseComponent,
 				Value:         tt.fields.Value,
+				ValueOptions:  tt.fields.ValueOptions,
 				Title:         tt.fields.Title,
 				Message:       tt.fields.Message,
 				Info:          tt.fields.Info,
@@ -306,6 +322,15 @@ func TestTestInputBox(t *testing.T) {
 			tt.Component.Render()
 		})
 	}
+	testInputBoxResponse(ResponseEvent{Name: ButtonEventClick, Trigger: &Button{
+		BaseComponent: BaseComponent{
+			Data: ut.IM{"value_options": []SelectOption{
+				{Text: "Option 1", Value: "option1"},
+				{Text: "Option 2", Value: "option2"},
+				{Text: "Option 3", Value: "option3"},
+			}},
+		},
+	}})
 	testInputBoxResponse(ResponseEvent{Name: ButtonEventClick, Trigger: &Button{}})
 	testInputBoxResponse(ResponseEvent{Name: InputBoxEventOK, Trigger: &InputBox{}})
 	testInputBoxResponse(ResponseEvent{Name: InputBoxEventValueChange, Trigger: &InputBox{}})
