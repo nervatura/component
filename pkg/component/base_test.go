@@ -237,6 +237,22 @@ func TestBaseComponent_Validation(t *testing.T) {
 			},
 			want: "",
 		},
+		{
+			name: "style_imap",
+			args: args{
+				propName:  "style",
+				propValue: ut.IM{"color": "red"},
+			},
+			want: ut.SM{"color": "red"},
+		},
+		{
+			name: "class_il",
+			args: args{
+				propName:  "class",
+				propValue: []interface{}{"class1", "class2"},
+			},
+			want: []string{"class1", "class2"},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

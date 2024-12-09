@@ -77,9 +77,12 @@ It checks the value given to the property of the [Label] and always returns a va
 func (lbl *Label) Validation(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"icon_style": func() interface{} {
-			value := ut.SetSMValue(lbl.IconStyle, "", "")
+			value := ut.ToSM(lbl.IconStyle, ut.SM{})
 			if smap, valid := propValue.(ut.SM); valid {
 				value = ut.MergeSM(value, smap)
+			}
+			if imap, valid := propValue.(ut.IM); valid {
+				value = ut.MergeSM(value, ut.IMToSM(imap))
 			}
 			return value
 		},

@@ -3,6 +3,8 @@ package component
 import (
 	"reflect"
 	"testing"
+
+	ut "github.com/nervatura/component/pkg/util"
 )
 
 func TestTestSelect(t *testing.T) {
@@ -104,6 +106,14 @@ func TestSelect_Validation(t *testing.T) {
 				propValue: "",
 			},
 			want: []SelectOption{},
+		},
+		{
+			name: "options",
+			args: args{
+				propName:  "options",
+				propValue: []interface{}{ut.IM{"value": "value1", "text": "text1"}},
+			},
+			want: []SelectOption{{Value: "value1", Text: "text1"}},
 		},
 		{
 			name: "is_null",

@@ -103,6 +103,18 @@ func (mnb *MenuBar) Validation(propName string, propValue interface{}) interface
 			if it, valid := propValue.([]MenuBarItem); valid && (it != nil) {
 				items = it
 			}
+			if valueOptions, found := propValue.([]interface{}); found {
+				for _, valueOption := range valueOptions {
+					if valueOptionMap, valid := valueOption.(ut.IM); valid {
+						items = append(items, MenuBarItem{
+							Value:   ut.ToString(valueOptionMap["value"], ""),
+							Label:   ut.ToString(valueOptionMap["label"], ""),
+							Icon:    ut.ToString(valueOptionMap["icon"], ""),
+							ItemURL: ut.ToString(valueOptionMap["item_url"], ""),
+						})
+					}
+				}
+			}
 			return items
 		},
 		"target": func() interface{} {

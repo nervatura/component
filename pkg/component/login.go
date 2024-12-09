@@ -135,9 +135,12 @@ func (lgn *Login) Validation(propName string, propValue interface{}) interface{}
 			return lgn.CheckEnumValue(ut.ToString(propValue, ""), ThemeLight, Theme)
 		},
 		"labels": func() interface{} {
-			value := ut.SetSMValue(lgn.Labels, "", "")
+			value := ut.ToSM(lgn.Labels, ut.SM{})
 			if smap, valid := propValue.(ut.SM); valid {
 				value = ut.MergeSM(value, smap)
+			}
+			if imap, valid := propValue.(ut.IM); valid {
+				value = ut.MergeSM(value, ut.IMToSM(imap))
 			}
 			if len(value) == 0 {
 				value = loginDefaultLabel
@@ -148,6 +151,16 @@ func (lgn *Login) Validation(propName string, propValue interface{}) interface{}
 			value := lgn.Locales
 			if loc, valid := propValue.([]SelectOption); valid && len(loc) > 0 {
 				value = loc
+			}
+			if valueOptions, found := propValue.([]interface{}); found {
+				for _, valueOption := range valueOptions {
+					if valueOptionMap, valid := valueOption.(ut.IM); valid {
+						value = append(value, SelectOption{
+							Value: ut.ToString(valueOptionMap["value"], ""),
+							Text:  ut.ToString(valueOptionMap["text"], ""),
+						})
+					}
+				}
 			}
 			if len(value) == 0 {
 				lang := ut.ToString(lgn.Lang, "en")

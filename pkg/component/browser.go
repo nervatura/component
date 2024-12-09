@@ -180,9 +180,12 @@ It checks the value given to the property of the [Browser] and always returns a 
 func (bro *Browser) Validation(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"labels": func() interface{} {
-			value := ut.SetSMValue(bro.Labels, "", "")
+			value := ut.ToSM(bro.Labels, ut.SM{})
 			if smap, valid := propValue.(ut.SM); valid {
 				value = ut.MergeSM(value, smap)
+			}
+			if imap, valid := propValue.(ut.IM); valid {
+				value = ut.MergeSM(value, ut.IMToSM(imap))
 			}
 			if len(value) == 0 {
 				value = browserDefaultLabel
@@ -193,6 +196,16 @@ func (bro *Browser) Validation(propName string, propValue interface{}) interface
 			value := bro.Views
 			if views, valid := propValue.([]SelectOption); valid && len(views) > 0 {
 				value = views
+			}
+			if valueOptions, found := propValue.([]interface{}); found {
+				for _, valueOption := range valueOptions {
+					if valueOptionMap, valid := valueOption.(ut.IM); valid {
+						value = append(value, SelectOption{
+							Value: ut.ToString(valueOptionMap["value"], ""),
+							Text:  ut.ToString(valueOptionMap["text"], ""),
+						})
+					}
+				}
 			}
 			return value
 		},

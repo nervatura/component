@@ -297,17 +297,23 @@ func (bcc *BaseComponent) Validation(propName string, propValue interface{}) int
 			if class, valid := propValue.([]string); valid {
 				value = class
 			}
+			if il, valid := propValue.([]interface{}); valid {
+				value = append(value, ut.ILtoSL(il)...)
+			}
 			return value
 		},
 		"style": func() interface{} {
-			value := ut.SetSMValue(bcc.Style, "", "")
+			value := ut.ToSM(bcc.Style, ut.SM{})
 			if smap, valid := propValue.(ut.SM); valid {
 				value = ut.MergeSM(value, smap)
+			}
+			if imap, valid := propValue.(ut.IM); valid {
+				value = ut.MergeSM(value, ut.IMToSM(imap))
 			}
 			return value
 		},
 		"data": func() interface{} {
-			value := ut.SetIMValue(bcc.Data, "", "")
+			value := ut.ToIM(bcc.Data, ut.IM{})
 			if imap, valid := propValue.(ut.IM); valid {
 				value = ut.MergeIM(value, imap)
 			}

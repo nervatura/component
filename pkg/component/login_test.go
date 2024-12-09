@@ -64,12 +64,28 @@ func TestLogin_Validation(t *testing.T) {
 			want: []SelectOption{{Value: "en", Text: "en"}},
 		},
 		{
+			name: "locales_imap",
+			args: args{
+				propName:  "locales",
+				propValue: []interface{}{ut.IM{"value": "en", "text": "en"}},
+			},
+			want: []SelectOption{{Value: "en", Text: "en"}},
+		},
+		{
 			name: "labels",
 			args: args{
 				propName:  "labels",
 				propValue: "",
 			},
 			want: loginDefaultLabel,
+		},
+		{
+			name: "labels_imap",
+			args: args{
+				propName:  "labels",
+				propValue: ut.IM{"fieldName": "Label"},
+			},
+			want: ut.SM{"fieldName": "Label"},
 		},
 	}
 	for _, tt := range tests {

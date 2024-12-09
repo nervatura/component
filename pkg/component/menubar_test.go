@@ -96,6 +96,14 @@ func TestMenuBar_Validation(t *testing.T) {
 			},
 			want: "",
 		},
+		{
+			name: "items",
+			args: args{
+				propName:  "items",
+				propValue: []interface{}{ut.IM{"value": "value1", "label": "label1"}},
+			},
+			want: []MenuBarItem{{Value: "value1", Label: "label1"}},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

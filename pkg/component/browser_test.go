@@ -187,6 +187,22 @@ func TestBrowser_Validation(t *testing.T) {
 				"fieldName": {FieldType: "string", Label: "Label"},
 			},
 		},
+		{
+			name: "labels",
+			args: args{
+				propName:  "labels",
+				propValue: ut.IM{"fieldName": "Label"},
+			},
+			want: ut.SM{"fieldName": "Label"},
+		},
+		{
+			name: "views",
+			args: args{
+				propName:  "views",
+				propValue: []interface{}{ut.IM{"value": "value1", "text": "text1"}},
+			},
+			want: []SelectOption{{Value: "value1", Text: "text1"}},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

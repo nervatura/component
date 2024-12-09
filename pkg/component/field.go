@@ -73,7 +73,7 @@ func (fld *Field) Validation(propName string, propValue interface{}) interface{}
 			return fld.CheckEnumValue(ut.ToString(propValue, ""), FieldTypeString, FieldType)
 		},
 		"value": func() interface{} {
-			value := ut.SetIMValue(fld.Value, "", "")
+			value := ut.ToIM(fld.Value, ut.IM{})
 			if imap, valid := propValue.(ut.IM); valid {
 				value = ut.MergeIM(value, imap)
 			}

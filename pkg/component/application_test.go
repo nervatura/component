@@ -154,6 +154,22 @@ func TestApplication_Validation(t *testing.T) {
 			},
 			want: nil,
 		},
+		{
+			name: "header_imap",
+			args: args{
+				propName:  "header",
+				propValue: ut.IM{"X-Session-Token": "TOKEN1234", "X-CSRF-Token": "CSRF1234"},
+			},
+			want: ut.SM{"X-Session-Token": "TOKEN1234", "X-CSRF-Token": "CSRF1234"},
+		},
+		{
+			name: "script_il",
+			args: args{
+				propName:  "script",
+				propValue: []interface{}{"script1", "script2"},
+			},
+			want: []string{"script1", "script2"},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

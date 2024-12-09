@@ -86,6 +86,12 @@ func (sel *Selector) Validation(propName string, propValue interface{}) interfac
 			if value, valid := propValue.(SelectOption); valid {
 				return value
 			}
+			if valueOptions, found := propValue.(ut.IM); found {
+				return SelectOption{
+					Value: ut.ToString(valueOptions["value"], ""),
+					Text:  ut.ToString(valueOptions["text"], ""),
+				}
+			}
 			return SelectOption{}
 		},
 		"rows": func() interface{} {

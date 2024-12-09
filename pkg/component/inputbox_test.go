@@ -213,6 +213,14 @@ func TestInputBox_Validation(t *testing.T) {
 			},
 			want: "",
 		},
+		{
+			name: "value_options",
+			args: args{
+				propName:  "value_options",
+				propValue: []interface{}{ut.IM{"value": "value1", "text": "text1"}},
+			},
+			want: []SelectOption{{Value: "value1", Text: "text1"}},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

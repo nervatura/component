@@ -4,7 +4,9 @@ package component
 
 import (
 	"crypto/rand"
+	"encoding/json"
 	"html/template"
+	"io"
 	"math/big"
 	"strconv"
 	"strings"
@@ -209,6 +211,75 @@ func StringToDateTime(value string) (time.Time, error) {
 	return tm, err
 }
 
+// ConvertFromReader - convert io.Reader to interface
+func ConvertFromReader(data io.Reader, result interface{}) error {
+	return json.NewDecoder(data).Decode(&result)
+}
+
+// ConvertToByte - convert interface to []byte
+func ConvertToByte(data interface{}) ([]byte, error) {
+	return json.Marshal(data)
+}
+
+// ConvertFromByte - convert []byte to interface
+func ConvertFromByte(data []byte, result interface{}) error {
+	return json.Unmarshal(data, result)
+}
+
+// ToIM - safe map[string]interface{} conversion
+func ToIM(im interface{}, defValue IM) (result IM) {
+	if im == nil {
+		return defValue
+	}
+	if values, valid := im.(IM); valid && len(values) > 0 {
+		return values
+	}
+	return defValue
+}
+
+// ToSM - safe map[string]string conversion
+func ToSM(sm interface{}, defValue SM) (result SM) {
+	if sm == nil {
+		return defValue
+	}
+	if values, valid := sm.(SM); valid && len(values) > 0 {
+		return values
+	}
+	return defValue
+}
+
+// ILtoSL - convert []interface{} to []string
+func ILtoSL(il []interface{}) []string {
+	result := []string{}
+	for _, value := range il {
+		result = append(result, ToString(value, ""))
+	}
+	return result
+}
+
+// IMToSM - convert map[string]interface{} to map[string]string
+func IMToSM(im IM) SM {
+	checkBaseType := func(value interface{}) bool {
+		switch value.(type) {
+		case string, int, int32, int64, float32, float64, bool, time.Time:
+			return true
+		default:
+			return false
+		}
+	}
+	result := SM{}
+	for key, value := range im {
+		if checkBaseType(value) {
+			result[key] = ToString(value, "")
+		} else {
+			if dt, err := ConvertToByte(value); err == nil {
+				result[key] = string(dt)
+			}
+		}
+	}
+	return result
+}
+
 func RandString(length int) string {
 	chars := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789")
 	var b strings.Builder
@@ -239,38 +310,18 @@ func TemplateBuilder(name, tpl string, funcMap map[string]any, data any) (html t
 	return template.HTML(strings.ReplaceAll(sb.String(), "\n\t", "")), err
 }
 
-// SetIMValue - safe IM value setting
-func SetIMValue(imap IM, key string, value interface{}) IM {
-	if imap == nil {
-		imap = IM{}
-	}
-	if key != "" {
-		imap[key] = value
-	}
-	return imap
-}
-
-// SetSMValue - safe SM value setting
-func SetSMValue(smap SM, key string, value string) SM {
-	if smap == nil {
-		smap = SM{}
-	}
-	if key != "" {
-		smap[key] = value
-	}
-	return smap
-}
-
 func MergeSM(baseMap, valueMap SM) SM {
+	baseMap = ToSM(baseMap, SM{})
 	for key, svalue := range valueMap {
-		baseMap = SetSMValue(baseMap, key, svalue)
+		baseMap[key] = svalue
 	}
 	return baseMap
 }
 
 func MergeIM(baseMap, valueMap IM) IM {
+	baseMap = ToIM(baseMap, IM{})
 	for key, ivalue := range valueMap {
-		baseMap = SetIMValue(baseMap, key, ivalue)
+		baseMap[key] = ivalue
 	}
 	return baseMap
 }

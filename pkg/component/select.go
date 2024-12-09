@@ -89,10 +89,21 @@ It checks the value given to the property of the [Select] and always returns a v
 func (sel *Select) Validation(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"options": func() interface{} {
+			value := []SelectOption{}
 			if options, valid := propValue.([]SelectOption); valid && (options != nil) {
 				return options
 			}
-			return []SelectOption{}
+			if valueOptions, found := propValue.([]interface{}); found {
+				for _, valueOption := range valueOptions {
+					if valueOptionMap, valid := valueOption.(ut.IM); valid {
+						value = append(value, SelectOption{
+							Value: ut.ToString(valueOptionMap["value"], ""),
+							Text:  ut.ToString(valueOptionMap["text"], ""),
+						})
+					}
+				}
+			}
+			return value
 		},
 		"value": func() interface{} {
 			value := ut.ToString(propValue, "")

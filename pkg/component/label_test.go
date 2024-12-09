@@ -51,6 +51,14 @@ func TestLabel_Validation(t *testing.T) {
 			},
 			want: "",
 		},
+		{
+			name: "icon_style",
+			args: args{
+				propName:  "icon_style",
+				propValue: ut.IM{"color": "red"},
+			},
+			want: ut.SM{"color": "red"},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

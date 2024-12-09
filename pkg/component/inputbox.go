@@ -68,6 +68,16 @@ func (ibx *InputBox) Validation(propName string, propValue interface{}) interfac
 			if options, valid := propValue.([]SelectOption); valid && len(options) > 0 {
 				value = options
 			}
+			if valueOptions, found := propValue.([]interface{}); found {
+				for _, valueOption := range valueOptions {
+					if valueOptionMap, valid := valueOption.(ut.IM); valid {
+						value = append(value, SelectOption{
+							Value: ut.ToString(valueOptionMap["value"], ""),
+							Text:  ut.ToString(valueOptionMap["text"], ""),
+						})
+					}
+				}
+			}
 			return value
 		},
 		"target": func() interface{} {

@@ -1,7 +1,9 @@
 package component
 
 import (
+	"bytes"
 	"errors"
+	"io"
 	"reflect"
 	"testing"
 	"time"
@@ -546,64 +548,6 @@ func TestTemplateBuilder(t *testing.T) {
 	}
 }
 
-func TestSetIMValue(t *testing.T) {
-	type args struct {
-		imap  IM
-		key   string
-		value interface{}
-	}
-	tests := []struct {
-		name string
-		args args
-		want IM
-	}{
-		{
-			name: "ok",
-			args: args{
-				key:   "key",
-				value: "value",
-			},
-			want: IM{"key": "value"},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := SetIMValue(tt.args.imap, tt.args.key, tt.args.value); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("SetIMValue() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestSetSMValue(t *testing.T) {
-	type args struct {
-		smap  SM
-		key   string
-		value string
-	}
-	tests := []struct {
-		name string
-		args args
-		want SM
-	}{
-		{
-			name: "ok",
-			args: args{
-				key:   "key",
-				value: "value",
-			},
-			want: SM{"key": "value"},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := SetSMValue(tt.args.smap, tt.args.key, tt.args.value); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("SetSMValue() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestMergeSM(t *testing.T) {
 	type args struct {
 		baseMap  SM
@@ -707,6 +651,255 @@ func TestToIMA(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := ToIMA(tt.args.value, tt.args.defValue); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ToIMA() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestConvertFromReader(t *testing.T) {
+	type args struct {
+		data   io.Reader
+		result interface{}
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "ok",
+			args: args{
+				data:   bytes.NewBufferString(`{"key": "value"}`),
+				result: &SM{},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := ConvertFromReader(tt.args.data, tt.args.result); (err != nil) != tt.wantErr {
+				t.Errorf("ConvertFromReader() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestConvertToByte(t *testing.T) {
+	type args struct {
+		data interface{}
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []byte
+		wantErr bool
+	}{
+		{
+			name: "ok",
+			args: args{
+				data: SM{"key": "value"},
+			},
+			want: []byte(`{"key":"value"}`),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ConvertToByte(tt.args.data)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ConvertToByte() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ConvertToByte() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestConvertFromByte(t *testing.T) {
+	type args struct {
+		data   []byte
+		result interface{}
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "ok",
+			args: args{
+				data:   []byte(`{"key": "value"}`),
+				result: &SM{},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := ConvertFromByte(tt.args.data, tt.args.result); (err != nil) != tt.wantErr {
+				t.Errorf("ConvertFromByte() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestToIM(t *testing.T) {
+	type args struct {
+		im       interface{}
+		defValue IM
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantResult IM
+	}{
+		{
+			name: "ok",
+			args: args{
+				im:       IM{"key": "value"},
+				defValue: IM{},
+			},
+			wantResult: IM{"key": "value"},
+		},
+		{
+			name: "nil",
+			args: args{
+				im:       nil,
+				defValue: IM{},
+			},
+			wantResult: IM{},
+		},
+		{
+			name: "empty",
+			args: args{
+				im:       []IM{},
+				defValue: IM{},
+			},
+			wantResult: IM{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if gotResult := ToIM(tt.args.im, tt.args.defValue); !reflect.DeepEqual(gotResult, tt.wantResult) {
+				t.Errorf("ToIM() = %v, want %v", gotResult, tt.wantResult)
+			}
+		})
+	}
+}
+
+func TestToSM(t *testing.T) {
+	type args struct {
+		sm       interface{}
+		defValue SM
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantResult SM
+	}{
+		{
+			name: "ok",
+			args: args{
+				sm:       SM{"key": "value"},
+				defValue: SM{},
+			},
+			wantResult: SM{"key": "value"},
+		},
+		{
+			name: "nil",
+			args: args{
+				sm:       nil,
+				defValue: SM{},
+			},
+			wantResult: SM{},
+		},
+		{
+			name: "empty",
+			args: args{
+				sm:       []SM{},
+				defValue: SM{},
+			},
+			wantResult: SM{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if gotResult := ToSM(tt.args.sm, tt.args.defValue); !reflect.DeepEqual(gotResult, tt.wantResult) {
+				t.Errorf("ToSM() = %v, want %v", gotResult, tt.wantResult)
+			}
+		})
+	}
+}
+
+func TestILtoSL(t *testing.T) {
+	type args struct {
+		il []interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want []string
+	}{
+		{
+			name: "ok",
+			args: args{
+				il: []interface{}{"value1", "value2"},
+			},
+			want: []string{"value1", "value2"},
+		},
+		{
+			name: "empty",
+			args: args{
+				il: []interface{}{},
+			},
+			want: []string{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ILtoSL(tt.args.il); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ILtoSL() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestIMToSM(t *testing.T) {
+	type args struct {
+		im IM
+	}
+	tests := []struct {
+		name string
+		args args
+		want SM
+	}{
+		{
+			name: "string",
+			args: args{
+				im: IM{"key": "value"},
+			},
+			want: SM{"key": "value"},
+		},
+		{
+			name: "object",
+			args: args{
+				im: IM{"key": IM{"key": "value"}},
+			},
+			want: SM{"key": `{"key":"value"}`},
+		},
+		{
+			name: "nil",
+			args: args{
+				im: IM{"key": nil},
+			},
+			want: SM{"key": "null"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IMToSM(tt.args.im); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("IMToSM() = %v, want %v", got, tt.want)
 			}
 		})
 	}

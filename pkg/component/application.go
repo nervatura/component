@@ -85,9 +85,12 @@ func (app *Application) Validation(propName string, propValue interface{}) inter
 			return app.CheckEnumValue(ut.ToString(propValue, ""), ThemeLight, Theme)
 		},
 		"header": func() interface{} {
-			value := ut.SetSMValue(app.Header, "", "")
+			value := ut.ToSM(app.Header, ut.SM{})
 			if smap, valid := propValue.(ut.SM); valid {
 				value = ut.MergeSM(value, smap)
+			}
+			if imap, valid := propValue.(ut.IM); valid {
+				value = ut.MergeSM(value, ut.IMToSM(imap))
 			}
 			return value
 		},
@@ -95,6 +98,9 @@ func (app *Application) Validation(propName string, propValue interface{}) inter
 			value := []string{}
 			if script, valid := propValue.([]string); valid {
 				value = append(value, script...)
+			}
+			if il, valid := propValue.([]interface{}); valid {
+				value = append(value, ut.ILtoSL(il)...)
 			}
 			if len(value) == 0 {
 				value = append(value, st.JSLibs...)
