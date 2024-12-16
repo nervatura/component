@@ -84,7 +84,7 @@ button.right {
   padding: 1px 7px;
   margin-left: 5px;
   text-align: center;
-  border-radius: 50%;
+  border-radius: 3px;
 }
 .selected-badge {
   background-color: rgb(var(--functional-yellow));

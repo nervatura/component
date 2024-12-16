@@ -23,9 +23,7 @@ type EditorView struct {
 	// Valid [Icon] component value. See more [IconKey] variable values.
 	Icon string `json:"icon"`
 	// The badge value of the view
-	Badge int64 `json:"badge"`
-	// The view badge is visible or invisible
-	ShowBadge bool `json:"show_badge"`
+	Badge string `json:"badge"`
 }
 
 // Generic input form component
@@ -206,7 +204,6 @@ func (edi *Editor) getComponent(name string, view EditorView, index int) (html t
 				Label:       view.Label,
 				Icon:        view.Icon,
 				Badge:       view.Badge,
-				ShowBadge:   view.ShowBadge,
 				Full:        true,
 				Align:       TextAlignLeft,
 				Selected:    (view.Key == edi.View),
@@ -319,17 +316,15 @@ func TestEditor(cc ClientComponent) []TestComponent {
 				View:  "main",
 				Views: []EditorView{
 					{
-						Key:       "main",
-						Label:     "Main input",
-						Icon:      "ShoppingCart",
-						ShowBadge: false,
+						Key:   "main",
+						Label: "Main input",
+						Icon:  "ShoppingCart",
 					},
 					{
-						Key:       "item",
-						Label:     "Item rows",
-						Icon:      "User",
-						Badge:     3,
-						ShowBadge: true,
+						Key:   "item",
+						Label: "Item rows",
+						Icon:  "User",
+						Badge: "3",
 					},
 				},
 				Rows: []Row{
@@ -429,17 +424,15 @@ func TestEditor(cc ClientComponent) []TestComponent {
 				View:  "item",
 				Views: []EditorView{
 					{
-						Key:       "main",
-						Label:     "Main input",
-						Icon:      "ShoppingCart",
-						ShowBadge: false,
+						Key:   "main",
+						Label: "Main input",
+						Icon:  "ShoppingCart",
 					},
 					{
-						Key:       "item",
-						Label:     "Item rows",
-						Icon:      "User",
-						Badge:     3,
-						ShowBadge: true,
+						Key:   "item",
+						Label: "Item rows",
+						Icon:  "User",
+						Badge: "3",
 					},
 				},
 				Rows: []Row{},

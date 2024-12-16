@@ -81,9 +81,7 @@ type Button struct {
 	// The button label is visible or invisible
 	HideLabel bool `json:"hide_label"`
 	// The badge value of the button
-	Badge int64 `json:"badge"`
-	// The button badge is visible or invisible
-	ShowBadge bool `json:"show_badge"`
+	Badge string `json:"badge"`
 }
 
 /*
@@ -106,7 +104,6 @@ func (btn *Button) Properties() ut.IM {
 			"selected":        btn.Selected,
 			"hide_label":      btn.HideLabel,
 			"badge":           btn.Badge,
-			"show_badge":      btn.ShowBadge,
 		})
 }
 
@@ -201,12 +198,8 @@ func (btn *Button) SetProperty(propName string, propValue interface{}) interface
 			return btn.HideLabel
 		},
 		"badge": func() interface{} {
-			btn.Badge = ut.ToInteger(propValue, 0)
+			btn.Badge = ut.ToString(propValue, "")
 			return btn.Badge
-		},
-		"show_badge": func() interface{} {
-			btn.ShowBadge = ut.ToBoolean(propValue, false)
-			return btn.ShowBadge
 		},
 		"indicator": func() interface{} {
 			btn.Indicator = btn.Validation(propName, propValue).(string)
@@ -280,7 +273,7 @@ func (btn *Button) Render() (html template.HTML, err error) {
 	>{{ if and (ne .Icon "") (ne .Align "right") }}{{ buttonComponent "icon" }}{{ end }}
 	{{ if .LabelComponent }}{{ buttonComponent "label" }}{{ else }}<span>{{ .Label }}</span>{{ end }}
 	{{ if and (ne .Icon "") (eq .Align "right") }}{{ buttonComponent "icon" }}{{ end }}
-	{{ if .ShowBadge }}<span class="right" ><span class="badge{{ if .Selected }} selected-badge{{ end }}" >{{ .Badge }}</span></span>{{ end }}
+	{{ if ne .Badge "" }}<span class="right" ><span class="badge{{ if .Selected }} selected-badge{{ end }}" >{{ .Badge }}</span></span>{{ end }}
 	</button>`
 
 	if html, err = ut.TemplateBuilder("button", tpl, funcMap, btn); err == nil && btn.EventURL != "" {
@@ -292,7 +285,6 @@ func (btn *Button) Render() (html template.HTML, err error) {
 var testBtnResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt ResponseEvent) (re ResponseEvent) {
 	badge := ut.ToInteger(evt.Trigger.GetProperty("badge"), 0)
 	evt.Trigger.SetProperty("badge", badge+1)
-	evt.Trigger.SetProperty("show_badge", true)
 	return evt
 }
 
@@ -383,8 +375,7 @@ func TestButton(cc ClientComponent) []TestComponent {
 				Align:       TextAlignLeft,
 				Label:       "Border full and badge",
 				Full:        true,
-				Badge:       0,
-				ShowBadge:   true,
+				Badge:       "0",
 			}},
 		{
 			Label:         "Small disabled",

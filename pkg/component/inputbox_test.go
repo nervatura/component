@@ -10,6 +10,7 @@ import (
 func TestInputBox_Render(t *testing.T) {
 	type fields struct {
 		BaseComponent BaseComponent
+		InputType     InputBoxType
 		Value         string
 		ValueOptions  []SelectOption
 		Title         string
@@ -18,7 +19,6 @@ func TestInputBox_Render(t *testing.T) {
 		Tag           string
 		LabelOK       string
 		LabelCancel   string
-		ShowValue     bool
 		DefaultOK     bool
 	}
 	tests := []struct {
@@ -29,14 +29,21 @@ func TestInputBox_Render(t *testing.T) {
 		{
 			name: "ok",
 			fields: fields{
-				ShowValue: true,
+				InputType: InputBoxTypeCancel,
+			},
+			wantErr: false,
+		},
+		{
+			name: "input",
+			fields: fields{
+				InputType: InputBoxTypeInput,
 			},
 			wantErr: false,
 		},
 		{
 			name: "options",
 			fields: fields{
-				ShowValue: true,
+				InputType: InputBoxTypeSelect,
 				ValueOptions: []SelectOption{
 					{Text: "Option 1", Value: "option1"},
 					{Text: "Option 2", Value: "option2"},
@@ -50,6 +57,7 @@ func TestInputBox_Render(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ibx := &InputBox{
 				BaseComponent: tt.fields.BaseComponent,
+				InputType:     tt.fields.InputType,
 				Value:         tt.fields.Value,
 				ValueOptions:  tt.fields.ValueOptions,
 				Title:         tt.fields.Title,
@@ -58,7 +66,6 @@ func TestInputBox_Render(t *testing.T) {
 				Tag:           tt.fields.Tag,
 				LabelOK:       tt.fields.LabelOK,
 				LabelCancel:   tt.fields.LabelCancel,
-				ShowValue:     tt.fields.ShowValue,
 				DefaultOK:     tt.fields.DefaultOK,
 			}
 			_, err := ibx.Render()
@@ -73,14 +80,15 @@ func TestInputBox_Render(t *testing.T) {
 func TestInputBox_GetProperty(t *testing.T) {
 	type fields struct {
 		BaseComponent BaseComponent
+		InputType     InputBoxType
 		Value         string
+		ValueOptions  []SelectOption
 		Title         string
 		Message       string
 		Info          string
 		Tag           string
 		LabelOK       string
 		LabelCancel   string
-		ShowValue     bool
 		DefaultOK     bool
 	}
 	type args struct {
@@ -104,14 +112,15 @@ func TestInputBox_GetProperty(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ibx := &InputBox{
 				BaseComponent: tt.fields.BaseComponent,
+				InputType:     tt.fields.InputType,
 				Value:         tt.fields.Value,
+				ValueOptions:  tt.fields.ValueOptions,
 				Title:         tt.fields.Title,
 				Message:       tt.fields.Message,
 				Info:          tt.fields.Info,
 				Tag:           tt.fields.Tag,
 				LabelOK:       tt.fields.LabelOK,
 				LabelCancel:   tt.fields.LabelCancel,
-				ShowValue:     tt.fields.ShowValue,
 				DefaultOK:     tt.fields.DefaultOK,
 			}
 			if got := ibx.GetProperty(tt.args.propName); !reflect.DeepEqual(got, tt.want) {
@@ -124,14 +133,15 @@ func TestInputBox_GetProperty(t *testing.T) {
 func TestInputBox_SetProperty(t *testing.T) {
 	type fields struct {
 		BaseComponent BaseComponent
+		InputType     InputBoxType
 		Value         string
+		ValueOptions  []SelectOption
 		Title         string
 		Message       string
 		Info          string
 		Tag           string
 		LabelOK       string
 		LabelCancel   string
-		ShowValue     bool
 		DefaultOK     bool
 	}
 	type args struct {
@@ -165,14 +175,15 @@ func TestInputBox_SetProperty(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ibx := &InputBox{
 				BaseComponent: tt.fields.BaseComponent,
+				InputType:     tt.fields.InputType,
 				Value:         tt.fields.Value,
+				ValueOptions:  tt.fields.ValueOptions,
 				Title:         tt.fields.Title,
 				Message:       tt.fields.Message,
 				Info:          tt.fields.Info,
 				Tag:           tt.fields.Tag,
 				LabelOK:       tt.fields.LabelOK,
 				LabelCancel:   tt.fields.LabelCancel,
-				ShowValue:     tt.fields.ShowValue,
 				DefaultOK:     tt.fields.DefaultOK,
 			}
 			if got := ibx.SetProperty(tt.args.propName, tt.args.propValue); !reflect.DeepEqual(got, tt.want) {
@@ -185,14 +196,15 @@ func TestInputBox_SetProperty(t *testing.T) {
 func TestInputBox_Validation(t *testing.T) {
 	type fields struct {
 		BaseComponent BaseComponent
+		InputType     InputBoxType
 		Value         string
+		ValueOptions  []SelectOption
 		Title         string
 		Message       string
 		Info          string
 		Tag           string
 		LabelOK       string
 		LabelCancel   string
-		ShowValue     bool
 		DefaultOK     bool
 	}
 	type args struct {
@@ -221,19 +233,30 @@ func TestInputBox_Validation(t *testing.T) {
 			},
 			want: []SelectOption{{Value: "value1", Text: "text1"}},
 		},
+		{
+			name: "input_type_string",
+			args: args{propName: "input_type", propValue: "IBOX_INPUT"},
+			want: InputBoxTypeInput,
+		},
+		{
+			name: "input_type_int",
+			args: args{propName: "input_type", propValue: 2},
+			want: InputBoxTypeInput,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ibx := &InputBox{
 				BaseComponent: tt.fields.BaseComponent,
+				InputType:     tt.fields.InputType,
 				Value:         tt.fields.Value,
+				ValueOptions:  tt.fields.ValueOptions,
 				Title:         tt.fields.Title,
 				Message:       tt.fields.Message,
 				Info:          tt.fields.Info,
 				Tag:           tt.fields.Tag,
 				LabelOK:       tt.fields.LabelOK,
 				LabelCancel:   tt.fields.LabelCancel,
-				ShowValue:     tt.fields.ShowValue,
 				DefaultOK:     tt.fields.DefaultOK,
 			}
 			if got := ibx.Validation(tt.args.propName, tt.args.propValue); !reflect.DeepEqual(got, tt.want) {
@@ -246,14 +269,15 @@ func TestInputBox_Validation(t *testing.T) {
 func TestInputBox_response(t *testing.T) {
 	type fields struct {
 		BaseComponent BaseComponent
+		InputType     InputBoxType
 		Value         string
+		ValueOptions  []SelectOption
 		Title         string
 		Message       string
 		Info          string
 		Tag           string
 		LabelOK       string
 		LabelCancel   string
-		ShowValue     bool
 		DefaultOK     bool
 	}
 	type args struct {
@@ -273,7 +297,7 @@ func TestInputBox_response(t *testing.T) {
 						return evt
 					},
 				},
-				ShowValue: true,
+				InputType: InputBoxTypeInput,
 				Tag:       "tag",
 			},
 			args: args{
@@ -285,7 +309,7 @@ func TestInputBox_response(t *testing.T) {
 		{
 			name: "input_value",
 			fields: fields{
-				ShowValue: true,
+				InputType: InputBoxTypeInput,
 			},
 			args: args{
 				evt: ResponseEvent{
@@ -296,7 +320,7 @@ func TestInputBox_response(t *testing.T) {
 		{
 			name: "btn_cancel",
 			fields: fields{
-				ShowValue: true,
+				InputType: InputBoxTypeInput,
 			},
 			args: args{
 				evt: ResponseEvent{
@@ -309,14 +333,15 @@ func TestInputBox_response(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ibx := &InputBox{
 				BaseComponent: tt.fields.BaseComponent,
+				InputType:     tt.fields.InputType,
 				Value:         tt.fields.Value,
+				ValueOptions:  tt.fields.ValueOptions,
 				Title:         tt.fields.Title,
 				Message:       tt.fields.Message,
 				Info:          tt.fields.Info,
 				Tag:           tt.fields.Tag,
 				LabelOK:       tt.fields.LabelOK,
 				LabelCancel:   tt.fields.LabelCancel,
-				ShowValue:     tt.fields.ShowValue,
 				DefaultOK:     tt.fields.DefaultOK,
 			}
 			ibx.response(tt.args.evt)
@@ -325,21 +350,149 @@ func TestInputBox_response(t *testing.T) {
 }
 
 func TestTestInputBox(t *testing.T) {
+
 	for _, tt := range TestInputBox(&BaseComponent{EventURL: "/demo"}) {
 		t.Run(tt.Label, func(t *testing.T) {
 			tt.Component.Render()
 		})
 	}
+
 	testInputBoxResponse(ResponseEvent{Name: ButtonEventClick, Trigger: &Button{
 		BaseComponent: BaseComponent{
-			Data: ut.IM{"value_options": []SelectOption{
-				{Text: "Option 1", Value: "option1"},
-				{Text: "Option 2", Value: "option2"},
-				{Text: "Option 3", Value: "option3"},
-			}},
+			Data: ut.IM{
+				"value_options": []SelectOption{
+					{Text: "Option 1", Value: "option1"},
+					{Text: "Option 2", Value: "option2"},
+					{Text: "Option 3", Value: "option3"},
+				},
+				"input_type": InputBoxTypeSelect,
+			},
 		},
 	}})
-	testInputBoxResponse(ResponseEvent{Name: ButtonEventClick, Trigger: &Button{}})
-	testInputBoxResponse(ResponseEvent{Name: InputBoxEventOK, Trigger: &InputBox{}})
-	testInputBoxResponse(ResponseEvent{Name: InputBoxEventValueChange, Trigger: &InputBox{}})
+	testInputBoxResponse(ResponseEvent{Name: ButtonEventClick, Trigger: &Button{
+		BaseComponent: BaseComponent{
+			Data: ut.IM{"input_type": InputBoxTypeCancel},
+		},
+	}})
+	testInputBoxResponse(ResponseEvent{Name: InputBoxEventOK, Trigger: &InputBox{
+		BaseComponent: BaseComponent{
+			Data: ut.IM{"input_type": InputBoxTypeOK},
+		},
+	}})
+
+	testInputBoxResponse(ResponseEvent{Name: ButtonEventClick, Trigger: &Button{
+		BaseComponent: BaseComponent{
+			Data: ut.IM{"input_type": InputBoxTypeInput},
+		},
+	}})
+
+	testInputBoxResponse(ResponseEvent{Name: InputBoxEventValueChange, Trigger: &InputBox{
+		BaseComponent: BaseComponent{
+			Data: ut.IM{"input_type": InputBoxTypeInput},
+		},
+	}})
+
+}
+
+func TestInputBoxType_Value(t *testing.T) {
+	type args struct {
+		stringValue string
+	}
+	tests := []struct {
+		name string
+		bt   InputBoxType
+		args args
+		want InputBoxType
+	}{
+		{
+			name: "ok",
+			args: args{stringValue: "IBOX_OK"},
+			want: InputBoxTypeOK,
+		},
+		{
+			name: "invalid",
+			args: args{stringValue: "invalid"},
+			want: InputBoxTypeOK,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.bt.Value(tt.args.stringValue); got != tt.want {
+				t.Errorf("InputBoxType.Value() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestInputBoxType_UnmarshalJSON(t *testing.T) {
+	type args struct {
+		b []byte
+	}
+	bt := InputBoxTypeOK
+	tests := []struct {
+		name    string
+		bt      *InputBoxType
+		args    args
+		wantErr bool
+	}{
+		{
+			name:    "ok",
+			bt:      &bt,
+			args:    args{b: []byte("IBOX_OK")},
+			wantErr: false,
+		},
+		{
+			name:    "cancel",
+			bt:      &bt,
+			args:    args{b: []byte("IBOX_CANCEL")},
+			wantErr: false,
+		},
+		{
+			name:    "input",
+			bt:      &bt,
+			args:    args{b: []byte("IBOX_INPUT")},
+			wantErr: false,
+		},
+		{
+			name:    "select",
+			bt:      &bt,
+			args:    args{b: []byte("IBOX_SELECT")},
+			wantErr: false,
+		},
+		{
+			name:    "invalid",
+			bt:      &bt,
+			args:    args{b: []byte("invalid")},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.bt.UnmarshalJSON(tt.args.b); (err != nil) != tt.wantErr {
+				t.Errorf("InputBoxType.UnmarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestInputBoxType_MarshalJSON(t *testing.T) {
+	tests := []struct {
+		name    string
+		bt      InputBoxType
+		wantErr bool
+	}{
+		{
+			name: "ok",
+			bt:   InputBoxType(InputBoxTypeOK),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := tt.bt.MarshalJSON()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("InputBoxType.MarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
 }

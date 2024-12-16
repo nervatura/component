@@ -29,8 +29,7 @@ func TestButton_GetProperty(t *testing.T) {
 		Small          bool
 		Selected       bool
 		HideLabel      bool
-		Badge          int64
-		ShowBadge      bool
+		Badge          string
 	}
 	type args struct {
 		propName string
@@ -66,7 +65,6 @@ func TestButton_GetProperty(t *testing.T) {
 				Selected:       tt.fields.Selected,
 				HideLabel:      tt.fields.HideLabel,
 				Badge:          tt.fields.Badge,
-				ShowBadge:      tt.fields.ShowBadge,
 			}
 			if got := btn.GetProperty(tt.args.propName); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Button.GetProperty() = %v, want %v", got, tt.want)
@@ -90,8 +88,7 @@ func TestButton_Validation(t *testing.T) {
 		Small          bool
 		Selected       bool
 		HideLabel      bool
-		Badge          int64
-		ShowBadge      bool
+		Badge          string
 	}
 	type args struct {
 		propName  string
@@ -137,7 +134,6 @@ func TestButton_Validation(t *testing.T) {
 				Selected:       tt.fields.Selected,
 				HideLabel:      tt.fields.HideLabel,
 				Badge:          tt.fields.Badge,
-				ShowBadge:      tt.fields.ShowBadge,
 			}
 			if got := btn.Validation(tt.args.propName, tt.args.propValue); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Button.Validation() = %v, want %v", got, tt.want)
@@ -161,8 +157,7 @@ func TestButton_SetProperty(t *testing.T) {
 		Small          bool
 		Selected       bool
 		HideLabel      bool
-		Badge          int64
-		ShowBadge      bool
+		Badge          string
 	}
 	type args struct {
 		propName  string
@@ -208,7 +203,6 @@ func TestButton_SetProperty(t *testing.T) {
 				Selected:       tt.fields.Selected,
 				HideLabel:      tt.fields.HideLabel,
 				Badge:          tt.fields.Badge,
-				ShowBadge:      tt.fields.ShowBadge,
 			}
 			if got := btn.SetProperty(tt.args.propName, tt.args.propValue); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Button.SetProperty() = %v, want %v", got, tt.want)
@@ -232,8 +226,7 @@ func TestButton_OnRequest(t *testing.T) {
 		Small          bool
 		Selected       bool
 		HideLabel      bool
-		Badge          int64
-		ShowBadge      bool
+		Badge          string
 	}
 	type args struct {
 		te TriggerEvent
@@ -296,7 +289,6 @@ func TestButton_OnRequest(t *testing.T) {
 				Selected:       tt.fields.Selected,
 				HideLabel:      tt.fields.HideLabel,
 				Badge:          tt.fields.Badge,
-				ShowBadge:      tt.fields.ShowBadge,
 			}
 			if gotRe := btn.OnRequest(tt.args.te); !reflect.DeepEqual(gotRe, tt.wantRe) {
 				t.Errorf("Button.OnRequest() = %v, want %v", gotRe, tt.wantRe)

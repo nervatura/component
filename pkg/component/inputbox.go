@@ -1,7 +1,10 @@
 package component
 
 import (
+	"encoding/json"
+	"fmt"
 	"html/template"
+	"slices"
 	"strings"
 
 	ut "github.com/nervatura/component/pkg/util"
@@ -16,9 +19,52 @@ const (
 	InputBoxEventValueChange = "input_value"
 )
 
+type InputBoxType int
+
+const (
+	InputBoxTypeCancel InputBoxType = iota
+	InputBoxTypeOK
+	InputBoxTypeInput
+	InputBoxTypeSelect
+)
+
+func (bt InputBoxType) String() string {
+	return [...]string{"IBOX_CANCEL", "IBOX_OK", "IBOX_INPUT", "IBOX_SELECT"}[bt]
+}
+
+func (bt InputBoxType) Value(stringValue string) InputBoxType {
+	if index := slices.Index([]string{"IBOX_CANCEL", "IBOX_OK", "IBOX_INPUT", "IBOX_SELECT"}, stringValue); index != -1 {
+		return InputBoxType(index)
+	}
+	return InputBoxTypeOK
+}
+
+func (bt *InputBoxType) UnmarshalJSON(b []byte) error {
+	var s string = strings.Trim(string(b), "\"")
+
+	switch s {
+	case "IBOX_OK":
+		*bt = InputBoxTypeOK
+	case "IBOX_CANCEL":
+		*bt = InputBoxTypeCancel
+	case "IBOX_INPUT":
+		*bt = InputBoxTypeInput
+	case "IBOX_SELECT":
+		*bt = InputBoxTypeSelect
+	default:
+		return fmt.Errorf("invalid inputbox type")
+	}
+	return nil
+}
+
+func (bt InputBoxType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(bt.String())
+}
+
 // Message and value request component
 type InputBox struct {
 	BaseComponent
+	InputType    InputBoxType   `json:"input_type"`
 	Value        string         `json:"value"`
 	ValueOptions []SelectOption `json:"value_options"`
 	Title        string         `json:"title"`
@@ -27,7 +73,6 @@ type InputBox struct {
 	Tag          string         `json:"tag"`
 	LabelOK      string         `json:"label_ok"`
 	LabelCancel  string         `json:"label_cancel"`
-	ShowValue    bool           `json:"show_value"`
 	DefaultOK    bool           `json:"default_ok"`
 }
 
@@ -38,6 +83,7 @@ func (ibx *InputBox) Properties() ut.IM {
 	return ut.MergeIM(
 		ibx.BaseComponent.Properties(),
 		ut.IM{
+			"input_type":    ibx.InputType,
 			"value":         ibx.Value,
 			"value_options": ibx.ValueOptions,
 			"title":         ibx.Title,
@@ -46,7 +92,6 @@ func (ibx *InputBox) Properties() ut.IM {
 			"tag":           ibx.Tag,
 			"label_ok":      ibx.LabelOK,
 			"label_cancel":  ibx.LabelCancel,
-			"show_value":    ibx.ShowValue,
 			"default_ok":    ibx.DefaultOK,
 		})
 }
@@ -63,6 +108,15 @@ It checks the value given to the property of the [Pagination] and always returns
 */
 func (ibx *InputBox) Validation(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
+		"input_type": func() interface{} {
+			if inputType, valid := propValue.(InputBoxType); valid {
+				return inputType
+			}
+			if inputType, valid := propValue.(string); valid {
+				return InputBoxType(InputBoxTypeOK).Value(inputType)
+			}
+			return InputBoxType(int(ut.ToInteger(propValue, 0)))
+		},
 		"value_options": func() interface{} {
 			value := []SelectOption{}
 			if options, valid := propValue.([]SelectOption); valid && len(options) > 0 {
@@ -104,6 +158,10 @@ In case of an invalid value, the default value will be set.
 */
 func (ibx *InputBox) SetProperty(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
+		"input_type": func() interface{} {
+			ibx.InputType = ibx.Validation(propName, propValue).(InputBoxType)
+			return ibx.InputType
+		},
 		"value": func() interface{} {
 			ibx.Value = ut.ToString(propValue, "")
 			return ibx.Value
@@ -136,10 +194,6 @@ func (ibx *InputBox) SetProperty(propName string, propValue interface{}) interfa
 			ibx.LabelOK = ut.ToString(propValue, "OK")
 			return ibx.LabelOK
 		},
-		"show_value": func() interface{} {
-			ibx.ShowValue = ut.ToBoolean(propValue, false)
-			return ibx.ShowValue
-		},
 		"default_ok": func() interface{} {
 			ibx.DefaultOK = ut.ToBoolean(propValue, false)
 			return ibx.DefaultOK
@@ -159,18 +213,12 @@ func (ibx *InputBox) SetProperty(propName string, propValue interface{}) interfa
 }
 
 func (ibx *InputBox) response(evt ResponseEvent) (re ResponseEvent) {
-	ibxEvt := ResponseEvent{Trigger: ibx, TriggerName: ibx.Name, Value: ibx.Tag}
-	if ibx.ShowValue {
-		if ibx.Tag != "" {
-			ibxEvt.Value = ut.SM{"value": ibx.Value, "tag": ibx.Tag}
-		} else {
-			ibxEvt.Value = ibx.Value
-		}
-	}
+	ibxEvt := ResponseEvent{Trigger: ibx, TriggerName: ibx.Name,
+		Value: ut.SM{"value": ibx.Value, "tag": ibx.Tag}}
 	switch evt.TriggerName {
 	case "btn_ok":
 		ibxEvt.Name = InputBoxEventOK
-	case "input_value":
+	case "input_value", "select_value":
 		ibxEvt.Name = InputBoxEventValueChange
 		ibx.SetProperty("value", evt.Value)
 	default:
@@ -248,10 +296,10 @@ func (ibx *InputBox) getComponent(name string) (html template.HTML, err error) {
 			return ccBtn(ButtonStyleDefault, ibx.LabelCancel, "Times", false)
 		},
 		"input_value": func() ClientComponent {
-			if len(ibx.ValueOptions) > 0 {
-				return ccSel(ibx.Value)
-			}
 			return ccInp(ibx.Value)
+		},
+		"select_value": func() ClientComponent {
+			return ccSel(ibx.Value)
 		},
 	}
 	cc := ccMap[name]()
@@ -275,6 +323,9 @@ func (ibx *InputBox) Render() (html template.HTML, err error) {
 		"inputComponent": func(name string) (template.HTML, error) {
 			return ibx.getComponent(name)
 		},
+		"inputType": func() string {
+			return ibx.InputType.String()
+		},
 	}
 	tpl := `<div id="{{ .Id }}" name="{{ .Name }}" class="row {{ customClass }}"
 	{{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}
@@ -283,11 +334,12 @@ func (ibx *InputBox) Render() (html template.HTML, err error) {
 	<div class="section" ><div class="row full container" >
 	<div class="bold" >{{ .Message }}</div>
 	{{ if ne .Info "" }}<div >{{ .Info }}</div>{{ end }}
-	{{ if .ShowValue }}<div class="section-small-top" >{{ inputComponent "input_value" }}</div>{{ end }}
+	{{ if eq inputType "IBOX_INPUT" }}<div class="section-small-top" >{{ inputComponent "input_value" }}</div>{{ end }}
+	{{ if eq inputType "IBOX_SELECT" }}<div class="section-small-top" >{{ inputComponent "select_value" }}</div>{{ end }}
 	</div></div>
 	<div class="section buttons" ><div class="row full container" >
-	<div class="cell padding-small half" >{{ inputComponent "btn_cancel" }}</div>
-	<div class="cell padding-small half" >{{ inputComponent "btn_ok" }}</div>
+	{{ if ne inputType "IBOX_OK" }}<div class="cell padding-small half" >{{ inputComponent "btn_cancel" }}</div>{{ end }}
+	<div class="cell padding-small {{ if ne inputType "IBOX_OK" }}half{{ end }}" >{{ inputComponent "btn_ok" }}</div>
 	</div></div>
 	</div></div></div>
 	</div>`
@@ -323,7 +375,7 @@ var testInputBoxResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt R
 			}
 			return []SelectOption{}
 		}()
-		return ResponseEvent{
+		re = ResponseEvent{
 			Trigger: &InputBox{
 				BaseComponent: BaseComponent{
 					Id:           evt.Trigger.(*Button).Id,
@@ -333,18 +385,19 @@ var testInputBoxResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt R
 					RequestValue: evt.Trigger.(*Button).RequestValue,
 					RequestMap:   evt.Trigger.(*Button).RequestMap,
 				},
+				InputType:    data["input_type"].(InputBoxType),
 				Value:        ut.ToString(data["value"], ""),
 				ValueOptions: valueOptions,
 				Title:        ut.ToString(data["title"], ""),
 				Message:      ut.ToString(data["message"], ""),
 				Info:         ut.ToString(data["info"], ""),
 				Tag:          ut.ToString(data["tag"], ""),
-				ShowValue:    ut.ToBoolean(data["show_value"], false),
 				DefaultOK:    ut.ToBoolean(data["default_ok"], false),
 			},
 			TriggerName: evt.TriggerName,
 			Name:        evt.Trigger.(*Button).Name,
 		}
+		return re
 	}
 	return evt
 }
@@ -363,11 +416,12 @@ func TestInputBox(cc ClientComponent) []TestComponent {
 				BaseComponent: BaseComponent{
 					Id: id + "_inputbox_default",
 					Data: ut.IM{
-						"value": "", "title": "Warning",
+						"input_type": InputBoxTypeCancel,
+						"value":      "", "title": "Warning",
 						"message":    "The data has changed, but has not been saved!",
 						"info":       "Save changes?",
 						"tag":        "next_func",
-						"default_ok": true, "show_value": false,
+						"default_ok": true,
 					},
 					EventURL:     eventURL,
 					OnResponse:   testInputBoxResponse,
@@ -376,7 +430,29 @@ func TestInputBox(cc ClientComponent) []TestComponent {
 				},
 				ButtonStyle: ButtonStyleDefault,
 				Align:       TextAlignCenter,
-				Label:       "Input message",
+				Label:       "OK and cancel message",
+			}},
+		{
+			Label:         "InputBox info",
+			ComponentType: ComponentTypeInputBox,
+			Component: &Button{
+				BaseComponent: BaseComponent{
+					Id: id + "_inputbox_info",
+					Data: ut.IM{
+						"input_type": InputBoxTypeOK,
+						"title":      "Warning",
+						"message":    "Info message",
+						"info":       "Info message text",
+						"default_ok": true,
+					},
+					EventURL:     eventURL,
+					OnResponse:   testInputBoxResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
+				},
+				ButtonStyle: ButtonStyleDefault,
+				Align:       TextAlignCenter,
+				Label:       "Info message",
 			}},
 		{
 			Label:         "InputBox value",
@@ -385,12 +461,13 @@ func TestInputBox(cc ClientComponent) []TestComponent {
 				BaseComponent: BaseComponent{
 					Id: id + "_inputbox_value",
 					Data: ut.IM{
+						"input_type": InputBoxTypeInput,
 						"value":      "default value",
 						"title":      "New fieldname",
 						"message":    "Enter the value:",
 						"info":       "",
 						"tag":        "next_func",
-						"default_ok": false, "show_value": true,
+						"default_ok": false,
 					},
 					EventURL:     eventURL,
 					OnResponse:   testInputBoxResponse,
@@ -399,7 +476,7 @@ func TestInputBox(cc ClientComponent) []TestComponent {
 				},
 				ButtonStyle: ButtonStyleDefault,
 				Align:       TextAlignCenter,
-				Label:       "Input message",
+				Label:       "Input value message",
 			}},
 		{
 			Label:         "InputBox options",
@@ -408,17 +485,18 @@ func TestInputBox(cc ClientComponent) []TestComponent {
 				BaseComponent: BaseComponent{
 					Id: id + "_inputbox_options",
 					Data: ut.IM{
-						"value":   "default value",
-						"title":   "New fieldname",
-						"message": "Select the value:",
-						"info":    "",
+						"input_type": InputBoxTypeSelect,
+						"value":      "default value",
+						"title":      "New fieldname",
+						"message":    "Select the value:",
+						"info":       "",
 						"value_options": []SelectOption{
 							{Text: "Option 1", Value: "option1"},
 							{Text: "Option 2", Value: "option2"},
 							{Text: "Option 3", Value: "option3"},
 						},
 						"tag":        "next_func",
-						"default_ok": false, "show_value": true,
+						"default_ok": false,
 					},
 					EventURL:     eventURL,
 					OnResponse:   testInputBoxResponse,
@@ -427,7 +505,7 @@ func TestInputBox(cc ClientComponent) []TestComponent {
 				},
 				ButtonStyle: ButtonStyleDefault,
 				Align:       TextAlignCenter,
-				Label:       "Input message",
+				Label:       "Select value",
 			}},
 	}
 }
