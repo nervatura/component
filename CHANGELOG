@@ -1,3 +1,6 @@
+## 1.7.14
+- InputBox component: change InputType option type from InputBoxType to string constant
+
 ## 1.7.13
 - Button component: change Badge option type from int64 to string
 - Button component: remove ShowBadge option

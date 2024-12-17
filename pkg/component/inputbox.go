@@ -1,10 +1,7 @@
 package component
 
 import (
-	"encoding/json"
-	"fmt"
 	"html/template"
-	"slices"
 	"strings"
 
 	ut "github.com/nervatura/component/pkg/util"
@@ -17,55 +14,24 @@ const (
 	InputBoxEventOK          = "input_ok"
 	InputBoxEventCancel      = "input_cancel"
 	InputBoxEventValueChange = "input_value"
+
+	InputBoxTypeCancel = "IBOX_CANCEL"
+	InputBoxTypeOK     = "IBOX_OK"
+	InputBoxTypeInput  = "IBOX_INPUT"
+	InputBoxTypeSelect = "IBOX_SELECT"
 )
 
-type InputBoxType int
-
-const (
-	InputBoxTypeCancel InputBoxType = iota
-	InputBoxTypeOK
-	InputBoxTypeInput
-	InputBoxTypeSelect
-)
-
-func (bt InputBoxType) String() string {
-	return [...]string{"IBOX_CANCEL", "IBOX_OK", "IBOX_INPUT", "IBOX_SELECT"}[bt]
-}
-
-func (bt InputBoxType) Value(stringValue string) InputBoxType {
-	if index := slices.Index([]string{"IBOX_CANCEL", "IBOX_OK", "IBOX_INPUT", "IBOX_SELECT"}, stringValue); index != -1 {
-		return InputBoxType(index)
-	}
-	return InputBoxTypeOK
-}
-
-func (bt *InputBoxType) UnmarshalJSON(b []byte) error {
-	var s string = strings.Trim(string(b), "\"")
-
-	switch s {
-	case "IBOX_OK":
-		*bt = InputBoxTypeOK
-	case "IBOX_CANCEL":
-		*bt = InputBoxTypeCancel
-	case "IBOX_INPUT":
-		*bt = InputBoxTypeInput
-	case "IBOX_SELECT":
-		*bt = InputBoxTypeSelect
-	default:
-		return fmt.Errorf("invalid inputbox type")
-	}
-	return nil
-}
-
-func (bt InputBoxType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(bt.String())
-}
+// [InputBox] Type values
+var InputBoxType []string = []string{InputBoxTypeCancel, InputBoxTypeOK, InputBoxTypeInput, InputBoxTypeSelect}
 
 // Message and value request component
 type InputBox struct {
 	BaseComponent
-	InputType    InputBoxType   `json:"input_type"`
-	Value        string         `json:"value"`
+	/* [InputBoxType] variable constants: [InputBoxTypeCancel], [InputBoxTypeOK], [InputBoxTypeInput], [InputBoxTypeSelect].
+	Default value: [InputBoxTypeCancel] */
+	InputType string `json:"input_type"`
+	Value     string `json:"value"`
+	/* [SelectOption] type values. */
 	ValueOptions []SelectOption `json:"value_options"`
 	Title        string         `json:"title"`
 	Message      string         `json:"message"`
@@ -109,13 +75,7 @@ It checks the value given to the property of the [Pagination] and always returns
 func (ibx *InputBox) Validation(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"input_type": func() interface{} {
-			if inputType, valid := propValue.(InputBoxType); valid {
-				return inputType
-			}
-			if inputType, valid := propValue.(string); valid {
-				return InputBoxType(InputBoxTypeOK).Value(inputType)
-			}
-			return InputBoxType(int(ut.ToInteger(propValue, 0)))
+			return ibx.CheckEnumValue(ut.ToString(propValue, ""), InputBoxTypeCancel, InputBoxType)
 		},
 		"value_options": func() interface{} {
 			value := []SelectOption{}
@@ -159,7 +119,7 @@ In case of an invalid value, the default value will be set.
 func (ibx *InputBox) SetProperty(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"input_type": func() interface{} {
-			ibx.InputType = ibx.Validation(propName, propValue).(InputBoxType)
+			ibx.InputType = ibx.Validation(propName, propValue).(string)
 			return ibx.InputType
 		},
 		"value": func() interface{} {
@@ -323,9 +283,6 @@ func (ibx *InputBox) Render() (html template.HTML, err error) {
 		"inputComponent": func(name string) (template.HTML, error) {
 			return ibx.getComponent(name)
 		},
-		"inputType": func() string {
-			return ibx.InputType.String()
-		},
 	}
 	tpl := `<div id="{{ .Id }}" name="{{ .Name }}" class="row {{ customClass }}"
 	{{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}
@@ -334,12 +291,12 @@ func (ibx *InputBox) Render() (html template.HTML, err error) {
 	<div class="section" ><div class="row full container" >
 	<div class="bold" >{{ .Message }}</div>
 	{{ if ne .Info "" }}<div >{{ .Info }}</div>{{ end }}
-	{{ if eq inputType "IBOX_INPUT" }}<div class="section-small-top" >{{ inputComponent "input_value" }}</div>{{ end }}
-	{{ if eq inputType "IBOX_SELECT" }}<div class="section-small-top" >{{ inputComponent "select_value" }}</div>{{ end }}
+	{{ if eq .InputType "IBOX_INPUT" }}<div class="section-small-top" >{{ inputComponent "input_value" }}</div>{{ end }}
+	{{ if eq .InputType "IBOX_SELECT" }}<div class="section-small-top" >{{ inputComponent "select_value" }}</div>{{ end }}
 	</div></div>
 	<div class="section buttons" ><div class="row full container" >
-	{{ if ne inputType "IBOX_OK" }}<div class="cell padding-small half" >{{ inputComponent "btn_cancel" }}</div>{{ end }}
-	<div class="cell padding-small {{ if ne inputType "IBOX_OK" }}half{{ end }}" >{{ inputComponent "btn_ok" }}</div>
+	{{ if ne .InputType "IBOX_OK" }}<div class="cell padding-small half" >{{ inputComponent "btn_cancel" }}</div>{{ end }}
+	<div class="cell padding-small {{ if ne .InputType "IBOX_OK" }}half{{ end }}" >{{ inputComponent "btn_ok" }}</div>
 	</div></div>
 	</div></div></div>
 	</div>`
@@ -385,7 +342,7 @@ var testInputBoxResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt R
 					RequestValue: evt.Trigger.(*Button).RequestValue,
 					RequestMap:   evt.Trigger.(*Button).RequestMap,
 				},
-				InputType:    data["input_type"].(InputBoxType),
+				InputType:    ut.ToString(data["input_type"], ""),
 				Value:        ut.ToString(data["value"], ""),
 				ValueOptions: valueOptions,
 				Title:        ut.ToString(data["title"], ""),

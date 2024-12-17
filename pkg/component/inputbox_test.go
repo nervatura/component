@@ -10,7 +10,7 @@ import (
 func TestInputBox_Render(t *testing.T) {
 	type fields struct {
 		BaseComponent BaseComponent
-		InputType     InputBoxType
+		InputType     string
 		Value         string
 		ValueOptions  []SelectOption
 		Title         string
@@ -80,7 +80,7 @@ func TestInputBox_Render(t *testing.T) {
 func TestInputBox_GetProperty(t *testing.T) {
 	type fields struct {
 		BaseComponent BaseComponent
-		InputType     InputBoxType
+		InputType     string
 		Value         string
 		ValueOptions  []SelectOption
 		Title         string
@@ -133,7 +133,7 @@ func TestInputBox_GetProperty(t *testing.T) {
 func TestInputBox_SetProperty(t *testing.T) {
 	type fields struct {
 		BaseComponent BaseComponent
-		InputType     InputBoxType
+		InputType     string
 		Value         string
 		ValueOptions  []SelectOption
 		Title         string
@@ -196,7 +196,7 @@ func TestInputBox_SetProperty(t *testing.T) {
 func TestInputBox_Validation(t *testing.T) {
 	type fields struct {
 		BaseComponent BaseComponent
-		InputType     InputBoxType
+		InputType     string
 		Value         string
 		ValueOptions  []SelectOption
 		Title         string
@@ -241,7 +241,7 @@ func TestInputBox_Validation(t *testing.T) {
 		{
 			name: "input_type_int",
 			args: args{propName: "input_type", propValue: 2},
-			want: InputBoxTypeInput,
+			want: InputBoxTypeCancel,
 		},
 	}
 	for _, tt := range tests {
@@ -269,7 +269,7 @@ func TestInputBox_Validation(t *testing.T) {
 func TestInputBox_response(t *testing.T) {
 	type fields struct {
 		BaseComponent BaseComponent
-		InputType     InputBoxType
+		InputType     string
 		Value         string
 		ValueOptions  []SelectOption
 		Title         string
@@ -392,107 +392,4 @@ func TestTestInputBox(t *testing.T) {
 		},
 	}})
 
-}
-
-func TestInputBoxType_Value(t *testing.T) {
-	type args struct {
-		stringValue string
-	}
-	tests := []struct {
-		name string
-		bt   InputBoxType
-		args args
-		want InputBoxType
-	}{
-		{
-			name: "ok",
-			args: args{stringValue: "IBOX_OK"},
-			want: InputBoxTypeOK,
-		},
-		{
-			name: "invalid",
-			args: args{stringValue: "invalid"},
-			want: InputBoxTypeOK,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.bt.Value(tt.args.stringValue); got != tt.want {
-				t.Errorf("InputBoxType.Value() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestInputBoxType_UnmarshalJSON(t *testing.T) {
-	type args struct {
-		b []byte
-	}
-	bt := InputBoxTypeOK
-	tests := []struct {
-		name    string
-		bt      *InputBoxType
-		args    args
-		wantErr bool
-	}{
-		{
-			name:    "ok",
-			bt:      &bt,
-			args:    args{b: []byte("IBOX_OK")},
-			wantErr: false,
-		},
-		{
-			name:    "cancel",
-			bt:      &bt,
-			args:    args{b: []byte("IBOX_CANCEL")},
-			wantErr: false,
-		},
-		{
-			name:    "input",
-			bt:      &bt,
-			args:    args{b: []byte("IBOX_INPUT")},
-			wantErr: false,
-		},
-		{
-			name:    "select",
-			bt:      &bt,
-			args:    args{b: []byte("IBOX_SELECT")},
-			wantErr: false,
-		},
-		{
-			name:    "invalid",
-			bt:      &bt,
-			args:    args{b: []byte("invalid")},
-			wantErr: true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.bt.UnmarshalJSON(tt.args.b); (err != nil) != tt.wantErr {
-				t.Errorf("InputBoxType.UnmarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
-func TestInputBoxType_MarshalJSON(t *testing.T) {
-	tests := []struct {
-		name    string
-		bt      InputBoxType
-		wantErr bool
-	}{
-		{
-			name: "ok",
-			bt:   InputBoxType(InputBoxTypeOK),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			_, err := tt.bt.MarshalJSON()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("InputBoxType.MarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-		})
-	}
 }
