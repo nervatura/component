@@ -178,14 +178,42 @@ func (bro *Browser) GetProperty(propName string) interface{} {
 It checks the value given to the property of the [Browser] and always returns a valid value
 */
 func (bro *Browser) Validation(propName string, propValue interface{}) interface{} {
+	// Helper functions to reduce code duplication
+	makeEmptyMap := func() map[string]bool {
+		return make(map[string]bool)
+	}
+
+	processBooleanMap := func(existingMap map[string]bool) map[string]bool {
+		value := existingMap
+		if len(value) == 0 {
+			value = makeEmptyMap()
+		}
+
+		switch cols := propValue.(type) {
+		case []map[string]bool:
+			for _, values := range cols {
+				for key, bvalue := range values {
+					value[key] = bvalue
+				}
+			}
+		case map[string]bool:
+			value = cols
+		case map[string]interface{}:
+			for key, ivalue := range cols {
+				value[key] = ut.ToBoolean(ivalue, false)
+			}
+		}
+		return value
+	}
+
 	pm := map[string]func() interface{}{
 		"labels": func() interface{} {
 			value := ut.ToSM(bro.Labels, ut.SM{})
-			if smap, valid := propValue.(ut.SM); valid {
-				value = ut.MergeSM(value, smap)
-			}
-			if imap, valid := propValue.(ut.IM); valid {
-				value = ut.MergeSM(value, ut.IMToSM(imap))
+			switch v := propValue.(type) {
+			case ut.SM:
+				value = ut.MergeSM(value, v)
+			case ut.IM:
+				value = ut.MergeSM(value, ut.IMToSM(v))
 			}
 			if len(value) == 0 {
 				value = browserDefaultLabel
@@ -194,15 +222,17 @@ func (bro *Browser) Validation(propName string, propValue interface{}) interface
 		},
 		"views": func() interface{} {
 			value := bro.Views
-			if views, valid := propValue.([]SelectOption); valid && len(views) > 0 {
-				value = views
-			}
-			if valueOptions, found := propValue.([]interface{}); found {
-				for _, valueOption := range valueOptions {
-					if valueOptionMap, valid := valueOption.(ut.IM); valid {
+			switch v := propValue.(type) {
+			case []SelectOption:
+				if len(v) > 0 {
+					value = v
+				}
+			case []interface{}:
+				for _, opt := range v {
+					if optMap, ok := opt.(ut.IM); ok {
 						value = append(value, SelectOption{
-							Value: ut.ToString(valueOptionMap["value"], ""),
-							Text:  ut.ToString(valueOptionMap["text"], ""),
+							Value: ut.ToString(optMap["value"], ""),
+							Text:  ut.ToString(optMap["text"], ""),
 						})
 					}
 				}
@@ -210,60 +240,20 @@ func (bro *Browser) Validation(propName string, propValue interface{}) interface
 			return value
 		},
 		"visible_columns": func() interface{} {
-			value := bro.VisibleColumns
-			if len(value) == 0 {
-				value = make(map[string]bool)
-			}
-			if cols, valid := propValue.([]map[string]bool); valid {
-				for _, values := range cols {
-					for key, bvalue := range values {
-						value[key] = bvalue
-					}
-				}
-			}
-			if cols, valid := propValue.(map[string]bool); valid {
-				value = cols
-			}
-			if cols, valid := propValue.(map[string]interface{}); valid {
-				for key, ivalue := range cols {
-					value[key] = ut.ToBoolean(ivalue, false)
-				}
-			}
-
-			return value
+			return processBooleanMap(bro.VisibleColumns)
 		},
 		"hide_filters": func() interface{} {
-			value := bro.HideFilters
-			if len(value) == 0 {
-				value = make(map[string]bool)
-			}
-			if cols, valid := propValue.([]map[string]bool); valid {
-				for _, values := range cols {
-					for key, bvalue := range values {
-						value[key] = bvalue
-					}
-				}
-			}
-			if cols, valid := propValue.(map[string]bool); valid {
-				value = cols
-			}
-			if cols, valid := propValue.(map[string]interface{}); valid {
-				for key, ivalue := range cols {
-					value[key] = ut.ToBoolean(ivalue, false)
-				}
-			}
-
-			return value
+			return processBooleanMap(bro.HideFilters)
 		},
 		"filters": func() interface{} {
 			value := bro.Filters
-			if filters, valid := propValue.([]BrowserFilter); valid {
-				value = filters
-			}
-			if filters, valid := propValue.([]interface{}); valid {
-				value = []BrowserFilter{}
-				for _, filter := range filters {
-					if filterMap, valid := filter.(ut.IM); valid {
+			switch v := propValue.(type) {
+			case []BrowserFilter:
+				value = v
+			case []interface{}:
+				value = make([]BrowserFilter, 0, len(v))
+				for _, filter := range v {
+					if filterMap, ok := filter.(ut.IM); ok {
 						value = append(value, BrowserFilter{
 							Or:    ut.ToBoolean(filterMap["or"], false),
 							Field: ut.ToString(filterMap["field"], ""),
@@ -279,19 +269,20 @@ func (bro *Browser) Validation(propName string, propValue interface{}) interface
 			return value
 		},
 		"meta_fields": func() interface{} {
-			fields := map[string]BrowserMetaField{}
-			if mFields, valid := propValue.(map[string]BrowserMetaField); valid {
+			fields := make(map[string]BrowserMetaField)
+			switch mFields := propValue.(type) {
+			case map[string]BrowserMetaField:
 				for fname, fvalue := range mFields {
 					fvalue.FieldType = bro.CheckEnumValue(fvalue.FieldType, TableFieldTypeString, TableMetaType)
 					fields[fname] = fvalue
 				}
-			}
-			if mFields, valid := propValue.(ut.IM); valid {
+			case ut.IM:
 				for fname, fvalue := range mFields {
-					if values, valid := fvalue.(ut.IM); valid {
+					if values, ok := fvalue.(ut.IM); ok {
 						fieldType := bro.CheckEnumValue(ut.ToString(values["field_type"], ""), TableFieldTypeString, TableMetaType)
 						fields[fname] = BrowserMetaField{
-							FieldType: fieldType, Label: ut.ToString(values["label"], ""),
+							FieldType: fieldType,
+							Label:     ut.ToString(values["label"], ""),
 						}
 					}
 				}
@@ -307,8 +298,9 @@ func (bro *Browser) Validation(propName string, propValue interface{}) interface
 			return value
 		},
 	}
-	if _, found := pm[propName]; found {
-		return pm[propName]()
+
+	if fn, found := pm[propName]; found {
+		return fn()
 	}
 	if bro.Table.GetProperty(propName) != nil {
 		return bro.Table.Validation(propName, propValue)

@@ -1,3 +1,7 @@
+## 1.7.15
+- Application component: set default "this:abort" hx-sync option all child components
+- Browser component: code Validation function refactoring
+
 ## 1.7.14
 - InputBox component: change InputType option type from InputBoxType to string constant
 

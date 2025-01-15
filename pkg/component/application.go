@@ -257,7 +257,7 @@ func (app *Application) Render() (html template.HTML, err error) {
 		<body>
 		<div id="{{ .Id }}" theme="{{ .Theme }}" 
 		{{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }} 
-		hx-ext="remove-me" %s class="{{ customClass }}">
+		hx-ext="remove-me" %s hx-sync="this:abort" class="{{ customClass }}">
 		<div id="toast-msg"></div><div>{{ spinner }}</div>
 		{{ main }}
 		</div>
