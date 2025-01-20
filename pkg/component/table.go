@@ -190,6 +190,36 @@ func (tbl *Table) GetProperty(propName string) interface{} {
 	return tbl.Properties()[propName]
 }
 
+func (tbl *Table) tableFieldsValidation(propValue interface{}) []TableField {
+	fields := []TableField{}
+	if fd, valid := propValue.([]TableField); valid && (fd != nil) {
+		fields = fd
+	}
+	if tblFields, valid := propValue.([]interface{}); valid {
+		for _, tblField := range tblFields {
+			if values, valid := tblField.(ut.IM); valid {
+				fields = append(fields, TableField{
+					Name:          ut.ToString(values["name"], ""),
+					FieldType:     tbl.CheckEnumValue(ut.ToString(values["field_type"], ""), TableFieldTypeString, TableFieldType),
+					Label:         ut.ToString(values["label"], ""),
+					TextAlign:     tbl.CheckEnumValue(ut.ToString(values["text_align"], ""), TextAlignLeft, TextAlign),
+					VerticalAlign: tbl.CheckEnumValue(ut.ToString(values["vertical_align"], ""), VerticalAlignMiddle, VerticalAlign),
+					Format:        ut.ToBoolean(values["format"], false),
+				})
+			}
+		}
+	}
+	if len(fields) == 0 {
+		if len(tbl.Rows) > 0 {
+			for field := range tbl.Rows[0] {
+				fields = append(fields,
+					TableField{Name: field, FieldType: TableFieldTypeString, Label: field})
+			}
+		}
+	}
+	return fields
+}
+
 /*
 It checks the value given to the property of the [Table] and always returns a valid value
 */
@@ -202,33 +232,7 @@ func (tbl *Table) Validation(propName string, propValue interface{}) interface{}
 			return ut.ToIMA(propValue, []ut.IM{})
 		},
 		"fields": func() interface{} {
-			fields := []TableField{}
-			if fd, valid := propValue.([]TableField); valid && (fd != nil) {
-				fields = fd
-			}
-			if tblFields, valid := propValue.([]interface{}); valid {
-				for _, tblField := range tblFields {
-					if values, valid := tblField.(ut.IM); valid {
-						fields = append(fields, TableField{
-							Name:          ut.ToString(values["name"], ""),
-							FieldType:     tbl.CheckEnumValue(ut.ToString(values["field_type"], ""), TableFieldTypeString, TableFieldType),
-							Label:         ut.ToString(values["label"], ""),
-							TextAlign:     tbl.CheckEnumValue(ut.ToString(values["text_align"], ""), TextAlignLeft, TextAlign),
-							VerticalAlign: tbl.CheckEnumValue(ut.ToString(values["vertical_align"], ""), VerticalAlignMiddle, VerticalAlign),
-							Format:        ut.ToBoolean(values["format"], false),
-						})
-					}
-				}
-			}
-			if len(fields) == 0 {
-				if len(tbl.Rows) > 0 {
-					for field := range tbl.Rows[0] {
-						fields = append(fields,
-							TableField{Name: field, FieldType: TableFieldTypeString, Label: field})
-					}
-				}
-			}
-			return fields
+			return tbl.tableFieldsValidation(propValue)
 		},
 		"pagination": func() interface{} {
 			return tbl.CheckEnumValue(ut.ToString(propValue, ""), PaginationTypeTop, PaginationType)
@@ -551,67 +555,78 @@ func (tbl *Table) getStyle(styleMap ut.SM) string {
 	return ""
 }
 
-func (tbl *Table) columns() (cols []TableColumn) {
-	numberCell := func(value float64, label string, style ut.SM) template.HTML {
-		return template.HTML(fmt.Sprintf(
-			`<div class="number-cell">
-	    <span class="cell-label">%s</span>
-	    <span %s >%s</span>
-    </div>`, label, tbl.getStyle(style), ut.ToString(value, "0")))
-	}
+type cellFormatOptions struct {
+	Value       interface{}
+	Label       string
+	DateType    string
+	FieldName   string
+	ResultValue interface{}
+	Style       ut.SM
+	RowData     ut.IM
+}
 
-	dateCell := func(value interface{}, label, dateType string) template.HTML {
-		var fmtValue string
-		dateFormat := map[string]func(tm time.Time) string{
-			TableFieldTypeDate: func(tm time.Time) string {
-				return tm.Format("2006-01-02")
-			},
-			TableFieldTypeTime: func(tm time.Time) string {
-				return tm.Format("15:04")
-			},
-			TableFieldTypeDateTime: func(tm time.Time) string {
-				return tm.Format("2006-01-02 15:04")
-			},
-		}
-		switch v := value.(type) {
-		case string:
-			tmValue, _ := ut.StringToDateTime(v)
-			fmtValue = dateFormat[dateType](tmValue)
-		case time.Time:
-			fmtValue = dateFormat[dateType](v)
-		}
-		return template.HTML(fmt.Sprintf(`<span class="cell-label">%s</span><span>%s</span>`, label, fmtValue))
-	}
-
-	boolCell := func(value interface{}, label string) template.HTML {
-		if (value == 1) || (value == "true") || (value == true) {
+func (tbl *Table) cellFormat(fmtType string, options cellFormatOptions) template.HTML {
+	fmtMap := map[string]func() template.HTML{
+		"number": func() template.HTML {
+			return template.HTML(fmt.Sprintf(
+				`<div class="number-cell">
+				<span class="cell-label">%s</span>
+				<span %s >%s</span>
+			</div>`, options.Label, tbl.getStyle(options.Style), ut.ToString(options.Value, "0")))
+		},
+		"date": func() template.HTML {
+			var fmtValue string
+			dateFormat := map[string]func(tm time.Time) string{
+				TableFieldTypeDate: func(tm time.Time) string {
+					return tm.Format("2006-01-02")
+				},
+				TableFieldTypeTime: func(tm time.Time) string {
+					return tm.Format("15:04")
+				},
+				TableFieldTypeDateTime: func(tm time.Time) string {
+					return tm.Format("2006-01-02 15:04")
+				},
+			}
+			switch v := options.Value.(type) {
+			case string:
+				tmValue, _ := ut.StringToDateTime(v)
+				fmtValue = dateFormat[options.DateType](tmValue)
+			case time.Time:
+				fmtValue = dateFormat[options.DateType](v)
+			}
+			return template.HTML(fmt.Sprintf(`<span class="cell-label">%s</span><span>%s</span>`, options.Label, fmtValue))
+		},
+		"bool": func() template.HTML {
+			if (options.Value == 1) || (options.Value == "true") || (options.Value == true) {
+				return template.HTML(fmt.Sprintf(
+					`<span class="cell-label">%s</span>
+					<form-icon iconKey="CheckSquare" ></form-icon>
+					<span class="middle"> %s</span>`, options.Label, tbl.LabelYes))
+			}
 			return template.HTML(fmt.Sprintf(
 				`<span class="cell-label">%s</span>
-			  <form-icon iconKey="CheckSquare" ></form-icon>
-			  <span class="middle"> %s</span>`, label, tbl.LabelYes))
-		}
-		return template.HTML(fmt.Sprintf(
-			`<span class="cell-label">%s</span>
-			<form-icon iconKey="SquareEmpty" ></form-icon>
-			<span class="middle"> %s</span>`, label, tbl.LabelNo))
+				<form-icon iconKey="SquareEmpty" ></form-icon>
+				<span class="middle"> %s</span>`, options.Label, tbl.LabelNo))
+		},
+		"link": func() template.HTML {
+			linkLabel := fmt.Sprintf(
+				`<span class="cell-label">%s</span>`, options.Label)
+			var link template.HTML
+			link, _ = tbl.getComponent("link_cell", 0, ut.IM{
+				"value": options.Value, "fieldname": options.FieldName, "result": options.ResultValue, "row": options.RowData,
+			})
+			return template.HTML(linkLabel + string(link))
+		},
+		"string": func() template.HTML {
+			return template.HTML(fmt.Sprintf(
+				`<span class="cell-label">%s</span>
+				<span %s >%s</span>`, options.Label, tbl.getStyle(options.Style), options.Value))
+		},
 	}
+	return fmtMap[fmtType]()
+}
 
-	linkCell := func(value, label, fieldname string, resultValue interface{}, rowData ut.IM) template.HTML {
-		linkLabel := fmt.Sprintf(
-			`<span class="cell-label">%s</span>`, label)
-		var link template.HTML
-		link, _ = tbl.getComponent("link_cell", 0, ut.IM{
-			"value": value, "fieldname": fieldname, "result": resultValue, "row": rowData,
-		})
-		return template.HTML(linkLabel + string(link))
-	}
-
-	stringCell := func(value string, label string, style ut.SM) template.HTML {
-		return template.HTML(fmt.Sprintf(
-			`<span class="cell-label">%s</span>
-			<span %s >%s</span>`, label, tbl.getStyle(style), value))
-	}
-
+func (tbl *Table) columns() (cols []TableColumn) {
 	getFieldType := func(fType string) string {
 		bt := ut.SM{
 			TableFieldTypeInteger:  TableFieldTypeNumber,
@@ -658,23 +673,39 @@ func (tbl *Table) columns() (cols []TableColumn) {
 								style["color"] = "green"
 							}
 						}
-						return numberCell(ut.ToFloat(value, 0), col.Field.Label, style)
+						return tbl.cellFormat("number", cellFormatOptions{
+							Value: ut.ToFloat(value, 0),
+							Label: col.Field.Label,
+							Style: style,
+						})
 					}
 				},
 				TableFieldTypeDateTime: func() {
 					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}) template.HTML {
-						return dateCell(value, col.Field.Label, col.Field.FieldType)
+						return tbl.cellFormat("date", cellFormatOptions{
+							Value:    value,
+							Label:    col.Field.Label,
+							DateType: col.Field.FieldType,
+						})
 					}
 				},
 				TableFieldTypeBool: func() {
 					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}) template.HTML {
-						return boolCell(value, col.Field.Label)
+						return tbl.cellFormat("bool", cellFormatOptions{
+							Value: value,
+							Label: col.Field.Label,
+						})
 					}
 				},
 				TableFieldTypeLink: func() {
 					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}) template.HTML {
-						return linkCell(ut.ToString(value, ""), col.Field.Label,
-							col.Field.Name, row[col.Field.Name], row)
+						return tbl.cellFormat("link", cellFormatOptions{
+							Value:       value,
+							Label:       col.Field.Label,
+							FieldName:   col.Field.Name,
+							ResultValue: row[col.Field.Name],
+							RowData:     row,
+						})
 					}
 				},
 				TableFieldTypeMeta: func() {
@@ -682,23 +713,43 @@ func (tbl *Table) columns() (cols []TableColumn) {
 						fieldType := tbl.CheckEnumValue(ut.ToString(row[field.Name+"_meta"], ""), TableFieldTypeString, TableMetaType)
 						mResult := map[string]func() template.HTML{
 							TableFieldTypeBool: func() template.HTML {
-								return boolCell(value, col.Field.Label)
+								return tbl.cellFormat("bool", cellFormatOptions{
+									Value: value,
+									Label: col.Field.Label,
+								})
 							},
 							TableFieldTypeInteger: func() template.HTML {
-								return numberCell(ut.ToFloat(value, 0), col.Field.Label, ut.SM{})
+								return tbl.cellFormat("number", cellFormatOptions{
+									Value: ut.ToFloat(value, 0),
+									Label: col.Field.Label,
+									Style: ut.SM{},
+								})
 							},
 							TableFieldTypeNumber: func() template.HTML {
-								return numberCell(ut.ToFloat(value, 0), col.Field.Label, ut.SM{})
+								return tbl.cellFormat("number", cellFormatOptions{
+									Value: ut.ToFloat(value, 0),
+									Label: col.Field.Label,
+									Style: ut.SM{},
+								})
 							},
 							TableFieldTypeLink: func() template.HTML {
-								return linkCell(ut.ToString(value, ""), col.Field.Label,
-									field.Name, row[field.Name], row)
+								return tbl.cellFormat("link", cellFormatOptions{
+									Value:       ut.ToString(value, ""),
+									Label:       col.Field.Label,
+									FieldName:   field.Name,
+									ResultValue: row[field.Name],
+									RowData:     row,
+								})
 							},
 						}
 						if slices.Contains([]string{TableFieldTypeBool, TableFieldTypeInteger, TableFieldTypeNumber, TableFieldTypeLink}, fieldType) {
 							return mResult[fieldType]()
 						}
-						return stringCell(ut.ToString(value, ""), col.Field.Label, ut.SM{})
+						return tbl.cellFormat("string", cellFormatOptions{
+							Value: ut.ToString(value, ""),
+							Label: col.Field.Label,
+							Style: ut.SM{},
+						})
 					}
 				},
 				TableFieldTypeString: func() {
@@ -709,12 +760,20 @@ func (tbl *Table) columns() (cols []TableColumn) {
 						}
 						for key, ivalue := range row {
 							if key == col.Field.Name+"_link" {
-								return linkCell(ut.ToString(ivalue, ""), col.Field.Label,
-									col.Field.Name, row[col.Field.Name], row,
-								)
+								return tbl.cellFormat("link", cellFormatOptions{
+									Value:       ut.ToString(ivalue, ""),
+									Label:       col.Field.Label,
+									FieldName:   col.Field.Name,
+									ResultValue: row[col.Field.Name],
+									RowData:     row,
+								})
 							}
 						}
-						return stringCell(ut.ToString(value, ""), col.Field.Label, style)
+						return tbl.cellFormat("string", cellFormatOptions{
+							Value: ut.ToString(value, ""),
+							Label: col.Field.Label,
+							Style: style,
+						})
 					}
 				},
 			}

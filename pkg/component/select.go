@@ -83,27 +83,27 @@ func (sel *Select) GetProperty(propName string) interface{} {
 	return sel.Properties()[propName]
 }
 
+func SelectOptionRangeValidation(values interface{}, defaultValue []SelectOption) []SelectOption {
+	if values, valid := values.([]SelectOption); valid && len(values) >= 0 {
+		return values
+	}
+	if values, valid := values.([]interface{}); valid {
+		for _, value := range values {
+			if valueMap, valid := value.(ut.IM); valid {
+				defaultValue = append(defaultValue, SelectOption{Value: ut.ToString(valueMap["value"], ""), Text: ut.ToString(valueMap["text"], "")})
+			}
+		}
+	}
+	return defaultValue
+}
+
 /*
 It checks the value given to the property of the [Select] and always returns a valid value
 */
 func (sel *Select) Validation(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"options": func() interface{} {
-			value := []SelectOption{}
-			if options, valid := propValue.([]SelectOption); valid && (options != nil) {
-				return options
-			}
-			if valueOptions, found := propValue.([]interface{}); found {
-				for _, valueOption := range valueOptions {
-					if valueOptionMap, valid := valueOption.(ut.IM); valid {
-						value = append(value, SelectOption{
-							Value: ut.ToString(valueOptionMap["value"], ""),
-							Text:  ut.ToString(valueOptionMap["text"], ""),
-						})
-					}
-				}
-			}
-			return value
+			return SelectOptionRangeValidation(propValue, []SelectOption{})
 		},
 		"value": func() interface{} {
 			value := ut.ToString(propValue, "")

@@ -288,10 +288,7 @@ func (fld *Field) getComponent() (html template.HTML, err error) {
 			return dti
 		},
 		FieldTypeSelect: func() ClientComponent {
-			options := []SelectOption{}
-			if values, found := fld.Value["options"].([]SelectOption); found {
-				options = values
-			}
+			options := SelectOptionRangeValidation(fld.Value["options"], []SelectOption{})
 			sel := &Select{
 				BaseComponent: BaseComponent{
 					Id:           fld.Id + "_" + fld.Type,

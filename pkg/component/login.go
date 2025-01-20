@@ -148,20 +148,7 @@ func (lgn *Login) Validation(propName string, propValue interface{}) interface{}
 			return value
 		},
 		"locales": func() interface{} {
-			value := lgn.Locales
-			if loc, valid := propValue.([]SelectOption); valid && len(loc) > 0 {
-				value = loc
-			}
-			if valueOptions, found := propValue.([]interface{}); found {
-				for _, valueOption := range valueOptions {
-					if valueOptionMap, valid := valueOption.(ut.IM); valid {
-						value = append(value, SelectOption{
-							Value: ut.ToString(valueOptionMap["value"], ""),
-							Text:  ut.ToString(valueOptionMap["text"], ""),
-						})
-					}
-				}
-			}
+			value := SelectOptionRangeValidation(propValue, lgn.Locales)
 			if len(value) == 0 {
 				lang := ut.ToString(lgn.Lang, "en")
 				value = []SelectOption{{Value: lang, Text: lang}}

@@ -78,21 +78,7 @@ func (ibx *InputBox) Validation(propName string, propValue interface{}) interfac
 			return ibx.CheckEnumValue(ut.ToString(propValue, ""), InputBoxTypeCancel, InputBoxType)
 		},
 		"value_options": func() interface{} {
-			value := []SelectOption{}
-			if options, valid := propValue.([]SelectOption); valid && len(options) > 0 {
-				value = options
-			}
-			if valueOptions, found := propValue.([]interface{}); found {
-				for _, valueOption := range valueOptions {
-					if valueOptionMap, valid := valueOption.(ut.IM); valid {
-						value = append(value, SelectOption{
-							Value: ut.ToString(valueOptionMap["value"], ""),
-							Text:  ut.ToString(valueOptionMap["text"], ""),
-						})
-					}
-				}
-			}
-			return value
+			return SelectOptionRangeValidation(propValue, []SelectOption{})
 		},
 		"target": func() interface{} {
 			ibx.SetProperty("id", ibx.Id)
@@ -326,12 +312,6 @@ var testInputBoxResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt R
 		}
 	}
 	if evt.Name == ButtonEventClick {
-		valueOptions := func() []SelectOption {
-			if options, valid := data["value_options"].([]SelectOption); valid && len(options) > 0 {
-				return options
-			}
-			return []SelectOption{}
-		}()
 		re = ResponseEvent{
 			Trigger: &InputBox{
 				BaseComponent: BaseComponent{
@@ -344,7 +324,7 @@ var testInputBoxResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt R
 				},
 				InputType:    ut.ToString(data["input_type"], ""),
 				Value:        ut.ToString(data["value"], ""),
-				ValueOptions: valueOptions,
+				ValueOptions: SelectOptionRangeValidation(data["value_options"], []SelectOption{}),
 				Title:        ut.ToString(data["title"], ""),
 				Message:      ut.ToString(data["message"], ""),
 				Info:         ut.ToString(data["info"], ""),

@@ -293,14 +293,7 @@ func (bcc *BaseComponent) Validation(propName string, propValue interface{}) int
 			return bcc.CheckEnumValue(ut.ToString(propValue, ""), IndicatorNone, Indicator)
 		},
 		"class": func() interface{} {
-			value := []string{}
-			if class, valid := propValue.([]string); valid {
-				value = class
-			}
-			if il, valid := propValue.([]interface{}); valid {
-				value = append(value, ut.ILtoSL(il)...)
-			}
-			return value
+			return ut.ILtoSL(propValue)
 		},
 		"style": func() interface{} {
 			value := ut.ToSM(bcc.Style, ut.SM{})

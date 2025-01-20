@@ -1,3 +1,7 @@
+## 1.7.16
+- Editor component: add EditorEventField original event name
+- Code refactoring
+
 ## 1.7.15
 - Application component: set default "this:abort" hx-sync option all child components
 - Browser component: code Validation function refactoring

@@ -174,38 +174,84 @@ func (bro *Browser) GetProperty(propName string) interface{} {
 	return bro.Properties()[propName]
 }
 
-/*
-It checks the value given to the property of the [Browser] and always returns a valid value
-*/
-func (bro *Browser) Validation(propName string, propValue interface{}) interface{} {
+func (bro *Browser) validationProcessBooleanMap(propValue interface{}, existingMap map[string]bool) map[string]bool {
 	// Helper functions to reduce code duplication
 	makeEmptyMap := func() map[string]bool {
 		return make(map[string]bool)
 	}
 
-	processBooleanMap := func(existingMap map[string]bool) map[string]bool {
-		value := existingMap
-		if len(value) == 0 {
-			value = makeEmptyMap()
-		}
-
-		switch cols := propValue.(type) {
-		case []map[string]bool:
-			for _, values := range cols {
-				for key, bvalue := range values {
-					value[key] = bvalue
-				}
-			}
-		case map[string]bool:
-			value = cols
-		case map[string]interface{}:
-			for key, ivalue := range cols {
-				value[key] = ut.ToBoolean(ivalue, false)
-			}
-		}
-		return value
+	value := existingMap
+	if len(value) == 0 {
+		value = makeEmptyMap()
 	}
 
+	switch cols := propValue.(type) {
+	case []map[string]bool:
+		for _, values := range cols {
+			for key, bvalue := range values {
+				value[key] = bvalue
+			}
+		}
+	case map[string]bool:
+		value = cols
+	case map[string]interface{}:
+		for key, ivalue := range cols {
+			value[key] = ut.ToBoolean(ivalue, false)
+		}
+	}
+	return value
+}
+
+func (bro *Browser) validationFilters(propValue interface{}) []BrowserFilter {
+	value := bro.Filters
+	switch v := propValue.(type) {
+	case []BrowserFilter:
+		value = v
+	case []interface{}:
+		value = make([]BrowserFilter, 0, len(v))
+		for _, filter := range v {
+			if filterMap, ok := filter.(ut.IM); ok {
+				value = append(value, BrowserFilter{
+					Or:    ut.ToBoolean(filterMap["or"], false),
+					Field: ut.ToString(filterMap["field"], ""),
+					Comp:  ut.ToString(filterMap["comp"], ""),
+					Value: ut.ToString(filterMap["value"], ""),
+				})
+			}
+		}
+	}
+	if value == nil {
+		value = make([]BrowserFilter, 0)
+	}
+	return value
+}
+
+func (bro *Browser) validationMetaFields(propValue interface{}) map[string]BrowserMetaField {
+	fields := make(map[string]BrowserMetaField)
+	switch mFields := propValue.(type) {
+	case map[string]BrowserMetaField:
+		for fname, fvalue := range mFields {
+			fvalue.FieldType = bro.CheckEnumValue(fvalue.FieldType, TableFieldTypeString, TableMetaType)
+			fields[fname] = fvalue
+		}
+	case ut.IM:
+		for fname, fvalue := range mFields {
+			if values, ok := fvalue.(ut.IM); ok {
+				fieldType := bro.CheckEnumValue(ut.ToString(values["field_type"], ""), TableFieldTypeString, TableMetaType)
+				fields[fname] = BrowserMetaField{
+					FieldType: fieldType,
+					Label:     ut.ToString(values["label"], ""),
+				}
+			}
+		}
+	}
+	return fields
+}
+
+/*
+It checks the value given to the property of the [Browser] and always returns a valid value
+*/
+func (bro *Browser) Validation(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"labels": func() interface{} {
 			value := ut.ToSM(bro.Labels, ut.SM{})
@@ -221,73 +267,19 @@ func (bro *Browser) Validation(propName string, propValue interface{}) interface
 			return value
 		},
 		"views": func() interface{} {
-			value := bro.Views
-			switch v := propValue.(type) {
-			case []SelectOption:
-				if len(v) > 0 {
-					value = v
-				}
-			case []interface{}:
-				for _, opt := range v {
-					if optMap, ok := opt.(ut.IM); ok {
-						value = append(value, SelectOption{
-							Value: ut.ToString(optMap["value"], ""),
-							Text:  ut.ToString(optMap["text"], ""),
-						})
-					}
-				}
-			}
-			return value
+			return SelectOptionRangeValidation(propValue, bro.Views)
 		},
 		"visible_columns": func() interface{} {
-			return processBooleanMap(bro.VisibleColumns)
+			return bro.validationProcessBooleanMap(propValue, bro.VisibleColumns)
 		},
 		"hide_filters": func() interface{} {
-			return processBooleanMap(bro.HideFilters)
+			return bro.validationProcessBooleanMap(propValue, bro.HideFilters)
 		},
 		"filters": func() interface{} {
-			value := bro.Filters
-			switch v := propValue.(type) {
-			case []BrowserFilter:
-				value = v
-			case []interface{}:
-				value = make([]BrowserFilter, 0, len(v))
-				for _, filter := range v {
-					if filterMap, ok := filter.(ut.IM); ok {
-						value = append(value, BrowserFilter{
-							Or:    ut.ToBoolean(filterMap["or"], false),
-							Field: ut.ToString(filterMap["field"], ""),
-							Comp:  ut.ToString(filterMap["comp"], ""),
-							Value: ut.ToString(filterMap["value"], ""),
-						})
-					}
-				}
-			}
-			if value == nil {
-				value = make([]BrowserFilter, 0)
-			}
-			return value
+			return bro.validationFilters(propValue)
 		},
 		"meta_fields": func() interface{} {
-			fields := make(map[string]BrowserMetaField)
-			switch mFields := propValue.(type) {
-			case map[string]BrowserMetaField:
-				for fname, fvalue := range mFields {
-					fvalue.FieldType = bro.CheckEnumValue(fvalue.FieldType, TableFieldTypeString, TableMetaType)
-					fields[fname] = fvalue
-				}
-			case ut.IM:
-				for fname, fvalue := range mFields {
-					if values, ok := fvalue.(ut.IM); ok {
-						fieldType := bro.CheckEnumValue(ut.ToString(values["field_type"], ""), TableFieldTypeString, TableMetaType)
-						fields[fname] = BrowserMetaField{
-							FieldType: fieldType,
-							Label:     ut.ToString(values["label"], ""),
-						}
-					}
-				}
-			}
-			return fields
+			return bro.validationMetaFields(propValue)
 		},
 		"target": func() interface{} {
 			bro.SetProperty("id", bro.Id)
@@ -647,7 +639,7 @@ func (bro *Browser) setTotalValues() []BrowserTotalField {
 	return total
 }
 
-func (bro *Browser) getComponent(name string, data ut.IM) (html template.HTML, err error) {
+func (bro *Browser) getComponentSelector(name string, data ut.IM) *Select {
 	ccSel := func(options []SelectOption, index, value string) *Select {
 		sel := &Select{
 			BaseComponent: BaseComponent{
@@ -666,6 +658,106 @@ func (bro *Browser) getComponent(name string, data ut.IM) (html template.HTML, e
 		sel.SetProperty("value", value)
 		return sel
 	}
+
+	ccMap := map[string]func() *Select{
+		"filter_field": func() *Select {
+			options := []SelectOption{}
+			metaField := false
+			for _, field := range bro.Fields {
+				if !bro.HideFilters[field.Name] {
+					if field.FieldType == TableFieldTypeMeta {
+						if !metaField {
+							for fName, fValue := range bro.MetaFields {
+								options = append(options, SelectOption{Value: fName, Text: fValue.Label})
+							}
+							metaField = true
+						}
+					} else {
+						options = append(options, SelectOption{Value: field.Name, Text: field.Label})
+					}
+				}
+			}
+			index := ut.ToString(data["index"], "0")
+			value := ut.ToString(data["field"], "")
+			return ccSel(options, index, value)
+		},
+		"filter_comp": func() *Select {
+			options := func(ftype string) []SelectOption {
+				if !slices.Contains([]string{
+					TableFieldTypeDate, TableFieldTypeDateTime, TableFieldTypeTime, TableFieldTypeInteger,
+					TableFieldTypeNumber}, ftype) {
+					return browserFilterComp[0:2]
+				}
+				return browserFilterComp
+			}
+			index := ut.ToString(data["index"], "0")
+			value := ut.ToString(data["comp"], "")
+			fieldName := ut.ToString(data["field"], "")
+			fieldType := bro.getFilterType(fieldName)
+			return ccSel(options(fieldType), index, value)
+		},
+		"filter_value": func() *Select {
+			index := ut.ToString(data["index"], "0")
+			value := ut.ToString(data["value"], "")
+			options := []SelectOption{
+				{Value: "0", Text: bro.msg("browser_label_no")},
+				{Value: "1", Text: bro.msg("browser_label_yes")}}
+			return ccSel(options, index, value)
+		},
+	}
+	return ccMap[name]()
+}
+
+func (bro *Browser) getComponentTable() *Table {
+	fields := []TableField{
+		{Column: &TableColumn{
+			Id:        "edit_row",
+			Header:    "",
+			CellStyle: ut.SM{"width": "25px", "padding": "7px 3px 3px 8px"},
+			Cell: func(row ut.IM, col TableColumn, value interface{}) template.HTML {
+				var ico template.HTML
+				ico, _ = bro.getComponent("edit_row", row)
+				return ico
+			}}},
+	}
+	for _, fd := range bro.Fields {
+		if ut.ToBoolean(bro.VisibleColumns[fd.Name], false) {
+			fields = append(fields, fd)
+		}
+	}
+	tbl := &Table{
+		BaseComponent: BaseComponent{
+			Id:           bro.Id + "_table",
+			Name:         "table",
+			EventURL:     bro.EventURL,
+			OnResponse:   bro.response,
+			RequestValue: bro.RequestValue,
+			RequestMap:   bro.RequestMap,
+		},
+		Fields:            fields,
+		Rows:              bro.Rows,
+		Pagination:        bro.Pagination,
+		HidePaginatonSize: bro.HidePaginatonSize,
+		PageSize:          bro.PageSize,
+		CurrentPage:       bro.CurrentPage,
+		RowKey:            bro.RowKey,
+		TableFilter:       bro.TableFilter,
+		FilterPlaceholder: bro.msg("browser_placeholder"),
+		FilterValue:       bro.FilterValue,
+		AddItem:           bro.AddItem,
+		LabelAdd:          ut.ToString(bro.LabelAdd, bro.msg("browser_label_new")),
+		AddIcon:           bro.AddIcon,
+		LabelYes:          bro.LabelYes,
+		LabelNo:           bro.LabelNo,
+		RowSelected:       bro.RowSelected,
+		TablePadding:      bro.TablePadding,
+		SortCol:           bro.SortCol,
+		SortAsc:           bro.SortAsc,
+	}
+	return tbl
+}
+
+func (bro *Browser) getComponent(name string, data ut.IM) (html template.HTML, err error) {
 	ccBtn := func(icoKey, label, bstyle, index string) *Button {
 		btn := &Button{
 			BaseComponent: BaseComponent{
@@ -828,52 +920,19 @@ func (bro *Browser) getComponent(name string, data ut.IM) (html template.HTML, e
 			return btn
 		},
 		"filter_field": func() ClientComponent {
-			options := []SelectOption{}
-			metaField := false
-			for _, field := range bro.Fields {
-				if !bro.HideFilters[field.Name] {
-					if field.FieldType == TableFieldTypeMeta {
-						if !metaField {
-							for fName, fValue := range bro.MetaFields {
-								options = append(options, SelectOption{Value: fName, Text: fValue.Label})
-							}
-							metaField = true
-						}
-					} else {
-						options = append(options, SelectOption{Value: field.Name, Text: field.Label})
-					}
-				}
-			}
-			index := ut.ToString(data["index"], "0")
-			value := ut.ToString(data["field"], "")
-			return ccSel(options, index, value)
+			return bro.getComponentSelector(name, data)
 		},
 		"filter_comp": func() ClientComponent {
-			options := func(ftype string) []SelectOption {
-				if !slices.Contains([]string{
-					TableFieldTypeDate, TableFieldTypeDateTime, TableFieldTypeTime, TableFieldTypeInteger,
-					TableFieldTypeNumber}, ftype) {
-					return browserFilterComp[0:2]
-				}
-				return browserFilterComp
-			}
-			index := ut.ToString(data["index"], "0")
-			value := ut.ToString(data["comp"], "")
-			fieldName := ut.ToString(data["field"], "")
-			fieldType := bro.getFilterType(fieldName)
-			return ccSel(options(fieldType), index, value)
+			return bro.getComponentSelector(name, data)
 		},
 		"filter_value": func() ClientComponent {
-			index := ut.ToString(data["index"], "0")
-			value := ut.ToString(data["value"], "")
 			fieldName := ut.ToString(data["field"], "")
 			fieldType := bro.getFilterType(fieldName)
 			if fieldType == TableFieldTypeBool {
-				options := []SelectOption{
-					{Value: "0", Text: bro.msg("browser_label_no")},
-					{Value: "1", Text: bro.msg("browser_label_yes")}}
-				return ccSel(options, index, value)
+				return bro.getComponentSelector(name, data)
 			}
+			index := ut.ToString(data["index"], "0")
+			value := ut.ToString(data["value"], "")
 			if slices.Contains([]string{TableFieldTypeNumber, TableFieldTypeInteger}, fieldType) {
 				return ccNum(index, value)
 			}
@@ -955,52 +1014,7 @@ func (bro *Browser) getComponent(name string, data ut.IM) (html template.HTML, e
 			}
 		},
 		"table": func() ClientComponent {
-			fields := []TableField{
-				{Column: &TableColumn{
-					Id:        "edit_row",
-					Header:    "",
-					CellStyle: ut.SM{"width": "25px", "padding": "7px 3px 3px 8px"},
-					Cell: func(row ut.IM, col TableColumn, value interface{}) template.HTML {
-						var ico template.HTML
-						ico, _ = bro.getComponent("edit_row", row)
-						return ico
-					}}},
-			}
-			for _, fd := range bro.Fields {
-				if ut.ToBoolean(bro.VisibleColumns[fd.Name], false) {
-					fields = append(fields, fd)
-				}
-			}
-			tbl := &Table{
-				BaseComponent: BaseComponent{
-					Id:           bro.Id + "_" + name,
-					Name:         name,
-					EventURL:     bro.EventURL,
-					OnResponse:   bro.response,
-					RequestValue: bro.RequestValue,
-					RequestMap:   bro.RequestMap,
-				},
-				Fields:            fields,
-				Rows:              bro.Rows,
-				Pagination:        bro.Pagination,
-				HidePaginatonSize: bro.HidePaginatonSize,
-				PageSize:          bro.PageSize,
-				CurrentPage:       bro.CurrentPage,
-				RowKey:            bro.RowKey,
-				TableFilter:       bro.TableFilter,
-				FilterPlaceholder: bro.msg("browser_placeholder"),
-				FilterValue:       bro.FilterValue,
-				AddItem:           bro.AddItem,
-				LabelAdd:          ut.ToString(bro.LabelAdd, bro.msg("browser_label_new")),
-				AddIcon:           bro.AddIcon,
-				LabelYes:          bro.LabelYes,
-				LabelNo:           bro.LabelNo,
-				RowSelected:       bro.RowSelected,
-				TablePadding:      bro.TablePadding,
-				SortCol:           bro.SortCol,
-				SortAsc:           bro.SortAsc,
-			}
-			return tbl
+			return bro.getComponentTable()
 		},
 	}
 	cc := ccMap[name]()

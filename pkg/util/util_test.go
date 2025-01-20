@@ -832,39 +832,6 @@ func TestToSM(t *testing.T) {
 	}
 }
 
-func TestILtoSL(t *testing.T) {
-	type args struct {
-		il []interface{}
-	}
-	tests := []struct {
-		name string
-		args args
-		want []string
-	}{
-		{
-			name: "ok",
-			args: args{
-				il: []interface{}{"value1", "value2"},
-			},
-			want: []string{"value1", "value2"},
-		},
-		{
-			name: "empty",
-			args: args{
-				il: []interface{}{},
-			},
-			want: []string{},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := ILtoSL(tt.args.il); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ILtoSL() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestIMToSM(t *testing.T) {
 	type args struct {
 		im IM
@@ -900,6 +867,67 @@ func TestIMToSM(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := IMToSM(tt.args.im); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("IMToSM() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestILtoSL(t *testing.T) {
+	type args struct {
+		ivalue interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want []string
+	}{
+		{
+			name: "string",
+			args: args{
+				ivalue: []string{"value1", "value2"},
+			},
+			want: []string{"value1", "value2"},
+		},
+		{
+			name: "interface",
+			args: args{
+				ivalue: []interface{}{"value1", "value2"},
+			},
+			want: []string{"value1", "value2"},
+		},
+		{
+			name: "int",
+			args: args{
+				ivalue: []int{1, 2},
+			},
+			want: []string{"1", "2"},
+		},
+		{
+			name: "int64",
+			args: args{
+				ivalue: []int64{1, 2},
+			},
+			want: []string{"1", "2"},
+		},
+		{
+			name: "float64",
+			args: args{
+				ivalue: []float64{1.1, 2.2},
+			},
+			want: []string{"1.1", "2.2"},
+		},
+		{
+			name: "bool",
+			args: args{
+				ivalue: []bool{true, false},
+			},
+			want: []string{"true", "false"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ILtoSL(tt.args.ivalue); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ILtoSL() = %v, want %v", got, tt.want)
 			}
 		})
 	}

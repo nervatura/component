@@ -171,7 +171,7 @@ func (edi *Editor) response(evt ResponseEvent) (re ResponseEvent) {
 
 	default:
 		admEvt.Name = EditorEventField
-		admEvt.Value = ut.IM{"name": evt.TriggerName, "value": evt.Value, "data": evt.Trigger.GetProperty("data").(ut.IM)}
+		admEvt.Value = ut.IM{"name": evt.TriggerName, "event": evt.Name, "value": evt.Value, "data": evt.Trigger.GetProperty("data").(ut.IM)}
 	}
 	if edi.OnResponse != nil {
 		return edi.OnResponse(admEvt)

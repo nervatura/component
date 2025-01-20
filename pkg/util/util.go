@@ -46,7 +46,7 @@ func ToString(value interface{}, defValue string) string {
 		return strconv.FormatFloat(floatValue, 'f', -1, 64)
 	}
 	if timeValue, valid := value.(time.Time); valid {
-		return timeValue.Format("2006-01-02T15:04:05-07:00")
+		return timeValue.Format(time.RFC3339)
 	}
 	return defValue
 }
@@ -189,7 +189,7 @@ func ToIMA(value interface{}, defValue []IM) []IM {
 
 // StringToDateTime - parse string to datetime
 func StringToDateTime(value string) (time.Time, error) {
-	tm, err := time.Parse("2006-01-02T15:04:05-07:00", value)
+	tm, err := time.Parse(time.RFC3339, value)
 	if err != nil {
 		tm, err = time.Parse("2006-01-02T15:04:05-0700", value)
 	}
@@ -249,10 +249,31 @@ func ToSM(sm interface{}, defValue SM) (result SM) {
 }
 
 // ILtoSL - convert []interface{} to []string
-func ILtoSL(il []interface{}) []string {
+func ILtoSL(ivalue interface{}) []string {
 	result := []string{}
-	for _, value := range il {
-		result = append(result, ToString(value, ""))
+	switch value := ivalue.(type) {
+	case []string:
+		result = append(result, value...)
+	case []interface{}:
+		for _, v := range value {
+			result = append(result, ToString(v, ""))
+		}
+	case []int:
+		for _, v := range value {
+			result = append(result, strconv.Itoa(v))
+		}
+	case []int64:
+		for _, v := range value {
+			result = append(result, strconv.FormatInt(v, 10))
+		}
+	case []float64:
+		for _, v := range value {
+			result = append(result, strconv.FormatFloat(v, 'f', -1, 64))
+		}
+	case []bool:
+		for _, v := range value {
+			result = append(result, strconv.FormatBool(v))
+		}
 	}
 	return result
 }
