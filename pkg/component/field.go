@@ -383,7 +383,6 @@ var testFieldResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt Resp
 		case SelectorEventSearch:
 			return toast(ut.ToString(evt.Trigger.GetProperty("filter_value"), ""))
 		case SelectorEventSelected:
-			evt.Trigger.SetProperty("show_modal", false)
 			if value, valid := evt.Value.(ut.IM); valid {
 				if row, valid := value["row"].(ut.IM); valid {
 					evt.Trigger.SetProperty("value", SelectOption{

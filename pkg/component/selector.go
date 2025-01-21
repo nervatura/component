@@ -206,6 +206,7 @@ func (sel *Selector) response(evt ResponseEvent) (re ResponseEvent) {
 		selEvt.Header = ut.SM{
 			HeaderRetarget: "#" + sel.Id,
 		}
+		sel.SetProperty("show_modal", false)
 
 	case "btn_delete":
 		value := sel.SetProperty("value", SelectOption{})
@@ -417,7 +418,6 @@ var testSelectorResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt R
 	case SelectorEventLink:
 		return toast(evt.Value.(SelectOption).Text)
 	case SelectorEventSelected:
-		evt.Trigger.SetProperty("show_modal", false)
 		if value, valid := evt.Value.(ut.IM); valid {
 			if row, valid := value["row"].(ut.IM); valid {
 				evt.Trigger.SetProperty("value", SelectOption{

@@ -1,3 +1,7 @@
+## 1.7.17
+- Editor component: add the original trigger to the response event 
+- Selector component: set the modal state after the selected event
+
 ## 1.7.16
 - Editor component: add EditorEventField original event name
 - Code refactoring

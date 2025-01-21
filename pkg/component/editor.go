@@ -164,14 +164,18 @@ func (edi *Editor) response(evt ResponseEvent) (re ResponseEvent) {
 	case "view_table":
 		if slices.Contains([]string{TableEventAddItem, TableEventEditCell, TableEventRowSelected}, evt.Name) {
 			admEvt.Name = EditorEventField
-			admEvt.Value = ut.IM{"name": evt.Name, "value": evt.Value, "data": evt.Trigger.GetProperty("data").(ut.IM)}
+			admEvt.Value = ut.IM{
+				"name": evt.Name, "value": evt.Value, "trigger": evt.Trigger,
+				"data": evt.Trigger.GetProperty("data").(ut.IM)}
 		} else {
 			admEvt = evt
 		}
 
 	default:
 		admEvt.Name = EditorEventField
-		admEvt.Value = ut.IM{"name": evt.TriggerName, "event": evt.Name, "value": evt.Value, "data": evt.Trigger.GetProperty("data").(ut.IM)}
+		admEvt.Value = ut.IM{
+			"name": evt.TriggerName, "event": evt.Name, "value": evt.Value, "trigger": evt.Trigger,
+			"data": evt.Trigger.GetProperty("data").(ut.IM)}
 	}
 	if edi.OnResponse != nil {
 		return edi.OnResponse(admEvt)
