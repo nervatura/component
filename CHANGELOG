@@ -1,3 +1,6 @@
+## 1.7.18
+- List component: EditItem option bug fixes
+
 ## 1.7.17
 - Editor component: add the original trigger to the response event 
 - Selector component: set the modal state after the selected event

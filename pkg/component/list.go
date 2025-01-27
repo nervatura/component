@@ -474,8 +474,8 @@ func (lst *List) Render() (html template.HTML, err error) {
 	{{ if ne $.Indicator "none" }} hx-indicator="#{{ $.Indicator }}"{{ end }}
 	>{{ listComponent "edit_icon" }}</div>{{ end }}
 	<div id="{{ rowID $row $index "edit_item" }}" class="list-value-cell {{ if $.EditItem }} cursor-pointer{{ end }}" 
-	{{ if ne $.EventURL "" }} hx-post="{{ $.EventURL }}" hx-target="{{ $.Target }}" hx-swap="{{ $.Swap }}"{{ end }}
-	{{ if ne $.Indicator "none" }} hx-indicator="#{{ $.Indicator }}"{{ end }}
+	{{ if $.EditItem }}{{ if ne $.EventURL "" }} hx-post="{{ $.EventURL }}" hx-target="{{ $.Target }}" hx-swap="{{ $.Swap }}"{{ end }}
+	{{ if ne $.Indicator "none" }} hx-indicator="#{{ $.Indicator }}"{{ end }}{{ end }}
 	>
 	{{ if isValue $row $.LabelField }}<div class="border-bottom list-label" ><span>{{ rowValue $row $.LabelField }}</span></div>{{ end }}
   {{ if isValue $row $.LabelValue }}<div class="list-value" ><span>{{ rowValue $row $.LabelValue }}</span></div>{{ end }}
@@ -635,7 +635,7 @@ func TestList(cc ClientComponent) []TestComponent {
 				CaseSensitive: true,
 				LabelAdd:      "Add new",
 				AddItem:       true,
-				EditItem:      true,
+				EditItem:      false,
 				DeleteItem:    true,
 			}},
 	}
