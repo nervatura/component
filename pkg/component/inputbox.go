@@ -208,10 +208,10 @@ func (ibx *InputBox) getComponent(name string) (html template.HTML, err error) {
 				RequestValue: ibx.RequestValue,
 				RequestMap:   ibx.RequestMap,
 			},
-			Type:      InputTypeString,
-			Label:     ibx.Message,
-			AutoFocus: true,
-			Full:      true,
+			Type:  InputTypeString,
+			Label: ibx.Message,
+			//AutoFocus: true,
+			Full: true,
 		}
 		inp.SetProperty("value", value)
 		return inp

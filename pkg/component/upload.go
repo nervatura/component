@@ -158,7 +158,7 @@ func (upl *Upload) Render() (html template.HTML, err error) {
 	}
 	tpl := `
 	<form id="{{ .Id }}" name="{{ .Name }}" method="POST" enctype="multipart/form-data" 
-	{{ if eq .Disabled false }}{{ if ne .EventURL "" }} hx-post="{{ .EventURL }}" hx-target="{{ .Target }}" hx-swap="{{ .Swap }}"{{ end }}
+	{{ if eq .Disabled false }}{{ if ne .EventURL "" }} hx-post="{{ .EventURL }}" hx-target="{{ .Target }}" {{ if ne .Sync "none" }} hx-sync="{{ .Sync }}"{{ end }} hx-swap="{{ .Swap }}"{{ end }}
 	{{ if ne .Indicator "none" }} hx-indicator="#{{ .Indicator }}"{{ end }}{{ end }}>
 	<div class="upload{{ if .Full }} full{{ end }} {{ customClass }}"
 	{{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}>

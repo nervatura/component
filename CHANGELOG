@@ -1,3 +1,7 @@
+## 1.7.19
+- BaseComponent: add Sync option
+- Application component: add default ComponentSync option
+
 ## 1.7.18
 - List component: EditItem option bug fixes
 

@@ -197,7 +197,7 @@ func (lbl *Label) Render() (html template.HTML, err error) {
 		},
 	}
 	head := `id="{{ .Id }}" name="{{ .Name }}"
-	{{ if ne .EventURL "" }} hx-post="{{ .EventURL }}" hx-target="{{ .Target }}" hx-swap="{{ .Swap }}"{{ end }}
+	{{ if ne .EventURL "" }} hx-post="{{ .EventURL }}" hx-target="{{ .Target }}" {{ if ne .Sync "none" }} hx-sync="{{ .Sync }}"{{ end }} hx-swap="{{ .Swap }}"{{ end }}
 	{{ if ne .Indicator "none" }} hx-indicator="#{{ .Indicator }}"{{ end }}`
 	tpl := `{{ if or (ne .LeftIcon "") (ne .RightIcon "") }}<div ` + head + `
 	 class="label row{{ if .Border }} label-border{{ end }}{{ if .Full }} full{{ end }}

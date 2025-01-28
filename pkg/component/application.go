@@ -9,6 +9,11 @@ import (
 	ut "github.com/nervatura/component/pkg/util"
 )
 
+// [Application] constants
+const (
+	ComponentTypeApplication = "application"
+)
+
 // [Application] HeadLink data
 type HeadLink struct {
 	Rel  string `json:"rel"`
@@ -50,6 +55,8 @@ type Application struct {
 	MainComponent ClientComponent `json:"main_component"`
 	// Modal spinner appearance by default, other elements of the page are not available
 	SpinnerNotModal bool `json:"spinner_notmodal"`
+	// Application element synchronization mode. Default value: [SyncQueueAll]
+	ComponentSync string `json:"component_sync"`
 }
 
 /*
@@ -66,6 +73,7 @@ func (app *Application) Properties() ut.IM {
 			"link":             app.HeadLink,
 			"main":             app.MainComponent,
 			"spinner_notmodal": app.SpinnerNotModal,
+			"component_sync":   app.ComponentSync,
 		})
 }
 
@@ -83,6 +91,9 @@ func (app *Application) Validation(propName string, propValue interface{}) inter
 	pm := map[string]func() interface{}{
 		"theme": func() interface{} {
 			return app.CheckEnumValue(ut.ToString(propValue, ""), ThemeLight, Theme)
+		},
+		"component_sync": func() interface{} {
+			return app.CheckEnumValue(ut.ToString(propValue, ""), SyncQueueAll, Sync)
 		},
 		"header": func() interface{} {
 			value := ut.ToSM(app.Header, ut.SM{})
@@ -168,6 +179,10 @@ func (app *Application) SetProperty(propName string, propValue interface{}) inte
 		"spinner_notmodal": func() interface{} {
 			app.SpinnerNotModal = ut.ToBoolean(propValue, false)
 			return app.SpinnerNotModal
+		},
+		"component_sync": func() interface{} {
+			app.ComponentSync = app.Validation(propName, propValue).(string)
+			return app.ComponentSync
 		},
 	}
 	if _, found := pm[propName]; found {
@@ -257,7 +272,7 @@ func (app *Application) Render() (html template.HTML, err error) {
 		<body>
 		<div id="{{ .Id }}" theme="{{ .Theme }}" 
 		{{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }} 
-		hx-ext="remove-me" %s hx-sync="this:abort" class="{{ customClass }}">
+		hx-ext="remove-me" %s {{ if ne .ComponentSync "none" }} hx-sync="{{ .ComponentSync }}"{{ end }} class="{{ customClass }}">
 		<div id="toast-msg"></div><div>{{ spinner }}</div>
 		{{ main }}
 		</div>

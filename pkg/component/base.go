@@ -33,6 +33,21 @@ const (
 const (
 	BaseEventValue = "value"
 
+	// drop (ignore) this request if an existing request is in flight (default)
+	SyncDrop = "this:drop"
+	// drop (ignore) this request if an existing request is in flight, and, if that is not the case, abort this request if another request occurs while it is still in flight
+	SyncAbort = "this:abort"
+	// abort the current request, if any, and replace it with this request
+	SyncReplace = "this:replace"
+	// queue the first request to show up while a request is in flight
+	SyncQueueFirst = "this:queue first"
+	// queue the last request to show up while a request is in flight
+	SyncQueueLast = "this:queue last"
+	// queue all requests that show up while a request is in flight
+	SyncQueueAll = "this:queue all"
+	// parent setting or [SyncDrop] (default)
+	SyncNone = "none"
+
 	// Replace the inner html of the target element
 	SwapInnerHTML = "innerHTML"
 	// Replace the entire target element with the response
@@ -101,6 +116,9 @@ var PaginationType []string = []string{PaginationTypeTop, PaginationTypeBottom, 
 // [BaseComponent] Swap values
 var Swap []string = []string{SwapInnerHTML, SwapOuterHTML, SwapBeforeBegin, SwapAfterBegin,
 	SwapBeforeEnd, SwapAfterEnd, SwapDelete, SwapNone}
+
+// [BaseComponent] Sync values
+var Sync []string = []string{SyncDrop, SyncAbort, SyncReplace, SyncQueueFirst, SyncQueueLast, SyncQueueAll}
 
 // [BaseComponent] Indicator values
 var Indicator []string = []string{IndicatorNone, IndicatorSpinner}
@@ -204,6 +222,11 @@ type BaseComponent struct {
 	*/
 	Swap string `json:"swap"`
 	/*
+		The hx-sync attribute allows you to synchronize AJAX requests between multiple elements. If you do not specify the option,
+		the default is [SyncQueueAll]. See more [Sync] variable constants.
+	*/
+	Sync string `json:"sync"`
+	/*
 		The htmx hx-indicator can be used to show spinners or progress indicators while the request is in flight.
 		[Indicator] variable constants: [IndicatorNone], [IndicatorSpinner]. Default value: [IndicatorNone]
 	*/
@@ -248,6 +271,7 @@ func (bcc *BaseComponent) Properties() ut.IM {
 		"event_url":     bcc.EventURL,
 		"target":        bcc.Target,
 		"swap":          bcc.Swap,
+		"sync":          bcc.Sync,
 		"indicator":     bcc.Indicator,
 		"class":         bcc.Class,
 		"style":         bcc.Style,
@@ -288,6 +312,9 @@ func (bcc *BaseComponent) Validation(propName string, propValue interface{}) int
 		},
 		"swap": func() interface{} {
 			return bcc.CheckEnumValue(ut.ToString(propValue, ""), SwapOuterHTML, Swap)
+		},
+		"sync": func() interface{} {
+			return bcc.CheckEnumValue(ut.ToString(propValue, ""), SyncNone, Sync)
 		},
 		"indicator": func() interface{} {
 			return bcc.CheckEnumValue(ut.ToString(propValue, ""), IndicatorNone, Indicator)
@@ -380,6 +407,10 @@ func (bcc *BaseComponent) SetProperty(propName string, propValue interface{}) in
 		"swap": func() interface{} {
 			bcc.Swap = bcc.Validation(propName, propValue).(string)
 			return bcc.Swap
+		},
+		"sync": func() interface{} {
+			bcc.Sync = bcc.Validation(propName, propValue).(string)
+			return bcc.Sync
 		},
 		"class": func() interface{} {
 			bcc.Class = bcc.Validation(propName, propValue).([]string)

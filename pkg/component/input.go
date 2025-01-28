@@ -220,7 +220,7 @@ func (inp *Input) Render() (html template.HTML, err error) {
 	}
 	tpl := fmt.Sprintf(`<%s id="{{ .Id }}" name="{{ .Name }}" 
 	{{ if inputEl }} type="{{ .Type }}" value="{{ .Value }}"{{ end }}
-	{{ if ne .EventURL "" }} hx-post="{{ .EventURL }}" hx-target="{{ .Target }}" hx-swap="{{ .Swap }}"{{ end }}
+	{{ if ne .EventURL "" }} hx-post="{{ .EventURL }}" hx-target="{{ .Target }}" {{ if ne .Sync "none" }} hx-sync="{{ .Sync }}"{{ end }} hx-swap="{{ .Swap }}"{{ end }}
 	{{ if ne .Indicator "none" }} hx-indicator="#{{ .Indicator }}"{{ end }}
 	{{ if ne .Placeholder "" }} placeholder="{{ .Placeholder }}"{{ end }}
 	{{ if .ReadOnly }} readonly{{ end }}

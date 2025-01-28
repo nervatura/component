@@ -212,7 +212,7 @@ func (sel *Select) Render() (html template.HTML, err error) {
 		},
 	}
 	tpl := `<select id="{{ .Id }}" name="{{ .Name }}" value="{{ .Value }}"
-	{{ if ne .EventURL "" }} hx-post="{{ .EventURL }}" hx-target="{{ .Target }}" hx-swap="{{ .Swap }}"{{ end }}
+	{{ if ne .EventURL "" }} hx-post="{{ .EventURL }}" hx-target="{{ .Target }}" {{ if ne .Sync "none" }} hx-sync="{{ .Sync }}"{{ end }} hx-swap="{{ .Swap }}"{{ end }}
 	{{ if ne .Indicator "none" }} hx-indicator="#{{ .Indicator }}"{{ end }}
 	{{ if .Disabled }} disabled{{ end }}
 	{{ if .AutoFocus }} autofocus{{ end }}
