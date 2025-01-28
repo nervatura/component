@@ -93,7 +93,7 @@ func (app *Application) Validation(propName string, propValue interface{}) inter
 			return app.CheckEnumValue(ut.ToString(propValue, ""), ThemeLight, Theme)
 		},
 		"component_sync": func() interface{} {
-			return app.CheckEnumValue(ut.ToString(propValue, ""), SyncQueueAll, Sync)
+			return app.CheckEnumValue(ut.ToString(propValue, ""), SyncAbort, Sync)
 		},
 		"header": func() interface{} {
 			value := ut.ToSM(app.Header, ut.SM{})
