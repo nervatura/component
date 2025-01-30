@@ -21,7 +21,7 @@ type MenuBarItem struct {
 	Value string `json:"value"`
 	// Menu caption
 	Label string `json:"label"`
-	// Valid [Icon] component value. See more [IconKey] variable values.
+	// Valid [Icon] component value. See more [IconValues] variable values.
 	Icon string `json:"icon"`
 	// Specifies the url for menu. If it is not specified, then the built-in value event
 	ItemURL string `json:"item_url"`
@@ -40,9 +40,9 @@ For example:
 	    RequestMap:   parent_component.GetProperty("request_map").(map[string]ClientComponent),
 	  },
 	  Items: []MenuBarItem{
-	    {Value: "search", Label: "Search", Icon: "Search"},
-	    {Value: "edit", Label: "Edit", Icon: "Edit"},
-	    {Value: "setting", Label: "Setting", Icon: "Cog"},
+	    {Value: "search", Label: "Search", Icon: IconSearch},
+	    {Value: "edit", Label: "Edit", Icon: IconEdit},
+	    {Value: "setting", Label: "Setting", Icon: IconCog},
 	  },
 	  Value:          "search",
 	  SideBar:        true,
@@ -367,12 +367,12 @@ func TestMenuBar(cc ClientComponent) []TestComponent {
 					RequestMap:   requestMap,
 				},
 				Items: []MenuBarItem{
-					{Value: "search", Label: "Search", Icon: "Search"},
-					{Value: "edit", Label: "Edit", Icon: "Edit"},
-					{Value: "setting", Label: "Setting", Icon: "Cog"},
-					{Value: "bookmark", Label: "Bookmark", Icon: "Star"},
-					{Value: "help", Label: "Help", Icon: "QuestionCircle", ItemURL: "https://google.com"},
-					{Value: "logout", Label: "Logout", Icon: "Exit"},
+					{Value: "search", Label: "Search", Icon: IconSearch},
+					{Value: "edit", Label: "Edit", Icon: IconEdit},
+					{Value: "setting", Label: "Setting", Icon: IconCog},
+					{Value: "bookmark", Label: "Bookmark", Icon: IconStar},
+					{Value: "help", Label: "Help", Icon: IconQuestionCircle, ItemURL: "https://google.com"},
+					{Value: "logout", Label: "Logout", Icon: IconExit},
 				},
 				Value:   "search",
 				SideBar: false,
@@ -388,12 +388,12 @@ func TestMenuBar(cc ClientComponent) []TestComponent {
 					RequestMap:   requestMap,
 				},
 				Items: []MenuBarItem{
-					{Value: "search", Label: "Search", Icon: "Search"},
-					{Value: "edit", Label: "Edit", Icon: "Edit"},
-					{Value: "setting", Label: "Setting", Icon: "Cog"},
-					{Value: "bookmark", Label: "Bookmark", Icon: "Star"},
-					{Value: "help", Label: "Help", Icon: "QuestionCircle"},
-					{Value: "logout", Label: "Logout", Icon: "Exit"},
+					{Value: "search", Label: "Search", Icon: IconSearch},
+					{Value: "edit", Label: "Edit", Icon: IconEdit},
+					{Value: "setting", Label: "Setting", Icon: IconCog},
+					{Value: "bookmark", Label: "Bookmark", Icon: IconStar},
+					{Value: "help", Label: "Help", Icon: IconQuestionCircle},
+					{Value: "logout", Label: "Logout", Icon: IconExit},
 				},
 				Value:             "search",
 				SideBar:           true,

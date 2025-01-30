@@ -11,21 +11,109 @@ import (
 const (
 	ComponentTypeIcon = "icon"
 
-	IconDefaultIcon = "ExclamationTriangle"
+	IconDefaultIcon = IconExclamationTriangle
 	IconEventClick  = "click"
 )
 
+const (
+	IconArrowDown           = "ArrowDown"
+	IconArrowLeft           = "ArrowLeft"
+	IconArrowRight          = "ArrowRight"
+	IconArrowUp             = "ArrowUp"
+	IconBarcode             = "Barcode"
+	IconBars                = "Bars"
+	IconBold                = "Bold"
+	IconBolt                = "Bolt"
+	IconBook                = "Book"
+	IconBriefcase           = "Briefcase"
+	IconCalendar            = "Calendar"
+	IconCaretRight          = "CaretRight"
+	IconChartBar            = "ChartBar"
+	IconCheck               = "Check"
+	IconCheckCircle         = "CheckCircle"
+	IconCheckSquare         = "CheckSquare"
+	IconCheckSquareEmpty    = "CheckSquareEmpty"
+	IconClock               = "Clock"
+	IconClose               = "Close"
+	IconCode                = "Code"
+	IconCog                 = "Cog"
+	IconColumns             = "Columns"
+	IconComment             = "Comment"
+	IconCopy                = "Copy"
+	IconDatabase            = "Database"
+	IconDesktop             = "Desktop"
+	IconDollar              = "Dollar"
+	IconDownload            = "Download"
+	IconEdit                = "Edit"
+	IconEnvelop             = "Envelop"
+	IconExclamationTriangle = "ExclamationTriangle"
+	IconExit                = "Exit"
+	IconEye                 = "Eye"
+	IconFileText            = "FileText"
+	IconFilter              = "Filter"
+	IconFlask               = "Flask"
+	IconGlobe               = "Globe"
+	IconHandUp              = "HandUp"
+	IconHidemo              = "Hidemo"
+	IconHome                = "Home"
+	IconInbox               = "Inbox"
+	IconInfoCircle          = "InfoCircle"
+	IconItalic              = "Italic"
+	IconKey                 = "Key"
+	IconKeyboard            = "Keyboard"
+	IconLink                = "Link"
+	IconListOl              = "ListOl"
+	IconListUl              = "ListUl"
+	IconLock                = "Lock"
+	IconMagic               = "Magic"
+	IconMale                = "Male"
+	IconMap                 = "Map"
+	IconMobile              = "Mobile"
+	IconMoney               = "Money"
+	IconMoon                = "Moon"
+	IconPhone               = "Phone"
+	IconPlus                = "Plus"
+	IconPrint               = "Print"
+	IconQuestionCircle      = "QuestionCircle"
+	IconReply               = "Reply"
+	IconRetweet             = "Retweet"
+	IconSearch              = "Search"
+	IconShare               = "Share"
+	IconShoppingCart        = "ShoppingCart"
+	IconSitemap             = "Sitemap"
+	IconSquare              = "Square"
+	IconSquareEmpty         = "SquareEmpty"
+	IconStar                = "Star"
+	IconStrikethrough       = "Strikethrough"
+	IconSun                 = "Sun"
+	IconTag                 = "Tag"
+	IconTags                = "Tags"
+	IconTextHeight          = "TextHeight"
+	IconTh                  = "Th"
+	IconTicket              = "Ticket"
+	IconTimes               = "Times"
+	IconToggleOff           = "ToggleOff"
+	IconToggleOn            = "ToggleOn"
+	IconTruck               = "Truck"
+	IconUnderline           = "Underline"
+	IconUndo                = "Undo"
+	IconUpload              = "Upload"
+	IconUser                = "User"
+	IconUserLock            = "UserLock"
+	IconWrench              = "Wrench"
+)
+
 // [Icon] Value values
-var IconKey []string = []string{
-	"ArrowDown", "ArrowLeft", "ArrowRight", "ArrowUp", "Barcode", "Bars", "Bold", "Bolt", "Book", "Briefcase",
-	"Calendar", "CaretRight", "ChartBar", "Check", "CheckCircle", "CheckSquare", "CheckSquareEmpty", "Clock",
-	"Close", "Code", "Cog", "Columns", "Comment", "Copy", "Database", "Desktop", "Dollar", "Download", "Edit",
-	"Envelop", "ExclamationTriangle", "Exit", "Eye", "FileText", "Filter", "Flask", "Globe", "HandUp", "Hidemo",
-	"Home", "Inbox", "InfoCircle", "Italic", "Key", "Keyboard", "Link", "ListOl", "ListUl", "Lock", "Magic",
-	"Male", "Map", "Mobile", "Money", "Moon", "Phone", "Plus", "Print", "QuestionCircle", "Reply", "Retweet",
-	"Search", "Share", "ShoppingCart", "Sitemap", "Square", "SquareEmpty", "Star", "Strikethrough", "Sun",
-	"Tag", "Tags", "TextHeight", "Th", "Ticket", "Times", "ToggleOff", "ToggleOn", "Truck", "Underline", "Undo",
-	"Upload", "User", "UserLock", "Wrench",
+var IconValues []string = []string{
+	IconArrowDown, IconArrowLeft, IconArrowRight, IconArrowUp, IconBarcode, IconBars, IconBold, IconBolt, IconBook, IconBriefcase,
+	IconCalendar, IconCaretRight, IconChartBar, IconCheck, IconCheckCircle, IconCheckSquare, IconCheckSquareEmpty, IconClock,
+	IconClose, IconCode, IconCog, IconColumns, IconComment, IconCopy, IconDatabase, IconDesktop, IconDollar, IconDownload, IconEdit,
+	IconEnvelop, IconExclamationTriangle, IconExit, IconEye, IconFileText, IconFilter, IconFlask, IconGlobe, IconHandUp, IconHidemo,
+	IconHome, IconInbox, IconInfoCircle, IconItalic, IconKey, IconKeyboard, IconLink, IconListOl, IconListUl, IconLock, IconMagic,
+	IconMale, IconMap, IconMobile, IconMoney, IconMoon, IconPhone, IconPlus, IconPrint, IconQuestionCircle, IconReply, IconRetweet,
+	IconSearch, IconShare, IconShoppingCart, IconSitemap, IconSquare, IconSquareEmpty, IconStar, IconStrikethrough, IconSun,
+	IconTag, IconTags, IconTextHeight, IconTh, IconTicket, IconTimes, IconToggleOff, IconToggleOn, IconTruck, IconUnderline, IconUndo,
+	IconUpload, IconUser, IconUserLock, IconWrench,
 }
 
 /*
@@ -48,7 +136,7 @@ For example:
 */
 type Icon struct {
 	BaseComponent
-	// See more [IconKey] variable values.
+	// See more [IconValues] variable values.
 	Value  string  `json:"value"`
 	Width  float64 `json:"width"`
 	Height float64 `json:"height"`
@@ -90,11 +178,7 @@ It checks the value given to the property of the [Icon] and always returns a val
 func (ico *Icon) Validation(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"value": func() interface{} {
-			value := ut.ToString(propValue, IconDefaultIcon)
-			if _, found := iconMap[value]; !found {
-				value = IconDefaultIcon
-			}
-			return value
+			return ico.CheckEnumValue(ut.ToString(propValue, ""), IconDefaultIcon, IconValues)
 		},
 		"width": func() interface{} {
 			ikey := ico.Validation("value", ico.Value).(string)
@@ -231,7 +315,7 @@ func TestIcon(cc ClientComponent) []TestComponent {
 				BaseComponent: BaseComponent{
 					Id: id + "_icon_default",
 				},
-				Value: "ExclamationTriangle",
+				Value: IconExclamationTriangle,
 			}},
 		{
 			Label:         "Custom icon",
@@ -243,7 +327,7 @@ func TestIcon(cc ClientComponent) []TestComponent {
 						"cursor": "pointer",
 					},
 				},
-				Value:  "Copy",
+				Value:  IconCopy,
 				Width:  42,
 				Height: 48,
 				Color:  "red",
@@ -271,7 +355,7 @@ func TestIcon(cc ClientComponent) []TestComponent {
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 				},
-				Value: "Globe",
+				Value: IconGlobe,
 			}},
 	}
 }

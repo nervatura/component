@@ -1,3 +1,9 @@
+## 1.7.20
+- Selector component: label text overflow-wrap fixed
+- List component: hide list when the list is empty
+- Selector component: add CustomModal and ModalIcon options
+- Icon component: add icon value enums and checking the values
+
 ## 1.7.19
 - BaseComponent: add Sync option
 - Application component: add default ComponentSync option

@@ -2,4 +2,13 @@
 .selector .dialog {
   max-width: 600px;
   min-width: 280px;
+  box-sizing: border-box;
+}
+
+.selector .label-text {
+  overflow-wrap: anywhere;
+}
+
+.selector .label-link {
+  overflow-wrap: anywhere;
 }

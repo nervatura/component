@@ -66,7 +66,7 @@ type Button struct {
 	Label string `json:"label"`
 	// Any component to be displayed (e.g. [Label] component) instead of the label text
 	LabelComponent ClientComponent `json:"label_component"`
-	// Valid [Icon] component value. See more [IconKey] variable values.
+	// Valid [Icon] component value. See more [IconValues] variable values.
 	Icon string `json:"icon"`
 	// Specifies that the button should be disabled
 	Disabled bool `json:"disabled"`
@@ -128,6 +128,9 @@ func (btn *Button) Validation(propName string, propValue interface{}) interface{
 		"align": func() interface{} {
 			return btn.CheckEnumValue(ut.ToString(propValue, ""), TextAlignCenter, TextAlign)
 		},
+		"icon": func() interface{} {
+			return btn.CheckEnumValue(ut.ToString(propValue, ""), "", IconValues)
+		},
 		"indicator": func() interface{} {
 			return btn.CheckEnumValue(ut.ToString(propValue, IndicatorSpinner), IndicatorSpinner, Indicator)
 		},
@@ -170,7 +173,7 @@ func (btn *Button) SetProperty(propName string, propValue interface{}) interface
 			return btn.LabelComponent
 		},
 		"icon": func() interface{} {
-			btn.Icon = ut.ToString(propValue, "")
+			btn.Icon = btn.Validation(propName, propValue).(string)
 			return btn.Icon
 		},
 		"disabled": func() interface{} {
@@ -324,7 +327,7 @@ func TestButton(cc ClientComponent) []TestComponent {
 				ButtonStyle: ButtonStyleDefault,
 				Align:       TextAlignRight,
 				Label:       "Right icon",
-				Icon:        "InfoCircle",
+				Icon:        IconInfoCircle,
 				HideLabel:   true,
 			}},
 		{
@@ -341,7 +344,7 @@ func TestButton(cc ClientComponent) []TestComponent {
 				ButtonStyle: ButtonStylePrimary,
 				Align:       TextAlignCenter,
 				Label:       "Primary",
-				Icon:        "Check",
+				Icon:        IconCheck,
 				Selected:    true,
 			}},
 		{
@@ -401,7 +404,7 @@ func TestButton(cc ClientComponent) []TestComponent {
 				ButtonStyle:    ButtonStyleDefault,
 				Align:          TextAlignCenter,
 				Label:          "Label component",
-				LabelComponent: &Icon{Value: "Print", Width: 32, Height: 32},
+				LabelComponent: &Icon{Value: IconPrint, Width: 32, Height: 32},
 			}},
 		{
 			Label:         "Border and custom style",

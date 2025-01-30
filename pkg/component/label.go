@@ -39,9 +39,9 @@ type Label struct {
 	Border bool `json:"border"`
 	// Full width cell (100%)
 	Full bool `json:"full"`
-	// Valid [Icon] component value. See more [IconKey] variable values.
+	// Valid [Icon] component value. See more [IconValues] variable values.
 	LeftIcon string `json:"left_icon"`
-	// Valid [Icon] component value. See more [IconKey] variable values.
+	// Valid [Icon] component value. See more [IconValues] variable values.
 	RightIcon string `json:"right_icon"`
 	// Icon component style settings. Example: ut.SM{"fill": "orange"}
 	IconStyle ut.SM `json:"icon_style"`
@@ -76,6 +76,12 @@ It checks the value given to the property of the [Label] and always returns a va
 */
 func (lbl *Label) Validation(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
+		"left_icon": func() interface{} {
+			return lbl.CheckEnumValue(ut.ToString(propValue, ""), "", IconValues)
+		},
+		"right_icon": func() interface{} {
+			return lbl.CheckEnumValue(ut.ToString(propValue, ""), "", IconValues)
+		},
 		"icon_style": func() interface{} {
 			value := ut.ToSM(lbl.IconStyle, ut.SM{})
 			if smap, valid := propValue.(ut.SM); valid {
@@ -119,11 +125,11 @@ func (lbl *Label) SetProperty(propName string, propValue interface{}) interface{
 			return lbl.Full
 		},
 		"left_icon": func() interface{} {
-			lbl.LeftIcon = ut.ToString(propValue, "")
+			lbl.LeftIcon = lbl.Validation(propName, propValue).(string)
 			return lbl.LeftIcon
 		},
 		"right_icon": func() interface{} {
-			lbl.RightIcon = ut.ToString(propValue, "")
+			lbl.RightIcon = lbl.Validation(propName, propValue).(string)
 			return lbl.RightIcon
 		},
 		"icon_style": func() interface{} {
@@ -215,7 +221,7 @@ func (lbl *Label) Render() (html template.HTML, err error) {
 	{{ end }}</div>
 	{{ else }}
 	{{ if .Border }}<div ` + head + ` class="label-border{{ if .Full }} full{{ end }}"><span {{ else }}<span ` + head + `{{ end }}
-	 class="label bold{{ if ne .EventURL "" }} label-link{{ else }} label-text{{ end }}"
+	 class="label bold{{ if ne .EventURL "" }} label-link{{ else }} label-text{{ end }} {{ customClass }}"
 	 {{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}
 	>{{ .Value }}</span>{{ if .Border }}</div>{{ end }}
 	{{ end }}`
@@ -267,7 +273,7 @@ func TestLabel(cc ClientComponent) []TestComponent {
 					Id: id + "_label_left_icon",
 				},
 				Value:    "Label",
-				LeftIcon: "InfoCircle",
+				LeftIcon: IconInfoCircle,
 				Border:   true,
 			}},
 		{
@@ -278,7 +284,7 @@ func TestLabel(cc ClientComponent) []TestComponent {
 					Id: id + "_label_right_icon",
 				},
 				Value:     "Label",
-				RightIcon: "InfoCircle",
+				RightIcon: IconInfoCircle,
 			}},
 		{
 			Label:         "Centered",
@@ -288,7 +294,7 @@ func TestLabel(cc ClientComponent) []TestComponent {
 					Id: id + "_label_centered",
 				},
 				Value:    "Label",
-				LeftIcon: "InfoCircle",
+				LeftIcon: IconInfoCircle,
 				Centered: true,
 			}},
 		{
@@ -300,7 +306,7 @@ func TestLabel(cc ClientComponent) []TestComponent {
 					Style: ut.SM{"color": "red"},
 				},
 				Value:     "Label",
-				LeftIcon:  "InfoCircle",
+				LeftIcon:  IconInfoCircle,
 				IconStyle: ut.SM{"fill": "orange"},
 			}},
 		{
@@ -318,7 +324,7 @@ func TestLabel(cc ClientComponent) []TestComponent {
 					RequestMap:   requestMap,
 				},
 				Value:    "Label link",
-				LeftIcon: "Globe",
+				LeftIcon: IconGlobe,
 			}},
 		{
 			Label:         "Link cell",

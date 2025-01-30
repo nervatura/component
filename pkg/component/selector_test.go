@@ -24,6 +24,14 @@ func TestTestSelector(t *testing.T) {
 			"row": ut.IM{},
 		},
 	})
+	testSelectorResponse(ResponseEvent{
+		Name: SelectorEventShowModal, Trigger: &Selector{
+			CustomModal: true,
+		},
+		Value: ut.IM{
+			"row": ut.IM{},
+		},
+	})
 }
 
 func TestSelector_Validation(t *testing.T) {

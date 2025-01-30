@@ -47,6 +47,10 @@ type Selector struct {
 	Full bool `json:"full"`
 	// Displaying the search window
 	ShowModal bool `json:"show_modal"`
+	// It prevents the modal search window and only the simple SelectorEventShowModal event is triggered
+	CustomModal bool `json:"custom_modal"`
+	// Icon for the modal button. See more [IconValues] variable values. Default: Search
+	ModalIcon string `json:"modal_icon"`
 }
 
 /*
@@ -67,6 +71,8 @@ func (sel *Selector) Properties() ut.IM {
 			"auto_focus":         sel.AutoFocus,
 			"full":               sel.Full,
 			"show_modal":         sel.ShowModal,
+			"custom_modal":       sel.CustomModal,
+			"modal_icon":         sel.ModalIcon,
 		})
 }
 
@@ -111,6 +117,9 @@ func (sel *Selector) Validation(propName string, propValue interface{}) interfac
 				}
 			}
 			return fields
+		},
+		"modal_icon": func() interface{} {
+			return sel.CheckEnumValue(ut.ToString(propValue, ""), IconSearch, IconValues)
 		},
 		"target": func() interface{} {
 			sel.SetProperty("id", sel.Id)
@@ -180,6 +189,14 @@ func (sel *Selector) SetProperty(propName string, propValue interface{}) interfa
 			sel.ShowModal = ut.ToBoolean(propValue, false)
 			return sel.ShowModal
 		},
+		"custom_modal": func() interface{} {
+			sel.CustomModal = ut.ToBoolean(propValue, false)
+			return sel.CustomModal
+		},
+		"modal_icon": func() interface{} {
+			sel.ModalIcon = sel.Validation(propName, propValue).(string)
+			return sel.ModalIcon
+		},
 		"target": func() interface{} {
 			sel.Target = sel.Validation(propName, propValue).(string)
 			return sel.Target
@@ -215,7 +232,7 @@ func (sel *Selector) response(evt ResponseEvent) (re ResponseEvent) {
 
 	case "btn_modal":
 		selEvt.Name = SelectorEventShowModal
-		sel.SetProperty("show_modal", true)
+		sel.SetProperty("show_modal", !sel.CustomModal)
 
 	case "btn_close":
 		selEvt.Name = SelectorEventShowModal
@@ -282,13 +299,13 @@ func (sel *Selector) getComponent(name string) (html template.HTML, err error) {
 	}
 	ccMap := map[string]func() ClientComponent{
 		"btn_modal": func() ClientComponent {
-			return ccBtn("Search", sel.AutoFocus)
+			return ccBtn(sel.ModalIcon, sel.AutoFocus)
 		},
 		"btn_delete": func() ClientComponent {
-			return ccBtn("Times", false)
+			return ccBtn(IconTimes, false)
 		},
 		"btn_search": func() ClientComponent {
-			return ccBtn("Search", false)
+			return ccBtn(IconSearch, false)
 		},
 		"selector_text": func() ClientComponent {
 			lbl := &Label{
@@ -413,6 +430,11 @@ var testSelectorResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt R
 		}
 	}
 	switch evt.Name {
+	case SelectorEventShowModal:
+		customModal := ut.ToBoolean(evt.Trigger.GetProperty("custom_modal"), false)
+		if customModal {
+			return toast("Custom modal event triggered")
+		}
 	case SelectorEventSearch:
 		return toast(ut.ToString(evt.Value, ""))
 	case SelectorEventLink:
@@ -525,6 +547,25 @@ func TestSelector(cc ClientComponent) []TestComponent {
 				Link:   true,
 				IsNull: true,
 				Full:   true,
+			},
+		},
+		{
+			Label:         "Custom modal event and icon",
+			ComponentType: ComponentTypeList,
+			Component: &Selector{
+				BaseComponent: BaseComponent{
+					Id:           id + "_selector_custom",
+					EventURL:     eventURL,
+					OnResponse:   testSelectorResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
+				},
+				Value:       SelectOption{Value: "12345", Text: "Customer Name"},
+				Link:        true,
+				IsNull:      false,
+				Full:        true,
+				CustomModal: true,
+				ModalIcon:   IconBolt,
 			},
 		},
 	}

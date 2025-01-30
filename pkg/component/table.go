@@ -100,7 +100,7 @@ type Table struct {
 	LabelNo string `json:"label_no"`
 	// Add item button caption Default empty string
 	LabelAdd string `json:"label_add"`
-	// Valid [Icon] component value. See more [IconKey] variable values.
+	// Valid [Icon] component value. See more [IconValues] variable values.
 	AddIcon string `json:"add_icon"`
 	// Table cell padding style value. Example: 8px
 	TablePadding string `json:"table_padding"`
@@ -260,6 +260,9 @@ func (tbl *Table) Validation(propName string, propValue interface{}) interface{}
 			}
 			return value
 		},
+		"add_icon": func() interface{} {
+			return tbl.CheckEnumValue(ut.ToString(propValue, ""), IconPlus, IconValues)
+		},
 		"target": func() interface{} {
 			tbl.SetProperty("id", tbl.Id)
 			value := ut.ToString(propValue, tbl.Id)
@@ -345,7 +348,7 @@ func (tbl *Table) SetProperty(propName string, propValue interface{}) interface{
 			return tbl.LabelAdd
 		},
 		"add_icon": func() interface{} {
-			tbl.AddIcon = ut.ToString(propValue, "Plus")
+			tbl.AddIcon = tbl.Validation(propName, propValue).(string)
 			return tbl.AddIcon
 		},
 		"table_padding": func() interface{} {
@@ -1100,7 +1103,7 @@ func TestTable(cc ClientComponent) []TestComponent {
 				CurrentPage:       10,
 				TableFilter:       true,
 				FilterPlaceholder: "Placeholder text",
-				AddIcon:           "Check",
+				AddIcon:           IconCheck,
 				AddItem:           true,
 				TablePadding:      "16px",
 			}},

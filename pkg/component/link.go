@@ -57,7 +57,7 @@ type Link struct {
 	Label string `json:"label"`
 	// Any component to be displayed (e.g. [Label] component) instead of the label text
 	LabelComponent ClientComponent `json:"label_component"`
-	// Valid [Icon] component value. See more [IconKey] variable values.
+	// Valid [Icon] component value. See more [IconValues] variable values.
 	Icon string `json:"icon"`
 	// Specifies that the link should be disabled
 	Disabled bool `json:"disabled"`
@@ -129,6 +129,9 @@ func (lnk *Link) Validation(propName string, propValue interface{}) interface{} 
 		"indicator": func() interface{} {
 			return lnk.CheckEnumValue(ut.ToString(propValue, IndicatorSpinner), IndicatorSpinner, Indicator)
 		},
+		"icon": func() interface{} {
+			return lnk.CheckEnumValue(ut.ToString(propValue, ""), "", IconValues)
+		},
 	}
 	if _, found := pm[propName]; found {
 		return pm[propName]()
@@ -196,7 +199,7 @@ func (lnk *Link) SetProperty(propName string, propValue interface{}) interface{}
 			return lnk.LabelComponent
 		},
 		"icon": func() interface{} {
-			lnk.Icon = ut.ToString(propValue, "")
+			lnk.Icon = lnk.Validation(propName, propValue).(string)
 			return lnk.Icon
 		},
 		"disabled": func() interface{} {
@@ -335,7 +338,7 @@ func TestLink(cc ClientComponent) []TestComponent {
 				LinkStyle:  LinkStylePrimary,
 				Align:      TextAlignCenter,
 				Label:      "Primary",
-				Icon:       "Check",
+				Icon:       IconCheck,
 				Selected:   true,
 				Href:       "https://www.google.com",
 				LinkTarget: "_blank",
@@ -376,7 +379,7 @@ func TestLink(cc ClientComponent) []TestComponent {
 				LinkStyle:      LinkStyleButton,
 				Align:          TextAlignCenter,
 				Label:          "Label component",
-				LabelComponent: &Icon{Value: "Search", Width: 32, Height: 32},
+				LabelComponent: &Icon{Value: IconSearch, Width: 32, Height: 32},
 				Href:           "https://www.google.com",
 				LinkTarget:     "_blank",
 			}},

@@ -53,11 +53,11 @@ type List struct {
 	CaseSensitive bool `json:"case_sensitive"`
 	// Add item button caption Default empty string
 	LabelAdd string `json:"label_add"`
-	// Valid [Icon] component value. See more [IconKey] variable values.
+	// Valid [Icon] component value. See more [IconValues] variable values.
 	AddIcon string `json:"add_icon"`
-	// Valid [Icon] component value. See more [IconKey] variable values.
+	// Valid [Icon] component value. See more [IconValues] variable values.
 	EditIcon string `json:"edit_icon"`
-	// Valid [Icon] component value. See more [IconKey] variable values.
+	// Valid [Icon] component value. See more [IconValues] variable values.
 	DeleteIcon string `json:"delete_icon"`
 	// The field name containing the list label of the data source. Default: lslabel
 	LabelField string `json:"label_field"`
@@ -148,6 +148,15 @@ func (lst *List) Validation(propName string, propValue interface{}) interface{} 
 		"label_value": func() interface{} {
 			return ut.ToString(propValue, "lsvalue")
 		},
+		"add_icon": func() interface{} {
+			return lst.CheckEnumValue(ut.ToString(propValue, ""), IconPlus, IconValues)
+		},
+		"edit_icon": func() interface{} {
+			return lst.CheckEnumValue(ut.ToString(propValue, ""), IconEdit, IconValues)
+		},
+		"delete_icon": func() interface{} {
+			return lst.CheckEnumValue(ut.ToString(propValue, ""), IconTimes, IconValues)
+		},
 	}
 	if _, found := pm[propName]; found {
 		return pm[propName]()
@@ -217,15 +226,15 @@ func (lst *List) SetProperty(propName string, propValue interface{}) interface{}
 			return lst.LabelAdd
 		},
 		"add_icon": func() interface{} {
-			lst.AddIcon = ut.ToString(propValue, "Plus")
+			lst.AddIcon = lst.Validation(propName, propValue).(string)
 			return lst.AddIcon
 		},
 		"edit_icon": func() interface{} {
-			lst.EditIcon = ut.ToString(propValue, "Edit")
+			lst.EditIcon = lst.Validation(propName, propValue).(string)
 			return lst.EditIcon
 		},
 		"delete_icon": func() interface{} {
-			lst.DeleteIcon = ut.ToString(propValue, "Times")
+			lst.DeleteIcon = lst.Validation(propName, propValue).(string)
 			return lst.DeleteIcon
 		},
 		"target": func() interface{} {
@@ -457,6 +466,9 @@ func (lst *List) Render() (html template.HTML, err error) {
 		"rowValue": func(row ut.IM, fieldName string) string {
 			return ut.ToString(row[fieldName], "")
 		},
+		"showRows": func() bool {
+			return len(rows) > 0
+		},
 	}
 	tpl := `<div id="{{ .Id }}" name="{{ .Name }}" class="responsive {{ customClass }}">
 	{{ if or .ListFilter topPagination }}<div>
@@ -465,7 +477,7 @@ func (lst *List) Render() (html template.HTML, err error) {
 	<div class="cell" >{{ listComponent "filter" }}</div>
 	{{ if .AddItem }}<div class="cell" style="width: 20px;" >{{ listComponent "btn_add" }}</div>{{ end }}
 	</div>{{ end }}</div>{{ end }}
-	<ul class="list"
+	{{ if showRows }}<ul class="list"
 	{{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}>
 	{{ range $index, $row := listRows }}
 	<li class="list-row border-bottom">
@@ -486,7 +498,7 @@ func (lst *List) Render() (html template.HTML, err error) {
 	>{{ listComponent "delete_icon" }}</div>{{ end }}
 	</li>
 	{{ end }}
-	</ul>
+	</ul>{{ end }}
 	{{ if bottomPagination }}<div>{{ listComponent "bottom_pagination" }}</div>{{ end }}
 	</div>`
 
@@ -587,9 +599,9 @@ func TestList(cc ClientComponent) []TestComponent {
 				HidePaginatonSize: true,
 				ListFilter:        true,
 				FilterPlaceholder: "Placeholder text",
-				AddIcon:           "User",
-				EditIcon:          "Check",
-				DeleteIcon:        "Close",
+				AddIcon:           IconUser,
+				EditIcon:          IconCheck,
+				DeleteIcon:        IconClose,
 				AddItem:           true,
 				EditItem:          true,
 				DeleteItem:        true,

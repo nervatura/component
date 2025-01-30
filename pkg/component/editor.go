@@ -20,7 +20,7 @@ type EditorView struct {
 	Key string `json:"key"`
 	// The label of the view
 	Label string `json:"label"`
-	// Valid [Icon] component value. See more [IconKey] variable values.
+	// Valid [Icon] component value. See more [IconValues] variable values.
 	Icon string `json:"icon"`
 	// The badge value of the view
 	Badge string `json:"badge"`
@@ -31,7 +31,7 @@ type Editor struct {
 	BaseComponent
 	// The caption of the editor
 	Title string `json:"title"`
-	// Valid [Icon] component value. See more [IconKey] variable values.
+	// Valid [Icon] component value. See more [IconValues] variable values.
 	Icon string `json:"icon"`
 	// Current view key
 	View  string       `json:"view"`
@@ -76,6 +76,9 @@ func (edi *Editor) Validation(propName string, propValue interface{}) interface{
 			}
 			return []EditorView{}
 		},
+		"icon": func() interface{} {
+			return edi.CheckEnumValue(ut.ToString(propValue, ""), IconFileText, IconValues)
+		},
 		"rows": func() interface{} {
 			if value, valid := propValue.([]Row); valid {
 				return value
@@ -117,7 +120,7 @@ func (edi *Editor) SetProperty(propName string, propValue interface{}) interface
 			return edi.Title
 		},
 		"icon": func() interface{} {
-			edi.Icon = ut.ToString(propValue, "FileText")
+			edi.Icon = edi.Validation(propName, propValue).(string)
 			return edi.Icon
 		},
 		"view": func() interface{} {
@@ -322,12 +325,12 @@ func TestEditor(cc ClientComponent) []TestComponent {
 					{
 						Key:   "main",
 						Label: "Main input",
-						Icon:  "ShoppingCart",
+						Icon:  IconShoppingCart,
 					},
 					{
 						Key:   "item",
 						Label: "Item rows",
-						Icon:  "User",
+						Icon:  IconUser,
 						Badge: "3",
 					},
 				},
@@ -372,7 +375,7 @@ func TestEditor(cc ClientComponent) []TestComponent {
 									"name":         "button",
 									"button_style": ButtonStylePrimary,
 									"label":        "Primary",
-									"icon":         "Check",
+									"icon":         IconCheck,
 								},
 							}},
 							{Label: "DateTime", Value: Field{
@@ -430,12 +433,12 @@ func TestEditor(cc ClientComponent) []TestComponent {
 					{
 						Key:   "main",
 						Label: "Main input",
-						Icon:  "ShoppingCart",
+						Icon:  IconShoppingCart,
 					},
 					{
 						Key:   "item",
 						Label: "Item rows",
-						Icon:  "User",
+						Icon:  IconUser,
 						Badge: "3",
 					},
 				},
