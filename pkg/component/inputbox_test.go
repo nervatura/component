@@ -1,6 +1,7 @@
 package component
 
 import (
+	"net/url"
 	"reflect"
 	"testing"
 
@@ -29,6 +30,10 @@ func TestInputBox_Render(t *testing.T) {
 		{
 			name: "ok",
 			fields: fields{
+				BaseComponent: BaseComponent{
+					Id:       "test_inputbox_cancel",
+					EventURL: "/demo",
+				},
 				InputType: InputBoxTypeCancel,
 			},
 			wantErr: false,
@@ -36,7 +41,24 @@ func TestInputBox_Render(t *testing.T) {
 		{
 			name: "input",
 			fields: fields{
-				InputType: InputBoxTypeInput,
+				InputType: InputBoxTypeString,
+				Value:     "test",
+			},
+			wantErr: false,
+		},
+		{
+			name: "text",
+			fields: fields{
+				InputType: InputBoxTypeText,
+				Value:     "test",
+			},
+			wantErr: false,
+		},
+		{
+			name: "color",
+			fields: fields{
+				InputType: InputBoxTypeColor,
+				Value:     "#000000",
 			},
 			wantErr: false,
 		},
@@ -49,6 +71,46 @@ func TestInputBox_Render(t *testing.T) {
 					{Text: "Option 2", Value: "option2"},
 					{Text: "Option 3", Value: "option3"},
 				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "datetime",
+			fields: fields{
+				InputType: InputBoxTypeDateTime,
+				Value:     "2025-01-01T12:00",
+			},
+			wantErr: false,
+		},
+		{
+			name: "integer",
+			fields: fields{
+				InputType: InputBoxTypeInteger,
+				Value:     "123",
+			},
+			wantErr: false,
+		},
+		{
+			name: "number",
+			fields: fields{
+				InputType: InputBoxTypeNumber,
+				Value:     "123.45",
+			},
+			wantErr: false,
+		},
+		{
+			name: "date",
+			fields: fields{
+				InputType: InputBoxTypeDate,
+				Value:     "2025-01-01",
+			},
+			wantErr: false,
+		},
+		{
+			name: "time",
+			fields: fields{
+				InputType: InputBoxTypeTime,
+				Value:     "12:00",
 			},
 			wantErr: false,
 		},
@@ -235,8 +297,8 @@ func TestInputBox_Validation(t *testing.T) {
 		},
 		{
 			name: "input_type_string",
-			args: args{propName: "input_type", propValue: "IBOX_INPUT"},
-			want: InputBoxTypeInput,
+			args: args{propName: "input_type", propValue: "IBOX_STRING"},
+			want: InputBoxTypeString,
 		},
 		{
 			name: "input_type_int",
@@ -262,89 +324,6 @@ func TestInputBox_Validation(t *testing.T) {
 			if got := ibx.Validation(tt.args.propName, tt.args.propValue); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("InputBox.Validation() = %v, want %v", got, tt.want)
 			}
-		})
-	}
-}
-
-func TestInputBox_response(t *testing.T) {
-	type fields struct {
-		BaseComponent BaseComponent
-		InputType     string
-		Value         string
-		ValueOptions  []SelectOption
-		Title         string
-		Message       string
-		Info          string
-		Tag           string
-		LabelOK       string
-		LabelCancel   string
-		DefaultOK     bool
-	}
-	type args struct {
-		evt ResponseEvent
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-	}{
-		{
-			name: "btn_ok",
-			fields: fields{
-				BaseComponent: BaseComponent{
-					OnResponse: func(evt ResponseEvent) (re ResponseEvent) {
-						evt.Trigger = &Row{}
-						return evt
-					},
-				},
-				InputType: InputBoxTypeInput,
-				Tag:       "tag",
-			},
-			args: args{
-				evt: ResponseEvent{
-					TriggerName: "btn_ok",
-				},
-			},
-		},
-		{
-			name: "input_value",
-			fields: fields{
-				InputType: InputBoxTypeInput,
-			},
-			args: args{
-				evt: ResponseEvent{
-					TriggerName: "input_value",
-				},
-			},
-		},
-		{
-			name: "btn_cancel",
-			fields: fields{
-				InputType: InputBoxTypeInput,
-			},
-			args: args{
-				evt: ResponseEvent{
-					TriggerName: "btn_cancel",
-				},
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ibx := &InputBox{
-				BaseComponent: tt.fields.BaseComponent,
-				InputType:     tt.fields.InputType,
-				Value:         tt.fields.Value,
-				ValueOptions:  tt.fields.ValueOptions,
-				Title:         tt.fields.Title,
-				Message:       tt.fields.Message,
-				Info:          tt.fields.Info,
-				Tag:           tt.fields.Tag,
-				LabelOK:       tt.fields.LabelOK,
-				LabelCancel:   tt.fields.LabelCancel,
-				DefaultOK:     tt.fields.DefaultOK,
-			}
-			ibx.response(tt.args.evt)
 		})
 	}
 }
@@ -382,14 +361,79 @@ func TestTestInputBox(t *testing.T) {
 
 	testInputBoxResponse(ResponseEvent{Name: ButtonEventClick, Trigger: &Button{
 		BaseComponent: BaseComponent{
-			Data: ut.IM{"input_type": InputBoxTypeInput},
+			Data: ut.IM{"input_type": InputBoxTypeString},
 		},
 	}})
 
-	testInputBoxResponse(ResponseEvent{Name: InputBoxEventValueChange, Trigger: &InputBox{
-		BaseComponent: BaseComponent{
-			Data: ut.IM{"input_type": InputBoxTypeInput},
-		},
-	}})
+}
 
+func TestInputBox_OnRequest(t *testing.T) {
+	type fields struct {
+		BaseComponent BaseComponent
+		InputType     string
+		Value         string
+		ValueOptions  []SelectOption
+		Title         string
+		Message       string
+		Info          string
+		Tag           string
+		LabelOK       string
+		LabelCancel   string
+		DefaultOK     bool
+	}
+	type args struct {
+		te TriggerEvent
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+	}{
+		{
+			name: "base",
+			args: args{
+				te: TriggerEvent{
+					Id: "id",
+					Values: url.Values{
+						"btn_ok": []string{"true"},
+						"value":  []string{"test"},
+					},
+				},
+			},
+		},
+		{
+			name: "OnResponse",
+			fields: fields{
+				BaseComponent: BaseComponent{
+					OnResponse: func(evt ResponseEvent) (re ResponseEvent) {
+						evt.Trigger = &InputBox{}
+						return evt
+					},
+				},
+			},
+			args: args{
+				te: TriggerEvent{
+					Id: "id",
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ibx := &InputBox{
+				BaseComponent: tt.fields.BaseComponent,
+				InputType:     tt.fields.InputType,
+				Value:         tt.fields.Value,
+				ValueOptions:  tt.fields.ValueOptions,
+				Title:         tt.fields.Title,
+				Message:       tt.fields.Message,
+				Info:          tt.fields.Info,
+				Tag:           tt.fields.Tag,
+				LabelOK:       tt.fields.LabelOK,
+				LabelCancel:   tt.fields.LabelCancel,
+				DefaultOK:     tt.fields.DefaultOK,
+			}
+			ibx.OnRequest(tt.args.te)
+		})
+	}
 }

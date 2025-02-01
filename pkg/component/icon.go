@@ -49,10 +49,13 @@ const (
 	IconExclamationTriangle = "ExclamationTriangle"
 	IconExit                = "Exit"
 	IconEye                 = "Eye"
+	IconFacebook            = "Facebook"
 	IconFileText            = "FileText"
 	IconFilter              = "Filter"
 	IconFlask               = "Flask"
 	IconGlobe               = "Globe"
+	IconGithub              = "Github"
+	IconGoogle              = "Google"
 	IconHandUp              = "HandUp"
 	IconHidemo              = "Hidemo"
 	IconHome                = "Home"
@@ -71,6 +74,7 @@ const (
 	IconMobile              = "Mobile"
 	IconMoney               = "Money"
 	IconMoon                = "Moon"
+	IconMicrosoft           = "Microsoft"
 	IconPhone               = "Phone"
 	IconPlus                = "Plus"
 	IconPrint               = "Print"
@@ -108,10 +112,11 @@ var IconValues []string = []string{
 	IconArrowDown, IconArrowLeft, IconArrowRight, IconArrowUp, IconBarcode, IconBars, IconBold, IconBolt, IconBook, IconBriefcase,
 	IconCalendar, IconCaretRight, IconChartBar, IconCheck, IconCheckCircle, IconCheckSquare, IconCheckSquareEmpty, IconClock,
 	IconClose, IconCode, IconCog, IconColumns, IconComment, IconCopy, IconDatabase, IconDesktop, IconDollar, IconDownload, IconEdit,
-	IconEnvelop, IconExclamationTriangle, IconExit, IconEye, IconFileText, IconFilter, IconFlask, IconGlobe, IconHandUp, IconHidemo,
+	IconEnvelop, IconExclamationTriangle, IconExit, IconEye, IconFacebook, IconFileText, IconFilter, IconFlask, IconGlobe, IconGithub,
+	IconGoogle, IconHandUp, IconHidemo,
 	IconHome, IconInbox, IconInfoCircle, IconItalic, IconKey, IconKeyboard, IconLink, IconListOl, IconListUl, IconLock, IconMagic,
-	IconMale, IconMap, IconMobile, IconMoney, IconMoon, IconPhone, IconPlus, IconPrint, IconQuestionCircle, IconReply, IconRetweet,
-	IconSearch, IconShare, IconShoppingCart, IconSitemap, IconSquare, IconSquareEmpty, IconStar, IconStrikethrough, IconSun,
+	IconMale, IconMap, IconMobile, IconMoney, IconMoon, IconMicrosoft, IconPhone, IconPlus, IconPrint, IconQuestionCircle, IconReply,
+	IconRetweet, IconSearch, IconShare, IconShoppingCart, IconSitemap, IconSquare, IconSquareEmpty, IconStar, IconStrikethrough, IconSun,
 	IconTag, IconTags, IconTextHeight, IconTh, IconTicket, IconTimes, IconToggleOff, IconToggleOn, IconTruck, IconUnderline, IconUndo,
 	IconUpload, IconUser, IconUserLock, IconWrench,
 }

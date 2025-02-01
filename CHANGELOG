@@ -1,3 +1,6 @@
+## 1.7.21
+- InputBox component: add InputBoxTypeString, InputBoxTypeText, InputBoxTypeColor, InputBoxTypeNumber, InputBoxTypeInteger, InputBoxTypeDate, InputBoxTypeTime, InputBoxTypeDateTime options
+
 ## 1.7.20
 - Selector component: label text overflow-wrap fixed
 - List component: hide list when the list is empty

@@ -11,23 +11,33 @@ import (
 const (
 	ComponentTypeInputBox = "inputbox"
 
-	InputBoxEventOK          = "input_ok"
-	InputBoxEventCancel      = "input_cancel"
-	InputBoxEventValueChange = "input_value"
+	InputBoxEventOK     = "input_ok"
+	InputBoxEventCancel = "input_cancel"
 
-	InputBoxTypeCancel = "IBOX_CANCEL"
-	InputBoxTypeOK     = "IBOX_OK"
-	InputBoxTypeInput  = "IBOX_INPUT"
-	InputBoxTypeSelect = "IBOX_SELECT"
+	InputBoxTypeCancel   = "IBOX_CANCEL"
+	InputBoxTypeOK       = "IBOX_OK"
+	InputBoxTypeString   = "IBOX_STRING"
+	InputBoxTypeText     = "IBOX_TEXT"
+	InputBoxTypeColor    = "IBOX_COLOR"
+	InputBoxTypeSelect   = "IBOX_SELECT"
+	InputBoxTypeNumber   = "IBOX_NUMBER"
+	InputBoxTypeInteger  = "IBOX_INTEGER"
+	InputBoxTypeDate     = "IBOX_DATE"
+	InputBoxTypeTime     = "IBOX_TIME"
+	InputBoxTypeDateTime = "IBOX_DATETIME"
 )
 
 // [InputBox] Type values
-var InputBoxType []string = []string{InputBoxTypeCancel, InputBoxTypeOK, InputBoxTypeInput, InputBoxTypeSelect}
+var InputBoxType []string = []string{InputBoxTypeCancel, InputBoxTypeOK,
+	InputBoxTypeString, InputBoxTypeText, InputBoxTypeColor, InputBoxTypeSelect,
+	InputBoxTypeNumber, InputBoxTypeInteger, InputBoxTypeDate, InputBoxTypeTime, InputBoxTypeDateTime}
 
 // Message and value request component
 type InputBox struct {
 	BaseComponent
-	/* [InputBoxType] variable constants: [InputBoxTypeCancel], [InputBoxTypeOK], [InputBoxTypeInput], [InputBoxTypeSelect].
+	/* [InputBoxType] variable constants: [InputBoxTypeCancel], [InputBoxTypeOK], [InputBoxTypeInput],
+	[InputBoxTypeSelect], [InputBoxTypeNumber], [InputBoxTypeInteger], [InputBoxTypeDate],
+	[InputBoxTypeTime], [InputBoxTypeDateTime].
 	Default value: [InputBoxTypeCancel] */
 	InputType string `json:"input_type"`
 	Value     string `json:"value"`
@@ -158,36 +168,36 @@ func (ibx *InputBox) SetProperty(propName string, propValue interface{}) interfa
 	return propValue
 }
 
-func (ibx *InputBox) response(evt ResponseEvent) (re ResponseEvent) {
-	ibxEvt := ResponseEvent{Trigger: ibx, TriggerName: ibx.Name,
-		Value: ut.SM{"value": ibx.Value, "tag": ibx.Tag}}
-	switch evt.TriggerName {
-	case "btn_ok":
-		ibxEvt.Name = InputBoxEventOK
-	case "input_value", "select_value":
-		ibxEvt.Name = InputBoxEventValueChange
-		ibx.SetProperty("value", evt.Value)
-	default:
-		ibxEvt.Name = InputBoxEventCancel
+/*
+If the OnResponse function of the [InputBox] is implemented, the function calls it after the [TriggerEvent]
+is processed, otherwise the function's return [ResponseEvent] is the processed [TriggerEvent].
+*/
+func (ibx *InputBox) OnRequest(te TriggerEvent) (re ResponseEvent) {
+	evt := ResponseEvent{
+		Trigger: ibx, TriggerName: ibx.Name,
+		Name: InputBoxEventCancel,
 	}
+	if te.Values.Has("btn_ok") {
+		evt.Name = InputBoxEventOK
+		if te.Values.Has("value") {
+			ibx.SetProperty("value", te.Values.Get("value"))
+		}
+	}
+	evt.Value = ut.SM{"value": ibx.Value, "tag": ibx.Tag}
 	if ibx.OnResponse != nil {
-		return ibx.OnResponse(ibxEvt)
+		return ibx.OnResponse(evt)
 	}
-	return ibxEvt
+	return evt
 }
 
 func (ibx *InputBox) getComponent(name string) (html template.HTML, err error) {
 	ccBtn := func(btnStyle, label, icon string, focus bool) *Button {
 		return &Button{
 			BaseComponent: BaseComponent{
-				Id:           ibx.Id + "_" + name,
-				Name:         name,
-				EventURL:     ibx.EventURL,
-				Target:       ibx.Target,
-				OnResponse:   ibx.response,
-				RequestValue: ibx.RequestValue,
-				RequestMap:   ibx.RequestMap,
+				Id:   ibx.Id + "_" + name,
+				Name: name,
 			},
+			Type:        ButtonTypeSubmit,
 			ButtonStyle: btnStyle,
 			Label:       label,
 			Icon:        icon,
@@ -196,43 +206,62 @@ func (ibx *InputBox) getComponent(name string) (html template.HTML, err error) {
 			Selected:    focus,
 		}
 	}
-	ccInp := func(value string) *Input {
+	ccInp := func(value, typeValue string) *Input {
 		inp := &Input{
 			BaseComponent: BaseComponent{
-				Id:           ibx.Id + "_" + name,
-				Name:         name,
-				Style:        ut.SM{"border-radius": "0", "margin": "1px 0 2px"},
-				EventURL:     ibx.EventURL,
-				Target:       ibx.Target,
-				OnResponse:   ibx.response,
-				RequestValue: ibx.RequestValue,
-				RequestMap:   ibx.RequestMap,
+				Id:    ibx.Id + "_" + name,
+				Name:  "value",
+				Style: ut.SM{"border-radius": "0", "margin": "1px 0 2px"},
 			},
-			Type:  InputTypeString,
-			Label: ibx.Message,
-			//AutoFocus: true,
-			Full: true,
+			Type:      typeValue,
+			Label:     ibx.Message,
+			Rows:      8,
+			AutoFocus: true,
+			Full:      true,
 		}
 		inp.SetProperty("value", value)
+		return inp
+	}
+	ccNum := func(value float64, integer bool) *NumberInput {
+		inp := &NumberInput{
+			BaseComponent: BaseComponent{
+				Id:    ibx.Id + "_" + name,
+				Name:  "value",
+				Style: ut.SM{"border-radius": "0", "margin": "1px 0 2px"},
+			},
+			Integer:   integer,
+			Value:     value,
+			AutoFocus: true,
+		}
 		return inp
 	}
 	ccSel := func(value string) *Select {
 		sel := &Select{
 			BaseComponent: BaseComponent{
-				Id:           ibx.Id + "_" + name,
-				Name:         name,
-				Style:        ut.SM{"border-radius": "0", "margin": "1px 0 2px"},
-				EventURL:     ibx.EventURL,
-				Target:       ibx.Target,
-				OnResponse:   ibx.response,
-				RequestValue: ibx.RequestValue,
-				RequestMap:   ibx.RequestMap,
+				Id:    ibx.Id + "_" + name,
+				Name:  "value",
+				Style: ut.SM{"border-radius": "0", "margin": "1px 0 2px"},
 			},
-			IsNull:  false,
-			Options: ibx.ValueOptions,
+			IsNull:    false,
+			AutoFocus: true,
+			Options:   ibx.ValueOptions,
 		}
 		sel.SetProperty("value", value)
 		return sel
+	}
+	ccDti := func(dateType, value string) *DateTime {
+		dti := &DateTime{
+			BaseComponent: BaseComponent{
+				Id:    ibx.Id + "_" + name,
+				Name:  "value",
+				Style: ut.SM{"border-radius": "0", "margin": "1px 0 2px"},
+			},
+			Type:      dateType,
+			Value:     value,
+			AutoFocus: true,
+			IsNull:    false,
+		}
+		return dti
 	}
 	ccMap := map[string]func() ClientComponent{
 		"btn_ok": func() ClientComponent {
@@ -241,11 +270,32 @@ func (ibx *InputBox) getComponent(name string) (html template.HTML, err error) {
 		"btn_cancel": func() ClientComponent {
 			return ccBtn(ButtonStyleDefault, ibx.LabelCancel, "Times", false)
 		},
-		"input_value": func() ClientComponent {
-			return ccInp(ibx.Value)
+		"string_value": func() ClientComponent {
+			return ccInp(ibx.Value, InputTypeString)
+		},
+		"text_value": func() ClientComponent {
+			return ccInp(ibx.Value, InputTypeText)
+		},
+		"color_value": func() ClientComponent {
+			return ccInp(ibx.Value, InputTypeColor)
 		},
 		"select_value": func() ClientComponent {
 			return ccSel(ibx.Value)
+		},
+		"number_value": func() ClientComponent {
+			return ccNum(ut.ToFloat(ibx.Value, 0), false)
+		},
+		"integer_value": func() ClientComponent {
+			return ccNum(ut.ToFloat(ut.ToInteger(ibx.Value, 0), 0), true)
+		},
+		"date_value": func() ClientComponent {
+			return ccDti(DateTimeTypeDate, ibx.Value)
+		},
+		"time_value": func() ClientComponent {
+			return ccDti(DateTimeTypeTime, ibx.Value)
+		},
+		"datetime_value": func() ClientComponent {
+			return ccDti(DateTimeTypeDateTime, ibx.Value)
 		},
 	}
 	cc := ccMap[name]()
@@ -270,24 +320,37 @@ func (ibx *InputBox) Render() (html template.HTML, err error) {
 			return ibx.getComponent(name)
 		},
 	}
-	tpl := `<div id="{{ .Id }}" name="{{ .Name }}" class="row {{ customClass }}"
+	tpl := `<form id="{{ .Id }}" name="{{ .Name }}" class="row {{ customClass }}"
+	{{ if eq .InputType "IBOX_NUMBER" }} novalidate{{ end }}
 	{{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}
+	{{ if ne .EventURL "" }} hx-post="{{ .EventURL }}" hx-target="{{ .Target }}" {{ if ne .Sync "none" }} hx-sync="{{ .Sync }}"{{ end }} hx-swap="{{ .Swap }}"{{ end }}
+	{{ if ne .Indicator "none" }} hx-indicator="#{{ .Indicator }}"{{ end }}
 	><div class="modal"><div class="dialog"><div class="panel">
 	<div class="panel-title"><div class="cell title-cell"><span>{{ .Title }}</span></div></div>
 	<div class="section" ><div class="row full container" >
 	<div class="bold" >{{ .Message }}</div>
 	{{ if ne .Info "" }}<div >{{ .Info }}</div>{{ end }}
-	{{ if eq .InputType "IBOX_INPUT" }}<div class="section-small-top" >{{ inputComponent "input_value" }}</div>{{ end }}
+	{{ if eq .InputType "IBOX_STRING" }}<div class="section-small-top" >{{ inputComponent "string_value" }}</div>{{ end }}
+	{{ if eq .InputType "IBOX_TEXT" }}<div class="section-small-top" >{{ inputComponent "text_value" }}</div>{{ end }}
+	{{ if eq .InputType "IBOX_COLOR" }}<div class="section-small-top" >{{ inputComponent "color_value" }}</div>{{ end }}
 	{{ if eq .InputType "IBOX_SELECT" }}<div class="section-small-top" >{{ inputComponent "select_value" }}</div>{{ end }}
+	{{ if eq .InputType "IBOX_NUMBER" }}<div class="section-small-top" >{{ inputComponent "number_value" }}</div>{{ end }}
+	{{ if eq .InputType "IBOX_INTEGER" }}<div class="section-small-top" >{{ inputComponent "integer_value" }}</div>{{ end }}
+	{{ if eq .InputType "IBOX_DATE" }}<div class="section-small-top" >{{ inputComponent "date_value" }}</div>{{ end }}
+	{{ if eq .InputType "IBOX_TIME" }}<div class="section-small-top" >{{ inputComponent "time_value" }}</div>{{ end }}
+	{{ if eq .InputType "IBOX_DATETIME" }}<div class="section-small-top" >{{ inputComponent "datetime_value" }}</div>{{ end }}
 	</div></div>
 	<div class="section buttons" ><div class="row full container" >
-	{{ if ne .InputType "IBOX_OK" }}<div class="cell padding-small half" >{{ inputComponent "btn_cancel" }}</div>{{ end }}
 	<div class="cell padding-small {{ if ne .InputType "IBOX_OK" }}half{{ end }}" >{{ inputComponent "btn_ok" }}</div>
+	{{ if ne .InputType "IBOX_OK" }}<div class="cell padding-small half" >{{ inputComponent "btn_cancel" }}</div>{{ end }}
 	</div></div>
 	</div></div></div>
-	</div>`
+	</form>`
 
-	return ut.TemplateBuilder("inputbox", tpl, funcMap, ibx)
+	if html, err = ut.TemplateBuilder("inputbox", tpl, funcMap, ibx); err == nil && ibx.EventURL != "" {
+		ibx.SetProperty("request_map", ibx)
+	}
+	return html, err
 }
 
 var testInputBoxResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt ResponseEvent) (re ResponseEvent) {
@@ -311,32 +374,29 @@ var testInputBoxResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt R
 			Name:        evt.Trigger.(*InputBox).Name,
 		}
 	}
-	if evt.Name == ButtonEventClick {
-		re = ResponseEvent{
-			Trigger: &InputBox{
-				BaseComponent: BaseComponent{
-					Id:           evt.Trigger.(*Button).Id,
-					Data:         evt.Trigger.(*Button).Data,
-					EventURL:     evt.Trigger.(*Button).EventURL,
-					OnResponse:   evt.Trigger.(*Button).OnResponse,
-					RequestValue: evt.Trigger.(*Button).RequestValue,
-					RequestMap:   evt.Trigger.(*Button).RequestMap,
-				},
-				InputType:    ut.ToString(data["input_type"], ""),
-				Value:        ut.ToString(data["value"], ""),
-				ValueOptions: SelectOptionRangeValidation(data["value_options"], []SelectOption{}),
-				Title:        ut.ToString(data["title"], ""),
-				Message:      ut.ToString(data["message"], ""),
-				Info:         ut.ToString(data["info"], ""),
-				Tag:          ut.ToString(data["tag"], ""),
-				DefaultOK:    ut.ToBoolean(data["default_ok"], false),
+	re = ResponseEvent{
+		Trigger: &InputBox{
+			BaseComponent: BaseComponent{
+				Id:           evt.Trigger.(*Button).Id,
+				Data:         evt.Trigger.(*Button).Data,
+				EventURL:     evt.Trigger.(*Button).EventURL,
+				OnResponse:   evt.Trigger.(*Button).OnResponse,
+				RequestValue: evt.Trigger.(*Button).RequestValue,
+				RequestMap:   evt.Trigger.(*Button).RequestMap,
 			},
-			TriggerName: evt.TriggerName,
-			Name:        evt.Trigger.(*Button).Name,
-		}
-		return re
+			InputType:    ut.ToString(data["input_type"], ""),
+			Value:        ut.ToString(data["value"], ""),
+			ValueOptions: SelectOptionRangeValidation(data["value_options"], []SelectOption{}),
+			Title:        ut.ToString(data["title"], ""),
+			Message:      ut.ToString(data["message"], ""),
+			Info:         ut.ToString(data["info"], ""),
+			Tag:          ut.ToString(data["tag"], ""),
+			DefaultOK:    ut.ToBoolean(data["default_ok"], false),
+		},
+		TriggerName: evt.TriggerName,
+		Name:        evt.Trigger.(*Button).Name,
 	}
-	return evt
+	return re
 }
 
 // [InputBox] test and demo data
@@ -392,13 +452,13 @@ func TestInputBox(cc ClientComponent) []TestComponent {
 				Label:       "Info message",
 			}},
 		{
-			Label:         "InputBox value",
+			Label:         "InputBox string value",
 			ComponentType: ComponentTypeInputBox,
 			Component: &Button{
 				BaseComponent: BaseComponent{
-					Id: id + "_inputbox_value",
+					Id: id + "_inputbox_string",
 					Data: ut.IM{
-						"input_type": InputBoxTypeInput,
+						"input_type": InputBoxTypeString,
 						"value":      "default value",
 						"title":      "New fieldname",
 						"message":    "Enter the value:",
@@ -413,7 +473,55 @@ func TestInputBox(cc ClientComponent) []TestComponent {
 				},
 				ButtonStyle: ButtonStyleDefault,
 				Align:       TextAlignCenter,
-				Label:       "Input value message",
+				Label:       "Input string message",
+			}},
+		{
+			Label:         "InputBox text value",
+			ComponentType: ComponentTypeInputBox,
+			Component: &Button{
+				BaseComponent: BaseComponent{
+					Id: id + "_inputbox_text",
+					Data: ut.IM{
+						"input_type": InputBoxTypeText,
+						"value":      "default value",
+						"title":      "New fieldname",
+						"message":    "Enter the value:",
+						"info":       "",
+						"tag":        "next_func",
+						"default_ok": false,
+					},
+					EventURL:     eventURL,
+					OnResponse:   testInputBoxResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
+				},
+				ButtonStyle: ButtonStyleDefault,
+				Align:       TextAlignCenter,
+				Label:       "Input text message",
+			}},
+		{
+			Label:         "InputBox color value",
+			ComponentType: ComponentTypeInputBox,
+			Component: &Button{
+				BaseComponent: BaseComponent{
+					Id: id + "_inputbox_color",
+					Data: ut.IM{
+						"input_type": InputBoxTypeColor,
+						"value":      "#456200",
+						"title":      "New fieldname",
+						"message":    "Enter the value:",
+						"info":       "",
+						"tag":        "next_func",
+						"default_ok": false,
+					},
+					EventURL:     eventURL,
+					OnResponse:   testInputBoxResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
+				},
+				ButtonStyle: ButtonStyleDefault,
+				Align:       TextAlignCenter,
+				Label:       "Input color message",
 			}},
 		{
 			Label:         "InputBox options",
@@ -443,6 +551,126 @@ func TestInputBox(cc ClientComponent) []TestComponent {
 				ButtonStyle: ButtonStyleDefault,
 				Align:       TextAlignCenter,
 				Label:       "Select value",
+			}},
+		{
+			Label:         "InputBox number value",
+			ComponentType: ComponentTypeInputBox,
+			Component: &Button{
+				BaseComponent: BaseComponent{
+					Id: id + "_inputbox_number",
+					Data: ut.IM{
+						"input_type": InputBoxTypeNumber,
+						"value":      "123.45",
+						"title":      "New fieldname",
+						"message":    "Enter the value:",
+						"info":       "",
+						"tag":        "next_func",
+						"default_ok": false,
+					},
+					EventURL:     eventURL,
+					OnResponse:   testInputBoxResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
+				},
+				ButtonStyle: ButtonStyleDefault,
+				Align:       TextAlignCenter,
+				Label:       "Input number message",
+			}},
+		{
+			Label:         "InputBox integer value",
+			ComponentType: ComponentTypeInputBox,
+			Component: &Button{
+				BaseComponent: BaseComponent{
+					Id: id + "_inputbox_text",
+					Data: ut.IM{
+						"input_type": InputBoxTypeInteger,
+						"value":      "123",
+						"title":      "New fieldname",
+						"message":    "Enter the value:",
+						"info":       "",
+						"tag":        "next_func",
+						"default_ok": false,
+					},
+					EventURL:     eventURL,
+					OnResponse:   testInputBoxResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
+				},
+				ButtonStyle: ButtonStyleDefault,
+				Align:       TextAlignCenter,
+				Label:       "Input integer message",
+			}},
+		{
+			Label:         "InputBox date value",
+			ComponentType: ComponentTypeInputBox,
+			Component: &Button{
+				BaseComponent: BaseComponent{
+					Id: id + "_inputbox_date",
+					Data: ut.IM{
+						"input_type": InputBoxTypeDate,
+						"value":      "2025-01-01",
+						"title":      "New fieldname",
+						"message":    "Enter the value:",
+						"info":       "",
+						"tag":        "next_func",
+						"default_ok": false,
+					},
+					EventURL:     eventURL,
+					OnResponse:   testInputBoxResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
+				},
+				ButtonStyle: ButtonStyleDefault,
+				Align:       TextAlignCenter,
+				Label:       "Input date message",
+			}},
+		{
+			Label:         "InputBox time value",
+			ComponentType: ComponentTypeInputBox,
+			Component: &Button{
+				BaseComponent: BaseComponent{
+					Id: id + "_inputbox_time",
+					Data: ut.IM{
+						"input_type": InputBoxTypeTime,
+						"value":      "12:00",
+						"title":      "New fieldname",
+						"message":    "Enter the value:",
+						"info":       "",
+						"tag":        "next_func",
+						"default_ok": false,
+					},
+					EventURL:     eventURL,
+					OnResponse:   testInputBoxResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
+				},
+				ButtonStyle: ButtonStyleDefault,
+				Align:       TextAlignCenter,
+				Label:       "Input time message",
+			}},
+		{
+			Label:         "InputBox datetime value",
+			ComponentType: ComponentTypeInputBox,
+			Component: &Button{
+				BaseComponent: BaseComponent{
+					Id: id + "_inputbox_datetime",
+					Data: ut.IM{
+						"input_type": InputBoxTypeDateTime,
+						"value":      "2025-01-01T12:00",
+						"title":      "New fieldname",
+						"message":    "Enter the value:",
+						"info":       "",
+						"tag":        "next_func",
+						"default_ok": false,
+					},
+					EventURL:     eventURL,
+					OnResponse:   testInputBoxResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
+				},
+				ButtonStyle: ButtonStyleDefault,
+				Align:       TextAlignCenter,
+				Label:       "Input datetime message",
 			}},
 	}
 }

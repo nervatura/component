@@ -655,10 +655,10 @@ func TestLogin(cc ClientComponent) []TestComponent {
 				ShowHelp:     true,
 				HelpURL:      "http://gooogle.com",
 				AuthButtons: []LoginAuthButton{
-					{Id: "google", Label: "Google", Icon: "Google"},
-					{Id: "facebook", Label: "Facebook", Icon: "Facebook"},
-					{Id: "github", Label: "Github", Icon: "Github"},
-					{Id: "microsoft", Label: "Microsoft", Icon: "Microsoft"},
+					{Id: "google", Label: "Google", Icon: IconGoogle},
+					{Id: "facebook", Label: "Facebook", Icon: IconFacebook},
+					{Id: "github", Label: "Github", Icon: IconGithub},
+					{Id: "microsoft", Label: "Microsoft", Icon: IconMicrosoft},
 				},
 			}},
 		{
@@ -683,9 +683,9 @@ func TestLogin(cc ClientComponent) []TestComponent {
 				Labels:       ut.MergeSM(nil, testLoginLabels["en"]),
 				HideDatabase: true,
 				AuthButtons: []LoginAuthButton{
-					{Id: "google", Label: "Google", Icon: "Google"},
-					{Id: "facebook", Label: "Facebook", Icon: "Facebook"},
-					{Id: "microsoft", Label: "Microsoft", Icon: "Microsoft"},
+					{Id: "google", Label: "Google", Icon: IconGoogle},
+					{Id: "facebook", Label: "Facebook", Icon: IconFacebook},
+					{Id: "microsoft", Label: "Microsoft", Icon: IconMicrosoft},
 				},
 				HidePassword: true,
 			}},
