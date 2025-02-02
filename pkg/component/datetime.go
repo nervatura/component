@@ -223,7 +223,7 @@ func (dti *DateTime) Render() (html template.HTML, err error) {
 		},
 	}
 	tpl := `<input id="{{ .Id }}" name="{{ .Name }}" type="{{ .Type }}" value="{{ .Value }}"
-	{{ if ne .EventURL "" }} hx-post="{{ .EventURL }}" hx-target="{{ .Target }}" {{ if ne .Sync "none" }} hx-sync="{{ .Sync }}"{{ end }} hx-swap="{{ .Swap }}"{{ end }}
+	{{ if ne .EventURL "" }} hx-post="{{ .EventURL }}" hx-trigger="blur, keyup[keyCode==13]" hx-target="{{ .Target }}" {{ if ne .Sync "none" }} hx-sync="{{ .Sync }}"{{ end }} hx-swap="{{ .Swap }}"{{ end }}
 	{{ if ne .Indicator "none" }} hx-indicator="#{{ .Indicator }}"{{ end }}
 	{{ if .Picker }} onfocus="this.showPicker()"{{ end }}
 	{{ if .ReadOnly }} readonly{{ end }}

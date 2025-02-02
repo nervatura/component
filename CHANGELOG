@@ -1,3 +1,6 @@
+## 1.7.22
+- DateTime component: set the event trigger to blur and enter key
+
 ## 1.7.21
 - InputBox component: add InputBoxTypeString, InputBoxTypeText, InputBoxTypeColor, InputBoxTypeNumber, InputBoxTypeInteger, InputBoxTypeDate, InputBoxTypeTime, InputBoxTypeDateTime options
 
