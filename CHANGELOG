@@ -1,3 +1,13 @@
+## 1.7.23
+- Toggle component: change the input base and form compatibility component
+- Login component: form base LoginEventLogin event
+- Button component: add FormId option
+- Input component: add Required option
+- Number component: number format bug fixes
+- Table component: add Editable, HideHeader and Unsortable options
+- Table component: add TableField type ReadOnly, Options, Required, LinkLimit, InputLink, TriggerEvent options
+- Browser component: changing the display of search criteria to an editable table
+
 ## 1.7.22
 - DateTime component: set the event trigger to blur and enter key
 

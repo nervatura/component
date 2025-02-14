@@ -27,6 +27,7 @@
   text-align: right;
   font-size: 13px;
   font-weight: normal;
+  font-family: var(--font-family);
 }
 
 .login-title-cell {

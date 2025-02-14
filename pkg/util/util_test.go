@@ -932,3 +932,39 @@ func TestILtoSL(t *testing.T) {
 		})
 	}
 }
+
+func TestStringLimit(t *testing.T) {
+	type args struct {
+		value  string
+		length int64
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "ok",
+			args: args{
+				value:  "test",
+				length: 5,
+			},
+			want: "test",
+		},
+		{
+			name: "limit",
+			args: args{
+				value:  "testtest",
+				length: 5,
+			},
+			want: "testt...",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := StringLimit(tt.args.value, tt.args.length); got != tt.want {
+				t.Errorf("StringLimit() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

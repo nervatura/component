@@ -57,6 +57,8 @@ type Input struct {
 	AutoFocus bool `json:"auto_focus"`
 	// Sets the values of the invalid class style
 	Invalid bool `json:"invalid"`
+	// Specifies that the input element is required
+	Required bool `json:"required"`
 	// Specifies the maximum number of characters allowed in the input element
 	MaxLength int64 `json:"max_length"`
 	// Specifies the width, in characters, of the input element
@@ -82,6 +84,7 @@ func (inp *Input) Properties() ut.IM {
 			"readonly":    inp.ReadOnly,
 			"auto_focus":  inp.AutoFocus,
 			"invalid":     inp.Invalid,
+			"required":    inp.Required,
 			"max_length":  inp.MaxLength,
 			"size":        inp.Size,
 			"rows":        inp.Rows,
@@ -147,6 +150,10 @@ func (inp *Input) SetProperty(propName string, propValue interface{}) interface{
 		"invalid": func() interface{} {
 			inp.Invalid = ut.ToBoolean(propValue, false)
 			return inp.Invalid
+		},
+		"required": func() interface{} {
+			inp.Required = ut.ToBoolean(propValue, false)
+			return inp.Required
 		},
 		"max_length": func() interface{} {
 			inp.MaxLength = ut.ToInteger(propValue, 0)
@@ -225,6 +232,7 @@ func (inp *Input) Render() (html template.HTML, err error) {
 	{{ if ne .Placeholder "" }} placeholder="{{ .Placeholder }}"{{ end }}
 	{{ if .ReadOnly }} readonly{{ end }}
 	{{ if .Disabled }} disabled{{ end }}
+	{{ if .Required }} required{{ end }}
 	{{ if .AutoFocus }} autofocus{{ end }}
 	{{ if ne .Label "" }} aria-label="{{ .Label }}"{{ end }}
 	{{ if gt .MaxLength 0 }} maxlength="{{ .MaxLength }}"{{ end }}

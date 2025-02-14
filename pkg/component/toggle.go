@@ -104,32 +104,6 @@ func (tgl *Toggle) OnRequest(te TriggerEvent) (re ResponseEvent) {
 	return evt
 }
 
-func (tgl *Toggle) getComponent(name string) (template.HTML, error) {
-	ccMap := map[string]func() ClientComponent{
-		"toggleOn": func() ClientComponent {
-			return &Icon{
-				Value: "ToggleOn", Width: 40, Height: 32.6,
-			}
-		},
-		"toggleOff": func() ClientComponent {
-			return &Icon{
-				Value: "ToggleOff", Width: 40, Height: 32.6,
-			}
-		},
-		"check": func() ClientComponent {
-			return &Icon{
-				Value: "CheckSquare", Width: 32, Height: 32,
-			}
-		},
-		"empty": func() ClientComponent {
-			return &Icon{
-				Value: "SquareEmpty", Width: 32, Height: 32,
-			}
-		},
-	}
-	return ccMap[name]().Render()
-}
-
 /*
 Based on the values, it will generate the html code of the [Toggle] or return with an error message.
 */
@@ -143,19 +117,21 @@ func (tgl *Toggle) Render() (html template.HTML, err error) {
 		"customClass": func() string {
 			return strings.Join(tgl.Class, " ")
 		},
-		"toggleComponent": func(name string) (template.HTML, error) {
-			return tgl.getComponent(name)
+		"inputValue": func() string {
+			return ut.ToString(tgl.Value, "false")
 		},
 	}
-	tpl := `<div id="{{ .Id }}" name="{{ .Name }}" 
-	{{ if eq .Disabled false }}{{ if ne .EventURL "" }} hx-post="{{ .EventURL }}" hx-target="{{ .Target }}" {{ if ne .Sync "none" }} hx-sync="{{ .Sync }}"{{ end }} hx-swap="{{ .Swap }}"{{ end }}
-	{{ if ne .Indicator "none" }} hx-indicator="#{{ .Indicator }}"{{ end }}{{ end }}
-	 class="toggle {{ customClass }}{{ if .Full }} full{{ end }}{{ if .Disabled }} toggle-disabled{{ end }}
-	{{ if .Border }} toggle-border{{ end }}{{ if .Value }} toggle-on{{ else }} toggle-off{{ end }}"
-	{{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}
-	>{{ if .CheckBox }}{{ if .Value }}{{ toggleComponent "check" }}{{ else }}{{ toggleComponent "empty" }}{{ end }}
-	{{ else }}{{ if .Value }}{{ toggleComponent "toggleOn" }}{{ else }}{{ toggleComponent "toggleOff" }}{{ end }}{{ end }}
-	</div>`
+	tpl := `<div id="{{ .Id }}"
+		{{ if eq .Disabled false }}{{ if ne .EventURL "" }} hx-post="{{ .EventURL }}" hx-target="{{ .Target }}" {{ if ne .Sync "none" }} hx-sync="{{ .Sync }}"{{ end }} hx-swap="{{ .Swap }}"{{ end }}
+		{{ if ne .Indicator "none" }} hx-indicator="#{{ .Indicator }}"{{ end }}{{ end }}
+		 class="toggle {{ customClass }}{{ if .Full }} full{{ end }}{{ if .Disabled }} toggle-disabled{{ end }}
+		{{ if .Border }} toggle-border{{ end }}"
+		{{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}
+		><label class="{{ if .CheckBox }}checkmark-container{{ else }}switch{{ end }}">
+		<input name="{{ .Name }}" type="checkbox" value="{{ inputValue }}"
+		{{ if .Value }} checked{{ end }} {{ if .Disabled }} disabled{{ end }}>
+		<span class="{{ if .CheckBox }}checkmark{{ else }}slider round{{ end }}{{ if .Disabled }} toggle-disabled{{ end }}"></span>
+		</label></div>`
 
 	if html, err = ut.TemplateBuilder("toggle", tpl, funcMap, tgl); err == nil && tgl.EventURL != "" {
 		tgl.SetProperty("request_map", tgl)

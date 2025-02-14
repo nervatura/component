@@ -265,10 +265,10 @@ func (ibx *InputBox) getComponent(name string) (html template.HTML, err error) {
 	}
 	ccMap := map[string]func() ClientComponent{
 		"btn_ok": func() ClientComponent {
-			return ccBtn(ButtonStylePrimary, ibx.LabelOK, "Check", ibx.DefaultOK)
+			return ccBtn(ButtonStylePrimary, ibx.LabelOK, IconCheck, ibx.DefaultOK)
 		},
 		"btn_cancel": func() ClientComponent {
-			return ccBtn(ButtonStyleDefault, ibx.LabelCancel, "Times", false)
+			return ccBtn(ButtonStyleDefault, ibx.LabelCancel, IconTimes, false)
 		},
 		"string_value": func() ClientComponent {
 			return ccInp(ibx.Value, InputTypeString)
@@ -320,9 +320,9 @@ func (ibx *InputBox) Render() (html template.HTML, err error) {
 			return ibx.getComponent(name)
 		},
 	}
-	tpl := `<form id="{{ .Id }}" name="{{ .Name }}" class="row {{ customClass }}"
-	{{ if eq .InputType "IBOX_NUMBER" }} novalidate{{ end }}
-	{{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}
+	tpl := `<div id="{{ .Id }}" name="{{ .Name }}" class="row {{ customClass }}"
+	{{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}>
+	<form id="{{ .Id }}" name="inputbox_form"
 	{{ if ne .EventURL "" }} hx-post="{{ .EventURL }}" hx-target="{{ .Target }}" {{ if ne .Sync "none" }} hx-sync="{{ .Sync }}"{{ end }} hx-swap="{{ .Swap }}"{{ end }}
 	{{ if ne .Indicator "none" }} hx-indicator="#{{ .Indicator }}"{{ end }}
 	><div class="modal"><div class="dialog"><div class="panel">
@@ -345,7 +345,7 @@ func (ibx *InputBox) Render() (html template.HTML, err error) {
 	{{ if ne .InputType "IBOX_OK" }}<div class="cell padding-small half" >{{ inputComponent "btn_cancel" }}</div>{{ end }}
 	</div></div>
 	</div></div></div>
-	</form>`
+	</form></div>`
 
 	if html, err = ut.TemplateBuilder("inputbox", tpl, funcMap, ibx); err == nil && ibx.EventURL != "" {
 		ibx.SetProperty("request_map", ibx)

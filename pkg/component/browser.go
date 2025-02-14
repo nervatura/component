@@ -37,6 +37,8 @@ var browserDefaultLabel ut.SM = ut.SM{
 	"browser_columns":      "Columns",
 	"browser_total":        "Total",
 	"browser_filter":       "Filter",
+	"browser_comparison":   "?",
+	"browser_filters":      "Filter criterias",
 	"browser_search":       "Search",
 	"browser_bookmark":     "Bookmark",
 	"browser_export":       "Export",
@@ -129,6 +131,8 @@ type Browser struct {
 	VisibleColumns map[string]bool `json:"visible_columns"`
 	// List of filter criteria
 	Filters []BrowserFilter `json:"filters"`
+	// The index of the filter criteria to be edited
+	FilterIndex int64 `json:"filter_index"`
 	// Unfilterable table fields. These field names will not be included in the list
 	HideFilters map[string]bool `json:"hide_filters"`
 	// Multiple type column filter definitions
@@ -161,6 +165,7 @@ func (bro *Browser) Properties() ut.IM {
 			"help_url":        bro.HelpURL,
 			"visible_columns": bro.VisibleColumns,
 			"filters":         bro.Filters,
+			"filter_index":    bro.FilterIndex,
 			"hide_filters":    bro.HideFilters,
 			"meta_fields":     bro.MetaFields,
 			"labels":          bro.Labels,
@@ -278,6 +283,13 @@ func (bro *Browser) Validation(propName string, propValue interface{}) interface
 		"filters": func() interface{} {
 			return bro.validationFilters(propValue)
 		},
+		"filter_index": func() interface{} {
+			value := ut.ToInteger(propValue, 0)
+			if value < 0 || value > int64(len(bro.Filters)) {
+				value = 0
+			}
+			return value
+		},
 		"meta_fields": func() interface{} {
 			return bro.validationMetaFields(propValue)
 		},
@@ -326,6 +338,10 @@ func (bro *Browser) SetProperty(propName string, propValue interface{}) interfac
 		"filters": func() interface{} {
 			bro.Filters = bro.Validation(propName, propValue).([]BrowserFilter)
 			return bro.Filters
+		},
+		"filter_index": func() interface{} {
+			bro.FilterIndex = bro.Validation(propName, propValue).(int64)
+			return bro.FilterIndex
 		},
 		"hide_filters": func() interface{} {
 			bro.HideFilters = bro.Validation(propName, propValue).(map[string]bool)
@@ -466,6 +482,63 @@ func (bro *Browser) exportData() (re ResponseEvent) {
 	return re
 }
 
+func (bro *Browser) filterEvent(evt ResponseEvent) (re ResponseEvent) {
+	broEvt := ResponseEvent{
+		Trigger: bro, TriggerName: bro.Name, Value: evt.Value,
+		Name: BrowserEventChangeFilter,
+		Header: ut.SM{
+			HeaderRetarget: "#" + bro.Id,
+		},
+	}
+
+	evtData := ut.ToIM(evt.Value, ut.IM{})
+	filterIndex := ut.ToInteger(evtData["index"], 0)
+	filterRow := ut.ToIM(evtData["row"], ut.IM{})
+	filters := bro.GetProperty("filters").([]BrowserFilter)
+
+	switch evt.Name {
+	case TableEventFormDelete:
+		if len(filters) > int(filterIndex) {
+			filters = append(filters[:filterIndex], filters[filterIndex+1:]...)
+		}
+		bro.SetProperty("filter_index", 0)
+		bro.SetProperty("filters", filters)
+
+	case TableEventFormUpdate:
+		filters[filterIndex].Field = ut.ToString(filterRow["field"], "")
+		filters[filterIndex].Comp = ut.ToString(filterRow["comp"], "")
+		filters[filterIndex].Value = filterRow["value"]
+		bro.SetProperty("filter_index", 0)
+		bro.SetProperty("filters", filters)
+
+	case TableEventFormChange:
+		if ut.ToString(evtData["field"], "") == "field" {
+			rows := ut.ToIMA(evt.Trigger.GetProperty("rows"), []ut.IM{})
+			field := ut.ToString(evtData["value"], "")
+			rows[filterIndex]["comp"] = browserFilterComp[0].Value
+			rows[filterIndex]["comp_options"] = bro.filterCompOptions(bro.getFilterType(field))
+			rows[filterIndex]["value"] = bro.defaultFilterValue(bro.getFilterType(field))
+			rows[filterIndex]["value_meta"] = bro.getFilterType(field)
+			evt.Trigger.SetProperty("rows", rows)
+		}
+		broEvt = evt
+
+	case TableEventFormCancel:
+		broEvt.Name = TableEventFormCancel
+		broEvt.Value = ut.IM{"row": filterRow, "index": filterIndex}
+		bro.SetProperty("filter_index", 0)
+		bro.SetProperty("filters", filters)
+
+	case TableEventFormEdit:
+		broEvt.Name = TableEventFormEdit
+		bro.SetProperty("filter_index", evt.Value)
+	}
+	if bro.OnResponse != nil {
+		return bro.OnResponse(broEvt)
+	}
+	return broEvt
+}
+
 func (bro *Browser) response(evt ResponseEvent) (re ResponseEvent) {
 	broEvt := ResponseEvent{
 		Trigger: bro, TriggerName: bro.Name, Value: evt.Value,
@@ -473,6 +546,7 @@ func (bro *Browser) response(evt ResponseEvent) (re ResponseEvent) {
 	if evt.TriggerName != "btn_views" {
 		bro.SetProperty("show_dropdown", false)
 	}
+	bro.SetProperty("filter_index", 0)
 	switch evt.TriggerName {
 	case "table":
 		broEvt = evt
@@ -481,8 +555,7 @@ func (bro *Browser) response(evt ResponseEvent) (re ResponseEvent) {
 		return bro.exportData()
 
 	case "hide_header", "btn_search", "btn_bookmark", "btn_help", "btn_views", "btn_columns",
-		"btn_filter", "btn_total", "menu_item", "col_item", "filter_delete", "btn_ok", "edit_row",
-		"filter_field", "filter_comp", "filter_value":
+		"btn_filter", "btn_total", "menu_item", "col_item", "btn_ok", "edit_row":
 		evtMap := map[string]func(){
 			"hide_header": func() {
 				broEvt.Name = BrowserEventChange
@@ -514,6 +587,7 @@ func (bro *Browser) response(evt ResponseEvent) (re ResponseEvent) {
 						Value: bro.defaultFilterValue(bro.Fields[0].FieldType),
 					})
 					bro.SetProperty("filters", filters)
+					bro.SetProperty("filter_index", int64(len(filters)))
 				}
 			},
 			"btn_total": func() {
@@ -539,38 +613,6 @@ func (bro *Browser) response(evt ResponseEvent) (re ResponseEvent) {
 				broEvt.Name = BrowserEventSetColumn
 				broEvt.Value = fieldName
 				bro.SetProperty("visible_columns", []map[string]bool{{fieldName: !oldValue}})
-			},
-			"filter_field": func() {
-				broEvt.Name = BrowserEventChangeFilter
-				filterIndex := ut.ToInteger(evt.Trigger.GetProperty("data").(ut.IM)["index"], 0)
-				filters := bro.GetProperty("filters").([]BrowserFilter)
-				filters[filterIndex].Field = ut.ToString(evt.Value, "")
-				filters[filterIndex].Comp = browserFilterComp[0].Value
-				filters[filterIndex].Value = bro.defaultFilterValue(bro.getFilterType(filters[filterIndex].Field))
-				bro.SetProperty("filters", filters)
-			},
-			"filter_comp": func() {
-				broEvt.Name = BrowserEventChangeFilter
-				filterIndex := ut.ToInteger(evt.Trigger.GetProperty("data").(ut.IM)["index"], 0)
-				filters := bro.GetProperty("filters").([]BrowserFilter)
-				filters[filterIndex].Comp = ut.ToString(evt.Value, "")
-				bro.SetProperty("filters", filters)
-			},
-			"filter_value": func() {
-				broEvt.Name = BrowserEventChangeFilter
-				filterIndex := ut.ToInteger(evt.Trigger.GetProperty("data").(ut.IM)["index"], 0)
-				filters := bro.GetProperty("filters").([]BrowserFilter)
-				filters[filterIndex].Value = evt.Value
-				bro.SetProperty("filters", filters)
-			},
-			"filter_delete": func() {
-				broEvt.Name = BrowserEventChangeFilter
-				filterIndex := ut.ToInteger(evt.Trigger.GetProperty("data").(ut.IM)["index"], 0)
-				filters := bro.GetProperty("filters").([]BrowserFilter)
-				if len(filters) > int(filterIndex) {
-					filters = append(filters[:filterIndex], filters[filterIndex+1:]...)
-				}
-				bro.SetProperty("filters", filters)
 			},
 		}
 		evtMap[evt.TriggerName]()
@@ -601,11 +643,11 @@ func (bro *Browser) defaultFilterValue(ftype string) interface{} {
 func (bro *Browser) getFilterType(fieldName string) string {
 	fieldType := TableFieldTypeString
 	for _, field := range bro.Fields {
-		if (field.Name == fieldName) && (field.FieldType != "") {
+		if (field.Name == fieldName) && (field.FieldType != "") && (field.FieldType != TableFieldTypeLink) {
 			return field.FieldType
 		}
 	}
-	if mValue, found := bro.MetaFields[fieldName]; found {
+	if mValue, found := bro.MetaFields[fieldName]; found && (mValue.FieldType != TableFieldTypeLink) {
 		return mValue.FieldType
 	}
 	return fieldType
@@ -639,82 +681,13 @@ func (bro *Browser) setTotalValues() []BrowserTotalField {
 	return total
 }
 
-func (bro *Browser) getComponentSelector(name string, data ut.IM) *Select {
-	ccSel := func(options []SelectOption, index, value string) *Select {
-		sel := &Select{
-			BaseComponent: BaseComponent{
-				Id:           bro.Id + "_" + name + "_" + index,
-				Name:         name,
-				Data:         ut.IM{"index": index},
-				EventURL:     bro.EventURL,
-				Target:       bro.Target,
-				OnResponse:   bro.response,
-				RequestValue: bro.RequestValue,
-				RequestMap:   bro.RequestMap,
-			},
-			IsNull:  false,
-			Options: options,
-		}
-		sel.SetProperty("value", value)
-		return sel
-	}
-
-	ccMap := map[string]func() *Select{
-		"filter_field": func() *Select {
-			options := []SelectOption{}
-			metaField := false
-			for _, field := range bro.Fields {
-				if !bro.HideFilters[field.Name] {
-					if field.FieldType == TableFieldTypeMeta {
-						if !metaField {
-							for fName, fValue := range bro.MetaFields {
-								options = append(options, SelectOption{Value: fName, Text: fValue.Label})
-							}
-							metaField = true
-						}
-					} else {
-						options = append(options, SelectOption{Value: field.Name, Text: field.Label})
-					}
-				}
-			}
-			index := ut.ToString(data["index"], "0")
-			value := ut.ToString(data["field"], "")
-			return ccSel(options, index, value)
-		},
-		"filter_comp": func() *Select {
-			options := func(ftype string) []SelectOption {
-				if !slices.Contains([]string{
-					TableFieldTypeDate, TableFieldTypeDateTime, TableFieldTypeTime, TableFieldTypeInteger,
-					TableFieldTypeNumber}, ftype) {
-					return browserFilterComp[0:2]
-				}
-				return browserFilterComp
-			}
-			index := ut.ToString(data["index"], "0")
-			value := ut.ToString(data["comp"], "")
-			fieldName := ut.ToString(data["field"], "")
-			fieldType := bro.getFilterType(fieldName)
-			return ccSel(options(fieldType), index, value)
-		},
-		"filter_value": func() *Select {
-			index := ut.ToString(data["index"], "0")
-			value := ut.ToString(data["value"], "")
-			options := []SelectOption{
-				{Value: "0", Text: bro.msg("browser_label_no")},
-				{Value: "1", Text: bro.msg("browser_label_yes")}}
-			return ccSel(options, index, value)
-		},
-	}
-	return ccMap[name]()
-}
-
 func (bro *Browser) getComponentTable() *Table {
 	fields := []TableField{
 		{Column: &TableColumn{
 			Id:        "edit_row",
 			Header:    "",
 			CellStyle: ut.SM{"width": "25px", "padding": "7px 3px 3px 8px"},
-			Cell: func(row ut.IM, col TableColumn, value interface{}) template.HTML {
+			Cell: func(row ut.IM, col TableColumn, value interface{}, rowIndex int64) template.HTML {
 				var ico template.HTML
 				ico, _ = bro.getComponent("edit_row", row)
 				return ico
@@ -747,13 +720,74 @@ func (bro *Browser) getComponentTable() *Table {
 		AddItem:           bro.AddItem,
 		LabelAdd:          ut.ToString(bro.LabelAdd, bro.msg("browser_label_new")),
 		AddIcon:           bro.AddIcon,
-		LabelYes:          bro.LabelYes,
-		LabelNo:           bro.LabelNo,
 		RowSelected:       bro.RowSelected,
 		TablePadding:      bro.TablePadding,
 		SortCol:           bro.SortCol,
 		SortAsc:           bro.SortAsc,
 	}
+	return tbl
+}
+
+func (bro *Browser) filterCompOptions(ftype string) []SelectOption {
+	if !slices.Contains([]string{
+		TableFieldTypeDate, TableFieldTypeDateTime, TableFieldTypeTime, TableFieldTypeInteger,
+		TableFieldTypeNumber}, ftype) {
+		return browserFilterComp[0:2]
+	}
+	return browserFilterComp
+}
+
+func (bro *Browser) filterTable() *Table {
+	fieldOptions := func() (options []SelectOption) {
+		options = []SelectOption{}
+		metaField := false
+		for _, field := range bro.Fields {
+			if !bro.HideFilters[field.Name] {
+				if field.FieldType == TableFieldTypeMeta {
+					if !metaField {
+						for fName, fValue := range bro.MetaFields {
+							options = append(options, SelectOption{Value: fName, Text: fValue.Label})
+						}
+						metaField = true
+					}
+				} else {
+					options = append(options, SelectOption{Value: field.Name, Text: field.Label})
+				}
+			}
+		}
+		return options
+	}
+	var fields []TableField = []TableField{
+		{Name: "field", FieldType: TableFieldTypeString, Label: bro.msg("browser_filter"), Options: fieldOptions(), TriggerEvent: true},
+		{Name: "comp", FieldType: TableFieldTypeMeta, Label: bro.msg("browser_comparison"), Required: true},
+		{Name: "value", FieldType: TableFieldTypeMeta, Label: bro.msg("browser_value")},
+	}
+	rows := []ut.IM{}
+	for _, filter := range bro.Filters {
+		rows = append(rows, ut.IM{
+			"field": filter.Field,
+			"comp":  filter.Comp, "comp_meta": TableFieldTypeString, "comp_options": bro.filterCompOptions(bro.getFilterType(filter.Field)),
+			"value": filter.Value, "value_meta": bro.getFilterType(filter.Field),
+		})
+	}
+	tbl := &Table{
+		BaseComponent: BaseComponent{
+			Id:           bro.Id + "_filter_table",
+			Name:         "filter_table",
+			EventURL:     bro.EventURL,
+			OnResponse:   bro.filterEvent,
+			RequestValue: bro.RequestValue,
+			RequestMap:   bro.RequestMap,
+		},
+		Fields:      fields,
+		Pagination:  PaginationTypeNone,
+		PageSize:    5,
+		TableFilter: false,
+		Editable:    true,
+		HideHeader:  true,
+	}
+	tbl.SetProperty("rows", rows)
+	tbl.SetProperty("edit_index", bro.FilterIndex)
 	return tbl
 }
 
@@ -813,62 +847,26 @@ func (bro *Browser) getComponent(name string, data ut.IM) (html template.HTML, e
 			},
 		}
 	}
-	ccInp := func(index, value string) *Input {
-		inp := &Input{
+	ccIcon := func(icoKey, rowKey string, width, height float64) *Icon {
+		return &Icon{
 			BaseComponent: BaseComponent{
-				Id:           bro.Id + "_" + name + "_" + index,
+				Id:           bro.Id + "_" + name + "_" + rowKey,
 				Name:         name,
-				Data:         ut.IM{"index": index},
 				EventURL:     bro.EventURL,
 				Target:       bro.Target,
+				Data:         data,
 				OnResponse:   bro.response,
 				RequestValue: bro.RequestValue,
 				RequestMap:   bro.RequestMap,
 			},
-			Type: InputTypeString,
-			Full: true,
+			Value:  icoKey,
+			Width:  width,
+			Height: height,
 		}
-		inp.SetProperty("value", value)
-		return inp
-	}
-	ccNum := func(index, value string) *NumberInput {
-		inp := &NumberInput{
-			BaseComponent: BaseComponent{
-				Id:           bro.Id + "_" + name + "_" + index,
-				Name:         name,
-				Data:         ut.IM{"index": index},
-				EventURL:     bro.EventURL,
-				Target:       bro.Target,
-				OnResponse:   bro.response,
-				RequestValue: bro.RequestValue,
-				RequestMap:   bro.RequestMap,
-			},
-			Integer: false,
-		}
-		inp.SetProperty("value", value)
-		return inp
-	}
-	ccDti := func(index, value, dtype string) *DateTime {
-		inp := &DateTime{
-			BaseComponent: BaseComponent{
-				Id:           bro.Id + "_" + name + "_" + index,
-				Name:         name,
-				Data:         ut.IM{"index": index},
-				EventURL:     bro.EventURL,
-				Target:       bro.Target,
-				OnResponse:   bro.response,
-				RequestValue: bro.RequestValue,
-				RequestMap:   bro.RequestMap,
-			},
-			Type:   dtype,
-			IsNull: false,
-		}
-		inp.SetProperty("value", value)
-		return inp
 	}
 	ccMap := map[string]func() ClientComponent{
 		"hide_header": func() ClientComponent {
-			btn := ccBtn("Filter", "browser_view", ButtonStylePrimary, "0")
+			btn := ccBtn(IconFilter, "browser_view", ButtonStylePrimary, "0")
 			for _, view := range bro.Views {
 				if view.Value == bro.View {
 					btn.Label = view.Text
@@ -879,88 +877,58 @@ func (bro *Browser) getComponent(name string, data ut.IM) (html template.HTML, e
 			return btn
 		},
 		"btn_search": func() ClientComponent {
-			return ccBtn("Search", "browser_search", ButtonStyleBorder, "0")
+			return ccBtn(IconSearch, "browser_search", ButtonStyleBorder, "0")
 		},
 		"btn_bookmark": func() ClientComponent {
-			return ccBtn("Star", "browser_bookmark", ButtonStyleBorder, "0")
+			return ccBtn(IconStar, "browser_bookmark", ButtonStyleBorder, "0")
 		},
 		"btn_export": func() ClientComponent {
 			if bro.ExportURL != "" {
-				return ccLnk("Download", "browser_export", bro.ExportURL, bro.Download)
+				return ccLnk(IconDownload, "browser_export", bro.ExportURL, bro.Download)
 			}
-			return ccBtn("Download", "browser_export", ButtonStyleBorder, "0")
+			btn := ccBtn(IconDownload, "browser_export", ButtonStyleBorder, "0")
+			btn.SetProperty("indicator", IndicatorNone)
+			return btn
 		},
 		"btn_help": func() ClientComponent {
 			if bro.HelpURL != "" {
-				return ccLnk("QuestionCircle", "browser_help", bro.HelpURL, "")
+				return ccLnk(IconQuestionCircle, "browser_help", bro.HelpURL, "")
 			}
-			return ccBtn("QuestionCircle", "browser_help", ButtonStyleBorder, "0")
+			return ccBtn(IconQuestionCircle, "browser_help", ButtonStyleBorder, "0")
 		},
 		"btn_views": func() ClientComponent {
-			btn := ccBtn("Eye", "browser_views", ButtonStyleBorder, "0")
+			btn := ccBtn(IconEye, "browser_views", ButtonStyleBorder, "0")
 			btn.Selected = bro.ShowDropdown
 			btn.Indicator = IndicatorNone
 			return btn
 		},
 		"btn_columns": func() ClientComponent {
-			return ccBtn("Columns", "browser_columns", ButtonStyleBorder, "0")
+			return ccBtn(IconColumns, "browser_columns", ButtonStyleBorder, "0")
 		},
 		"btn_filter": func() ClientComponent {
-			return ccBtn("Plus", "browser_filter", ButtonStyleBorder, "0")
+			return ccBtn(IconPlus, "browser_filter", ButtonStyleBorder, "0")
 		},
 		"btn_total": func() ClientComponent {
-			btn := ccBtn("InfoCircle", "browser_total", ButtonStyleBorder, "0")
+			btn := ccBtn(IconInfoCircle, "browser_total", ButtonStyleBorder, "0")
 			btn.Disabled = (len(bro.Rows) == 0) || (len(bro.totalFields) == 0)
 			return btn
 		},
 		"btn_ok": func() ClientComponent {
-			btn := ccBtn("Check", "browser_label_ok", ButtonStylePrimary, "0")
+			btn := ccBtn(IconCheck, "browser_label_ok", ButtonStylePrimary, "0")
 			btn.AutoFocus = true
 			btn.Full = true
 			return btn
 		},
-		"filter_field": func() ClientComponent {
-			return bro.getComponentSelector(name, data)
-		},
-		"filter_comp": func() ClientComponent {
-			return bro.getComponentSelector(name, data)
-		},
-		"filter_value": func() ClientComponent {
-			fieldName := ut.ToString(data["field"], "")
-			fieldType := bro.getFilterType(fieldName)
-			if fieldType == TableFieldTypeBool {
-				return bro.getComponentSelector(name, data)
-			}
-			index := ut.ToString(data["index"], "0")
-			value := ut.ToString(data["value"], "")
-			if slices.Contains([]string{TableFieldTypeNumber, TableFieldTypeInteger}, fieldType) {
-				return ccNum(index, value)
-			}
-			if slices.Contains([]string{
-				TableFieldTypeDate, TableFieldTypeDateTime, TableFieldTypeTime}, fieldType) {
-				dtmap := ut.SM{
-					TableFieldTypeDate:     DateTimeTypeDate,
-					TableFieldTypeDateTime: DateTimeTypeDateTime,
-					TableFieldTypeTime:     DateTimeTypeTime,
-				}
-				return ccDti(index, value, dtmap[fieldType])
-			}
-			return ccInp(index, value)
-		},
-		"filter_delete": func() ClientComponent {
-			index := ut.ToString(data["index"], "0")
-			btn := ccBtn("", "browser_label_delete", ButtonStyleBorder, index)
-			btn.Style = ut.SM{"padding": "8px", "border-radius": "3px"}
-			btn.LabelComponent = &Icon{Value: "Times"}
-			return btn
+		"filter_table": func() ClientComponent {
+			return bro.filterTable()
 		},
 		"menu_item": func() ClientComponent {
 			key := ut.ToString(data["key"], "")
 			label := ut.ToString(data["value"], "")
-			icoKey := "Eye"
+			icoKey := IconEye
 			class := []string{}
 			if key == bro.View {
-				icoKey = "Check"
+				icoKey = IconCheck
 				class = []string{"selected"}
 			}
 			return ccLbl(key, icoKey, label, class)
@@ -968,10 +936,10 @@ func (bro *Browser) getComponent(name string, data ut.IM) (html template.HTML, e
 		"col_item": func() ClientComponent {
 			key := ut.ToString(data["key"], "")
 			label := ut.ToString(data["value"], "")
-			icoKey := "SquareEmpty"
+			icoKey := IconSquareEmpty
 			class := []string{"edit-col"}
 			if ut.ToBoolean(bro.VisibleColumns[key], false) {
-				icoKey = "CheckSquare"
+				icoKey = IconCheckSquare
 				class = []string{"select-col"}
 			}
 			class = append(class, "base-col")
@@ -992,24 +960,10 @@ func (bro *Browser) getComponent(name string, data ut.IM) (html template.HTML, e
 		"edit_row": func() ClientComponent {
 			rowKey := ut.ToString(data[bro.RowKey], "")
 			if rowKey != "" && !bro.ReadOnly {
-				return &Icon{
-					BaseComponent: BaseComponent{
-						Id:           bro.Id + "_" + name + "_" + rowKey,
-						Name:         name,
-						EventURL:     bro.EventURL,
-						Target:       bro.Target,
-						Data:         data,
-						OnResponse:   bro.response,
-						RequestValue: bro.RequestValue,
-						RequestMap:   bro.RequestMap,
-					},
-					Value:  "Edit",
-					Width:  24,
-					Height: 21.3,
-				}
+				return ccIcon(IconEdit, rowKey, 24, 21.3)
 			}
 			return &Icon{
-				Value: "CaretRight",
+				Value: IconCaretRight,
 				Width: 9, Height: 24,
 			}
 		},
@@ -1048,6 +1002,9 @@ func (bro *Browser) Render() (html template.HTML, err error) {
 		"showViews": func() bool {
 			return len(bro.Views) > 0
 		},
+		"showFilters": func() bool {
+			return len(bro.Filters) > 0
+		},
 		"customClass": func() string {
 			return strings.Join(bro.Class, " ")
 		},
@@ -1059,10 +1016,6 @@ func (bro *Browser) Render() (html template.HTML, err error) {
 		},
 		"colItem": func(key, value string) (template.HTML, error) {
 			return bro.getComponent("col_item", ut.IM{"key": key, "value": value})
-		},
-		"filter": func(filterKey string, index int, filterItem BrowserFilter) (template.HTML, error) {
-			return bro.getComponent(filterKey,
-				ut.IM{"index": index, "field": filterItem.Field, "comp": filterItem.Comp, "value": filterItem.Value})
 		},
 		"resultCount": func() int {
 			return len(bro.Rows)
@@ -1106,12 +1059,9 @@ func (bro *Browser) Render() (html template.HTML, err error) {
 	{{ range $index, $field := .Table.Fields }}<div 
 	class="cell col-cell" >{{ colItem $field.Name $field.Label }}</div>{{ end }}
 	</div>{{ end }}
-	{{ range $index, $filter := .Filters }}<div class="section-small-top" >
-	<div class="cell" >{{ filter "filter_field" $index $filter }}</div>
-	<div class="cell" >{{ filter "filter_comp" $index $filter }}</div>
-	<div class="cell mobile" ><div class="cell" >{{ filter "filter_value" $index $filter }}</div>
-	<div class="cell" >{{ filter "filter_delete" $index $filter }}</div>
-	</div>
+	{{ if showFilters }}<div class="row section-top">
+	<div class="row full" style="margin-bottom: 1px;"><div class="cell result-title result-border" >{{ msg "browser_filters" }}</div></div>
+	<div class="row full"><div class="cell" >{{ browserComponent "filter_table" }}</div></div>
 	</div>{{ end }}
 	</div>{{ end }}
 	<div class="row full section-small-top" ><div class="row full result-border" >
@@ -1372,7 +1322,7 @@ func TestBrowser(cc ClientComponent) []TestComponent {
 				VisibleColumns: testBrowserColumns["customer"](),
 				Filters:        testBrowserFilters["customer"](),
 				MetaFields:     testBrowserMetaFields["customer"](),
-				HideFilters:    map[string]bool{"inactive": true},
+				HideFilters:    map[string]bool{"status": true},
 			}},
 		{
 			Label:         "Meta data",

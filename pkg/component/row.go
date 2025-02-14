@@ -294,7 +294,7 @@ func TestRow(cc ClientComponent) []TestComponent {
 							"name":         "button",
 							"button_style": ButtonStylePrimary,
 							"label":        "Primary",
-							"icon":         "Check",
+							"icon":         IconCheck,
 						},
 					}},
 					{Label: "DateTime", Value: Field{

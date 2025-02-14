@@ -1,6 +1,7 @@
 package component
 
 import (
+	"net/url"
 	"reflect"
 	"testing"
 
@@ -72,8 +73,6 @@ func TestTable_GetProperty(t *testing.T) {
 				AddItem:           tt.fields.AddItem,
 				FilterPlaceholder: tt.fields.FilterPlaceholder,
 				FilterValue:       tt.fields.FilterValue,
-				LabelYes:          tt.fields.LabelYes,
-				LabelNo:           tt.fields.LabelNo,
 				LabelAdd:          tt.fields.LabelAdd,
 				AddIcon:           tt.fields.AddIcon,
 				TablePadding:      tt.fields.TablePadding,
@@ -170,7 +169,8 @@ func TestTable_Validation(t *testing.T) {
 				},
 			},
 			want: []TableField{
-				{Name: "name", FieldType: "string", Label: "", TextAlign: "left", VerticalAlign: "middle", Format: false},
+				{Name: "name", FieldType: "string", Label: "", TextAlign: "left", VerticalAlign: "middle", Format: false,
+					LinkLimit: 10, InputLink: false, ReadOnly: false, Options: []SelectOption{}},
 			},
 		},
 	}
@@ -189,8 +189,6 @@ func TestTable_Validation(t *testing.T) {
 				AddItem:           tt.fields.AddItem,
 				FilterPlaceholder: tt.fields.FilterPlaceholder,
 				FilterValue:       tt.fields.FilterValue,
-				LabelYes:          tt.fields.LabelYes,
-				LabelNo:           tt.fields.LabelNo,
 				LabelAdd:          tt.fields.LabelAdd,
 				AddIcon:           tt.fields.AddIcon,
 				TablePadding:      tt.fields.TablePadding,
@@ -270,8 +268,6 @@ func TestTable_SetProperty(t *testing.T) {
 				AddItem:           tt.fields.AddItem,
 				FilterPlaceholder: tt.fields.FilterPlaceholder,
 				FilterValue:       tt.fields.FilterValue,
-				LabelYes:          tt.fields.LabelYes,
-				LabelNo:           tt.fields.LabelNo,
 				LabelAdd:          tt.fields.LabelAdd,
 				AddIcon:           tt.fields.AddIcon,
 				TablePadding:      tt.fields.TablePadding,
@@ -408,8 +404,6 @@ func TestTable_SortRows(t *testing.T) {
 				AddItem:           tt.fields.AddItem,
 				FilterPlaceholder: tt.fields.FilterPlaceholder,
 				FilterValue:       tt.fields.FilterValue,
-				LabelYes:          tt.fields.LabelYes,
-				LabelNo:           tt.fields.LabelNo,
 				LabelAdd:          tt.fields.LabelAdd,
 				AddIcon:           tt.fields.AddIcon,
 				TablePadding:      tt.fields.TablePadding,
@@ -530,6 +524,19 @@ func TestTable_response(t *testing.T) {
 			},
 		},
 		{
+			name: "edit_row",
+			args: args{
+				evt: ResponseEvent{
+					Trigger: &Table{
+						BaseComponent: BaseComponent{
+							Data: ut.IM{},
+						},
+					},
+					TriggerName: "edit_row",
+				},
+			},
+		},
+		{
 			name: "header_sort",
 			fields: fields{
 				Rows: []ut.IM{
@@ -581,8 +588,6 @@ func TestTable_response(t *testing.T) {
 				AddItem:           tt.fields.AddItem,
 				FilterPlaceholder: tt.fields.FilterPlaceholder,
 				FilterValue:       tt.fields.FilterValue,
-				LabelYes:          tt.fields.LabelYes,
-				LabelNo:           tt.fields.LabelNo,
 				LabelAdd:          tt.fields.LabelAdd,
 				AddIcon:           tt.fields.AddIcon,
 				TablePadding:      tt.fields.TablePadding,
@@ -591,6 +596,272 @@ func TestTable_response(t *testing.T) {
 				RowSelected:       tt.fields.RowSelected,
 			}
 			tbl.response(tt.args.evt)
+		})
+	}
+}
+
+func TestTable_OnRequest(t *testing.T) {
+	type fields struct {
+		BaseComponent     BaseComponent
+		RowKey            string
+		Rows              []ut.IM
+		Fields            []TableField
+		Pagination        string
+		CurrentPage       int64
+		PageSize          int64
+		HidePaginatonSize bool
+		TableFilter       bool
+		AddItem           bool
+		FilterPlaceholder string
+		FilterValue       string
+		CaseSensitive     bool
+		LabelAdd          string
+		AddIcon           string
+		TablePadding      string
+		SortCol           string
+		SortAsc           bool
+		RowSelected       bool
+		Editable          bool
+		EditIndex         int64
+	}
+	type args struct {
+		te TriggerEvent
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+	}{
+		{
+			name: "base",
+			fields: fields{
+				Fields: []TableField{
+					{Name: "string", FieldType: TableFieldTypeString},
+					{Name: "number", FieldType: TableFieldTypeNumber},
+					{Name: "link", FieldType: TableFieldTypeLink},
+					{Name: "bool", FieldType: TableFieldTypeBool},
+				},
+				Rows: []ut.IM{
+					{"string": "a", "number": 2, "link": "link", "bool": "true"},
+					{"string": "b", "number": 1, "link": "link", "bool": "false"},
+					{"string": "a", "number": 1, "link": "link", "bool": "true"},
+					{"string": "d", "number": 2, "link": "link", "bool": "false"},
+					{"string": "b", "number": 3, "link": "link", "bool": "true"},
+				},
+				EditIndex: 1,
+			},
+			args: args{
+				te: TriggerEvent{
+					Id: "id",
+					Values: url.Values{
+						"update": []string{"true"},
+						"value":  []string{"test"},
+						"bool":   []string{"true"},
+					},
+				},
+			},
+		},
+		{
+			name: "OnResponse",
+			fields: fields{
+				BaseComponent: BaseComponent{
+					OnResponse: func(evt ResponseEvent) (re ResponseEvent) {
+						evt.Trigger = &Table{}
+						return evt
+					},
+				},
+				Rows: []ut.IM{
+					{"string": "a", "number": 2},
+					{"string": "b", "number": 1},
+					{"string": "a", "number": 1},
+					{"string": "d", "number": 2},
+					{"string": "b", "number": 3},
+				},
+				Fields: []TableField{
+					{Name: "string", FieldType: TableFieldTypeString},
+					{Name: "number", FieldType: TableFieldTypeNumber},
+					{Name: "link", FieldType: TableFieldTypeLink},
+				},
+				EditIndex: 1,
+			},
+			args: args{
+				te: TriggerEvent{
+					Id: "id",
+					Values: url.Values{
+						"delete": []string{"delete"},
+					},
+				},
+			},
+		},
+		{
+			name: "cancel",
+			fields: fields{
+				Fields: []TableField{
+					{Name: "string", FieldType: TableFieldTypeString},
+					{Name: "number", FieldType: TableFieldTypeNumber},
+					{Name: "link", FieldType: TableFieldTypeLink},
+					{Name: "bool", FieldType: TableFieldTypeBool},
+				},
+				Rows: []ut.IM{
+					{"string": "a", "number": 2, "link": "link", "bool": "true"},
+					{"string": "b", "number": 1, "link": "link", "bool": "false"},
+					{"string": "a", "number": 1, "link": "link", "bool": "true"},
+					{"string": "d", "number": 2, "link": "link", "bool": "false"},
+					{"string": "b", "number": 3, "link": "link", "bool": "true"},
+				},
+				EditIndex: 1,
+			},
+			args: args{
+				te: TriggerEvent{
+					Id: "id",
+					Values: url.Values{
+						"cancel": []string{"true"},
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tbl := &Table{
+				BaseComponent:     tt.fields.BaseComponent,
+				RowKey:            tt.fields.RowKey,
+				Rows:              tt.fields.Rows,
+				Fields:            tt.fields.Fields,
+				Pagination:        tt.fields.Pagination,
+				CurrentPage:       tt.fields.CurrentPage,
+				PageSize:          tt.fields.PageSize,
+				HidePaginatonSize: tt.fields.HidePaginatonSize,
+				TableFilter:       tt.fields.TableFilter,
+				AddItem:           tt.fields.AddItem,
+				FilterPlaceholder: tt.fields.FilterPlaceholder,
+				FilterValue:       tt.fields.FilterValue,
+				CaseSensitive:     tt.fields.CaseSensitive,
+				LabelAdd:          tt.fields.LabelAdd,
+				AddIcon:           tt.fields.AddIcon,
+				TablePadding:      tt.fields.TablePadding,
+				SortCol:           tt.fields.SortCol,
+				SortAsc:           tt.fields.SortAsc,
+				RowSelected:       tt.fields.RowSelected,
+				Editable:          tt.fields.Editable,
+				EditIndex:         tt.fields.EditIndex,
+			}
+			tbl.OnRequest(tt.args.te)
+		})
+	}
+}
+
+func TestTable_formEvent(t *testing.T) {
+	type fields struct {
+		BaseComponent     BaseComponent
+		RowKey            string
+		Rows              []ut.IM
+		Fields            []TableField
+		Pagination        string
+		CurrentPage       int64
+		PageSize          int64
+		HidePaginatonSize bool
+		TableFilter       bool
+		AddItem           bool
+		FilterPlaceholder string
+		FilterValue       string
+		CaseSensitive     bool
+		LabelAdd          string
+		AddIcon           string
+		TablePadding      string
+		SortCol           string
+		SortAsc           bool
+		RowSelected       bool
+		Editable          bool
+		EditIndex         int64
+		HideHeader        bool
+	}
+	type args struct {
+		evt ResponseEvent
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+	}{
+		{
+			name: "base",
+			fields: fields{
+				Fields: []TableField{
+					{Name: "string", FieldType: TableFieldTypeString},
+				},
+				Rows: []ut.IM{
+					{"string": "a"},
+				},
+			},
+			args: args{
+				evt: ResponseEvent{
+					Trigger: &Input{
+						BaseComponent: BaseComponent{
+							Id: "id",
+						},
+					},
+					TriggerName: "string",
+					Value:       "test",
+				},
+			},
+		},
+		{
+			name: "on_response",
+			fields: fields{
+				Fields: []TableField{
+					{Name: "string", FieldType: TableFieldTypeString},
+				},
+				Rows: []ut.IM{
+					{"string": "a"},
+				},
+				BaseComponent: BaseComponent{
+					OnResponse: func(evt ResponseEvent) (re ResponseEvent) {
+						evt.Trigger = &Table{}
+						return evt
+					},
+				},
+			},
+			args: args{
+				evt: ResponseEvent{
+					Trigger: &Input{
+						BaseComponent: BaseComponent{
+							Id: "id",
+						},
+					},
+					TriggerName: "string",
+					Value:       "test",
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tbl := &Table{
+				BaseComponent:     tt.fields.BaseComponent,
+				RowKey:            tt.fields.RowKey,
+				Rows:              tt.fields.Rows,
+				Fields:            tt.fields.Fields,
+				Pagination:        tt.fields.Pagination,
+				CurrentPage:       tt.fields.CurrentPage,
+				PageSize:          tt.fields.PageSize,
+				HidePaginatonSize: tt.fields.HidePaginatonSize,
+				TableFilter:       tt.fields.TableFilter,
+				AddItem:           tt.fields.AddItem,
+				FilterPlaceholder: tt.fields.FilterPlaceholder,
+				FilterValue:       tt.fields.FilterValue,
+				CaseSensitive:     tt.fields.CaseSensitive,
+				LabelAdd:          tt.fields.LabelAdd,
+				AddIcon:           tt.fields.AddIcon,
+				TablePadding:      tt.fields.TablePadding,
+				SortCol:           tt.fields.SortCol,
+				SortAsc:           tt.fields.SortAsc,
+				RowSelected:       tt.fields.RowSelected,
+				Editable:          tt.fields.Editable,
+				EditIndex:         tt.fields.EditIndex,
+				HideHeader:        tt.fields.HideHeader,
+			}
+			tbl.formEvent(tt.args.evt)
 		})
 	}
 }

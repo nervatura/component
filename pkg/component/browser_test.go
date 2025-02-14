@@ -203,6 +203,19 @@ func TestBrowser_Validation(t *testing.T) {
 			},
 			want: []SelectOption{{Value: "value1", Text: "text1"}},
 		},
+		{
+			name: "filter_index",
+			fields: fields{
+				Filters: []BrowserFilter{
+					{Field: "name", Comp: "eq", Value: "test"},
+				},
+			},
+			args: args{
+				propName:  "filter_index",
+				propValue: 3,
+			},
+			want: int64(0),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -889,6 +902,170 @@ func TestBrowser_msg(t *testing.T) {
 			if got := bro.msg(tt.args.labelID); got != tt.want {
 				t.Errorf("Browser.msg() = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func TestBrowser_filterEvent(t *testing.T) {
+	type fields struct {
+		Table          Table
+		View           string
+		Views          []SelectOption
+		HideHeader     bool
+		ShowDropdown   bool
+		ShowColumns    bool
+		ShowTotal      bool
+		HideBookmark   bool
+		HideExport     bool
+		ExportLimit    int64
+		ExportURL      string
+		Download       string
+		HideHelp       bool
+		HelpURL        string
+		ReadOnly       bool
+		VisibleColumns map[string]bool
+		Filters        []BrowserFilter
+		FilterIndex    int64
+		HideFilters    map[string]bool
+		MetaFields     map[string]BrowserMetaField
+		Labels         ut.SM
+		totalFields    []BrowserTotalField
+	}
+	type args struct {
+		evt ResponseEvent
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+	}{
+		{
+			name: "delete",
+			fields: fields{
+				Filters: []BrowserFilter{
+					{Field: "name", Comp: "eq", Value: "test"},
+				},
+			},
+			args: args{
+				evt: ResponseEvent{
+					TriggerName: "table",
+					Name:        TableEventFormDelete,
+					Value:       ut.IM{"index": 0},
+				},
+			},
+		},
+		{
+			name: "update",
+			fields: fields{
+				Table: Table{
+					BaseComponent: BaseComponent{
+						OnResponse: func(evt ResponseEvent) (re ResponseEvent) {
+							evt.Trigger = &Browser{}
+							return evt
+						},
+					},
+				},
+				Filters: []BrowserFilter{
+					{Field: "name", Comp: "eq", Value: "test"},
+				},
+			},
+			args: args{
+				evt: ResponseEvent{
+					TriggerName: "table",
+					Name:        TableEventFormUpdate,
+					Value:       ut.IM{"index": 0, "row": ut.IM{"field": "name", "comp": "eq", "value": "test"}},
+				},
+			},
+		},
+		{
+			name: "change",
+			fields: fields{
+				Filters: []BrowserFilter{
+					{Field: "name", Comp: "eq", Value: "test"},
+				},
+			},
+			args: args{
+				evt: ResponseEvent{
+					TriggerName: "table",
+					Trigger: &Table{
+						Rows: []ut.IM{
+							{"field": "name", "comp": "eq", "value": "test"},
+						},
+					},
+					Name: TableEventFormChange,
+					Value: ut.IM{"index": 0, "field": "field",
+						"row": ut.IM{"field": "name", "comp": "eq", "value": "test"}},
+				},
+			},
+		},
+		{
+			name: "cancel",
+			fields: fields{
+				Filters: []BrowserFilter{
+					{Field: "name", Comp: "eq", Value: "test"},
+				},
+			},
+			args: args{
+				evt: ResponseEvent{
+					TriggerName: "table",
+					Trigger: &Table{
+						Rows: []ut.IM{
+							{"field": "name", "comp": "eq", "value": "test"},
+						},
+					},
+					Name:  TableEventFormCancel,
+					Value: ut.IM{"index": 0, "row": 0},
+				},
+			},
+		},
+		{
+			name: "edit",
+			fields: fields{
+				Filters: []BrowserFilter{
+					{Field: "name", Comp: "eq", Value: "test"},
+				},
+			},
+			args: args{
+				evt: ResponseEvent{
+					TriggerName: "table",
+					Trigger: &Table{
+						Rows: []ut.IM{
+							{"field": "name", "comp": "eq", "value": "test"},
+						},
+					},
+					Name:  TableEventFormEdit,
+					Value: ut.IM{"index": 0, "row": 0},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			bro := &Browser{
+				Table:          tt.fields.Table,
+				View:           tt.fields.View,
+				Views:          tt.fields.Views,
+				HideHeader:     tt.fields.HideHeader,
+				ShowDropdown:   tt.fields.ShowDropdown,
+				ShowColumns:    tt.fields.ShowColumns,
+				ShowTotal:      tt.fields.ShowTotal,
+				HideBookmark:   tt.fields.HideBookmark,
+				HideExport:     tt.fields.HideExport,
+				ExportLimit:    tt.fields.ExportLimit,
+				ExportURL:      tt.fields.ExportURL,
+				Download:       tt.fields.Download,
+				HideHelp:       tt.fields.HideHelp,
+				HelpURL:        tt.fields.HelpURL,
+				ReadOnly:       tt.fields.ReadOnly,
+				VisibleColumns: tt.fields.VisibleColumns,
+				Filters:        tt.fields.Filters,
+				FilterIndex:    tt.fields.FilterIndex,
+				HideFilters:    tt.fields.HideFilters,
+				MetaFields:     tt.fields.MetaFields,
+				Labels:         tt.fields.Labels,
+				totalFields:    tt.fields.totalFields,
+			}
+			bro.filterEvent(tt.args.evt)
 		})
 	}
 }

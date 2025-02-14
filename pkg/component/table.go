@@ -22,6 +22,11 @@ const (
 	TableEventEditCell     = "edit_cell"
 	TableEventRowSelected  = "row_selected"
 	TableEventSort         = "table_sort"
+	TableEventFormEdit     = "table_form_edit"
+	TableEventFormUpdate   = "table_form_update"
+	TableEventFormChange   = "table_form_change"
+	TableEventFormDelete   = "table_form_delete"
+	TableEventFormCancel   = "table_form_cancel"
 
 	TableFieldTypeString   = "string"
 	TableFieldTypeInteger  = "integer"
@@ -94,22 +99,26 @@ type Table struct {
 	FilterValue string `json:"filter_value"`
 	// The filter is case sensitive
 	CaseSensitive bool `json:"case_sensitive"`
-	// A true value caption in the table cell. Default value: YES
-	LabelYes string `json:"label_yes"`
-	// A false value caption in the table cell. Default value: NO
-	LabelNo string `json:"label_no"`
 	// Add item button caption Default empty string
 	LabelAdd string `json:"label_add"`
 	// Valid [Icon] component value. See more [IconValues] variable values.
 	AddIcon string `json:"add_icon"`
 	// Table cell padding style value. Example: 8px
 	TablePadding string `json:"table_padding"`
+	// The table is not sortable
+	Unsortable bool `json:"unsortable"`
 	// The order of the table is based on the field name
 	SortCol string `json:"sort_col"`
 	// Sort in ascending or descending order
 	SortAsc bool `json:"sort_asc"`
 	// Select an entire row or cell
 	RowSelected bool `json:"row_selected"`
+	// Editable table row.
+	Editable bool `json:"editable"`
+	// The table row index from start 1
+	EditIndex int64 `json:"edit_index"`
+	// Hide table header row
+	HideHeader bool `json:"hide_header"`
 }
 
 // [Table] column definition
@@ -136,6 +145,20 @@ type TableField struct {
 	Format bool `json:"format"`
 	// Custom column definition
 	Column *TableColumn `json:"-"`
+	// Read only column when Editable is true
+	ReadOnly bool `json:"readonly"`
+	// Options for the [TableFieldTypeString] input element when Editable is true
+	Options []SelectOption `json:"options"`
+	// Specifies that the [TableFieldTypeString] input element is required when Editable is true
+	Required bool `json:"required"`
+	// Label text limit when [TableFieldTypeLink] button type and Editable is true. Default value: 10
+	LinkLimit int64 `json:"link_limit"`
+	// Button (default) or string input control when [TableFieldTypeLink] and Editable is true
+	InputLink bool `json:"input_link"`
+	/* Trigger a TableEventFormChange event when the field value changes while the row is being modified.
+	This can be useful if the field value affects the possible values ​​of other fields in the row.
+	Only Editable is true. */
+	TriggerEvent bool `json:"trigger_event"`
 }
 
 // [Table] column
@@ -151,7 +174,7 @@ type TableColumn struct {
 	// Original field definition
 	Field TableField `json:"field"`
 	// The cell generator function of the table
-	Cell func(row ut.IM, col TableColumn, value interface{}) template.HTML `json:"-"`
+	Cell func(row ut.IM, col TableColumn, value interface{}, rowIndex int64) template.HTML `json:"-"`
 }
 
 /*
@@ -173,13 +196,16 @@ func (tbl *Table) Properties() ut.IM {
 			"filter_placeholder":  tbl.FilterPlaceholder,
 			"filter_value":        tbl.FilterValue,
 			"case_sensitive":      tbl.CaseSensitive,
-			"label_yes":           tbl.LabelYes,
-			"label_no":            tbl.LabelNo,
 			"label_add":           tbl.LabelAdd,
 			"add_icon":            tbl.AddIcon,
 			"table_padding":       tbl.TablePadding,
+			"unsortable":          tbl.Unsortable,
 			"sort_col":            tbl.SortCol,
 			"sort_asc":            tbl.SortAsc,
+			"row_selected":        tbl.RowSelected,
+			"editable":            tbl.Editable,
+			"edit_index":          tbl.EditIndex,
+			"hide_header":         tbl.HideHeader,
 		})
 }
 
@@ -205,6 +231,12 @@ func (tbl *Table) tableFieldsValidation(propValue interface{}) []TableField {
 					TextAlign:     tbl.CheckEnumValue(ut.ToString(values["text_align"], ""), TextAlignLeft, TextAlign),
 					VerticalAlign: tbl.CheckEnumValue(ut.ToString(values["vertical_align"], ""), VerticalAlignMiddle, VerticalAlign),
 					Format:        ut.ToBoolean(values["format"], false),
+					LinkLimit:     ut.ToInteger(values["link_limit"], 10),
+					InputLink:     ut.ToBoolean(values["input_link"], false),
+					ReadOnly:      ut.ToBoolean(values["readonly"], false),
+					Options:       SelectOptionRangeValidation(values["options"], []SelectOption{}),
+					Required:      ut.ToBoolean(values["required"], false),
+					TriggerEvent:  ut.ToBoolean(values["trigger_event"], false),
 				})
 			}
 		}
@@ -246,6 +278,13 @@ func (tbl *Table) Validation(propName string, propValue interface{}) interface{}
 			}
 			if value < 1 {
 				value = 1
+			}
+			return value
+		},
+		"edit_index": func() interface{} {
+			value := ut.ToInteger(propValue, 0)
+			if value < 0 || value > int64(len(tbl.Rows)) {
+				value = 0
 			}
 			return value
 		},
@@ -335,13 +374,9 @@ func (tbl *Table) SetProperty(propName string, propValue interface{}) interface{
 			tbl.CaseSensitive = ut.ToBoolean(propValue, false)
 			return tbl.CaseSensitive
 		},
-		"label_yes": func() interface{} {
-			tbl.LabelYes = ut.ToString(propValue, "YES")
-			return tbl.LabelYes
-		},
-		"label_no": func() interface{} {
-			tbl.LabelNo = ut.ToString(propValue, "NO")
-			return tbl.LabelNo
+		"unsortable": func() interface{} {
+			tbl.Unsortable = ut.ToBoolean(propValue, false)
+			return tbl.Unsortable
 		},
 		"label_add": func() interface{} {
 			tbl.LabelAdd = ut.ToString(propValue, "")
@@ -362,6 +397,22 @@ func (tbl *Table) SetProperty(propName string, propValue interface{}) interface{
 		"sort_asc": func() interface{} {
 			tbl.SortAsc = ut.ToBoolean(propValue, false)
 			return tbl.SortAsc
+		},
+		"row_selected": func() interface{} {
+			tbl.RowSelected = ut.ToBoolean(propValue, false)
+			return tbl.RowSelected
+		},
+		"editable": func() interface{} {
+			tbl.Editable = ut.ToBoolean(propValue, false)
+			return tbl.Editable
+		},
+		"hide_header": func() interface{} {
+			tbl.HideHeader = ut.ToBoolean(propValue, false)
+			return tbl.HideHeader
+		},
+		"edit_index": func() interface{} {
+			tbl.EditIndex = tbl.Validation(propName, propValue).(int64)
+			return tbl.EditIndex
 		},
 		"target": func() interface{} {
 			tbl.Target = tbl.Validation(propName, propValue).(string)
@@ -411,11 +462,101 @@ func (tbl *Table) SortRows(fieldName, fieldType string, sortAsc bool) {
 	sort.Slice(tbl.Rows, lessFn)
 }
 
+func (tbl *Table) formRowIndex() (rowIndex int64) {
+	if int(tbl.EditIndex) <= len(tbl.Rows) {
+		rowIndex = tbl.EditIndex - 1
+		if tbl.Pagination != PaginationTypeNone {
+			currentPage := tbl.Validation("current_page", tbl.CurrentPage).(int64)
+			rowIndex = ((currentPage - 1) * tbl.PageSize) + rowIndex
+		}
+		if rowIndex < 0 {
+			rowIndex = 0
+		}
+	}
+	return rowIndex
+}
+
+/*
+If the OnResponse function of the [Table] is implemented, the function calls it after the [TriggerEvent]
+is processed, otherwise the function's return [ResponseEvent] is the processed [TriggerEvent].
+*/
+func (tbl *Table) OnRequest(te TriggerEvent) (re ResponseEvent) {
+	evt := ResponseEvent{
+		Trigger: tbl, TriggerName: tbl.Name,
+		Name: TableEventFormUpdate,
+	}
+	rowIndex := tbl.formRowIndex()
+	row := tbl.Rows[rowIndex]
+	eventKey := func() (etype, ekey string) {
+		if te.Values.Has("update") {
+			return TableEventFormUpdate, "update"
+		}
+		if te.Values.Has("delete") {
+			return TableEventFormDelete, "delete"
+		}
+		return TableEventFormCancel, "cancel"
+	}
+	typeMap := map[string]func(fieldName string){
+		TableEventFormUpdate: func(fieldName string) {
+			for _, field := range tbl.Fields {
+				fieldType := tbl.CheckEnumValue(ut.ToString(row[field.Name+"_meta"], ""), field.FieldType, TableMetaType)
+				if _, found := row[field.Name]; found && ((fieldType != TableFieldTypeLink) || (fieldType == TableFieldTypeLink && field.InputLink)) {
+					value := te.Values.Get(field.Name)
+					if fieldType == TableFieldTypeBool {
+						value = ut.ToString(te.Values.Has(field.Name), "false")
+					}
+					row[field.Name] = value
+				}
+			}
+			tbl.Rows[rowIndex] = row
+			tbl.SetProperty("edit_index", 0)
+			evt.Value = ut.IM{"row": row, "index": rowIndex}
+		},
+		TableEventFormDelete: func(fieldName string) {
+			evt.Name = TableEventFormDelete
+			if len(tbl.Rows) > int(rowIndex) {
+				tbl.Rows = append(tbl.Rows[:rowIndex], tbl.Rows[rowIndex+1:]...)
+			}
+			tbl.SetProperty("edit_index", 0)
+			evt.Value = ut.IM{"row": row, "index": rowIndex}
+		},
+		TableEventFormCancel: func(fieldName string) {
+			evt.Name = TableEventFormCancel
+			tbl.SetProperty("edit_index", 0)
+			evt.Value = ut.IM{"row": row, "index": rowIndex}
+		},
+	}
+	etype, ekey := eventKey()
+	typeMap[etype](ekey)
+
+	if tbl.OnResponse != nil {
+		return tbl.OnResponse(evt)
+	}
+	return evt
+}
+
+func (tbl *Table) formEvent(evt ResponseEvent) (re ResponseEvent) {
+	tblEvt := ResponseEvent{
+		Trigger: tbl, TriggerName: tbl.Name,
+		Name: TableEventFormChange,
+	}
+	rowIndex := tbl.formRowIndex()
+	if _, found := evt.Trigger.(*Button); !found {
+		tbl.Rows[rowIndex][evt.TriggerName] = evt.Value
+	}
+	tblEvt.Value = ut.IM{"row": tbl.Rows[rowIndex], "index": rowIndex, "field": evt.TriggerName, "value": evt.Value}
+	if tbl.OnResponse != nil {
+		return tbl.OnResponse(tblEvt)
+	}
+	return tblEvt
+}
+
 func (tbl *Table) response(evt ResponseEvent) (re ResponseEvent) {
 	tblEvt := ResponseEvent{
 		Trigger: tbl, TriggerName: tbl.Name, Value: evt.Value,
 		Header: ut.SM{HeaderRetarget: "#" + tbl.Id},
 	}
+	tbl.SetProperty("edit_index", 0)
 	switch evt.TriggerName {
 	case "top_pagination", "bottom_pagination":
 		if evt.Name == PaginationEventPageSize {
@@ -437,7 +578,7 @@ func (tbl *Table) response(evt ResponseEvent) (re ResponseEvent) {
 		tblEvt.Name = TableEventSort
 		tblEvt.Value = sortCol
 
-	case "filter", "btn_add", "link_cell", "data_row":
+	case "filter", "btn_add", "link_cell", "data_row", "edit_row":
 		evtMap := map[string]func(){
 			"filter": func() {
 				tblEvt.Name = TableEventFilterChange
@@ -453,6 +594,12 @@ func (tbl *Table) response(evt ResponseEvent) (re ResponseEvent) {
 			"data_row": func() {
 				tblEvt.Name = TableEventRowSelected
 				tblEvt.Value = evt.Trigger.GetProperty("data")
+			},
+			"edit_row": func() {
+				tblEvt.Name = TableEventFormEdit
+				data := ut.ToIM(evt.Trigger.GetProperty("data"), ut.IM{})
+				tblEvt.Value = ut.ToInteger(data["index"], 0) + 1
+				tbl.SetProperty("edit_index", tblEvt.Value)
 			},
 		}
 		evtMap[evt.TriggerName]()
@@ -501,6 +648,23 @@ func (tbl *Table) getComponent(name string, pageCount int64, data ut.IM) (html t
 		inp.SetProperty("value", value)
 		return inp
 	}
+	formBase := func(triggerEvent bool) BaseComponent {
+		if triggerEvent {
+			return BaseComponent{
+				Id:           tbl.Id + "_form_" + ut.ToString(data["fieldname"], ""),
+				Name:         ut.ToString(data["fieldname"], ""),
+				EventURL:     tbl.EventURL,
+				Target:       tbl.Target,
+				Data:         data,
+				OnResponse:   tbl.formEvent,
+				RequestValue: tbl.RequestValue,
+				RequestMap:   tbl.RequestMap,
+			}
+		}
+		return BaseComponent{
+			Name: ut.ToString(data["fieldname"], ""),
+		}
+	}
 	ccMap := map[string]func() ClientComponent{
 		"top_pagination": func() ClientComponent {
 			return ccPgn()
@@ -541,6 +705,119 @@ func (tbl *Table) getComponent(name string, pageCount int64, data ut.IM) (html t
 				Value: ut.ToString(data["value"], ""),
 			}
 		},
+		"icon_true": func() ClientComponent {
+			return &Icon{
+				Value: "CheckSquare", Width: 16, Height: 16,
+			}
+		},
+		"icon_false": func() ClientComponent {
+			return &Icon{
+				Value: "SquareEmpty", Width: 16, Height: 16,
+			}
+		},
+		"form_string": func() ClientComponent {
+			if options, found := data["options"].([]SelectOption); found && len(options) > 0 {
+				sel := &Select{
+					BaseComponent: formBase(ut.ToBoolean(data["trigger_event"], false)),
+					Full:          true,
+				}
+				sel.SetProperty("options", options)
+				sel.SetProperty("is_null", !ut.ToBoolean(data["required"], false))
+				sel.SetProperty("value", ut.ToString(data["value"], ""))
+				return sel
+			}
+			inp := &Input{
+				BaseComponent: formBase(ut.ToBoolean(data["trigger_event"], false)),
+				Type:          InputTypeString,
+				Label:         ut.ToString(data["fieldname"], ""),
+				Full:          true,
+			}
+			inp.SetProperty("required", ut.ToBoolean(data["required"], false))
+			inp.SetProperty("value", ut.ToString(data["value"], ""))
+			return inp
+		},
+		"form_number": func() ClientComponent {
+			inp := &NumberInput{
+				BaseComponent: formBase(ut.ToBoolean(data["trigger_event"], false)),
+				Full:          true,
+			}
+			inp.SetProperty("integer", !ut.ToBoolean(data["integer"], false))
+			inp.SetProperty("value", ut.ToString(data["value"], ""))
+			return inp
+		},
+		"form_bool": func() ClientComponent {
+			inp := &Toggle{
+				BaseComponent: formBase(ut.ToBoolean(data["trigger_event"], false)),
+				CheckBox:      true,
+				Full:          true,
+			}
+			inp.SetProperty("value", ut.ToString(data["value"], ""))
+			return inp
+		},
+		"form_datetime": func() ClientComponent {
+			inp := &DateTime{
+				BaseComponent: formBase(ut.ToBoolean(data["trigger_event"], false)),
+				Full:          true,
+			}
+			inp.SetProperty("type", ut.ToString(data["type"], ""))
+			inp.SetProperty("is_null", !ut.ToBoolean(data["required"], false))
+			inp.SetProperty("value", ut.ToString(data["value"], ""))
+			return inp
+		},
+		"form_link": func() ClientComponent {
+			btn := &Button{
+				BaseComponent: formBase(true),
+				Type:          ButtonTypeButton,
+				ButtonStyle:   ButtonStyleBorder,
+				Full:          true,
+			}
+			btn.SetProperty("label", ut.ToString(data["value"], ""))
+			return btn
+		},
+		"form_btn": func() ClientComponent {
+			return &Row{
+				Columns: []RowColumn{
+					{Value: Field{
+						Type: FieldTypeButton,
+						Value: ut.IM{
+							"name":         "update",
+							"type":         ButtonTypeSubmit,
+							"button_style": ButtonStyleBorder,
+							"icon":         IconCheck,
+							"style": ut.SM{
+								"border-color": "green", "fill": "green",
+							},
+							"auto_focus": true,
+						},
+					}},
+					{Value: Field{
+						Type: FieldTypeButton,
+						Value: ut.IM{
+							"name":         "cancel",
+							"type":         ButtonTypeSubmit,
+							"button_style": ButtonStyleBorder,
+							"icon":         IconReply,
+							"style": ut.SM{
+								"border-color": "white", "fill": "white",
+							},
+						},
+					}},
+					{Value: Field{
+						Type: FieldTypeButton,
+						Value: ut.IM{
+							"name":         "delete",
+							"type":         ButtonTypeSubmit,
+							"button_style": ButtonStyleBorder,
+							"icon":         IconTimes,
+							"style": ut.SM{
+								"border-color": "red", "fill": "red",
+							},
+						},
+					}},
+				},
+				Full: false,
+			}
+		},
 	}
 	cc := ccMap[name]()
 	html, err = cc.Render()
@@ -559,61 +836,114 @@ func (tbl *Table) getStyle(styleMap ut.SM) string {
 }
 
 type cellFormatOptions struct {
-	Value       interface{}
-	Label       string
-	DateType    string
-	FieldName   string
-	ResultValue interface{}
-	Style       ut.SM
-	RowData     ut.IM
+	Value        interface{}
+	Label        string
+	FieldType    string
+	FieldName    string
+	ResultValue  interface{}
+	Style        ut.SM
+	RowData      ut.IM
+	EditCell     bool
+	Options      []SelectOption
+	Required     bool
+	LinkLimit    int64
+	InputLink    bool
+	TriggerEvent bool
 }
 
 func (tbl *Table) cellFormat(fmtType string, options cellFormatOptions) template.HTML {
 	fmtMap := map[string]func() template.HTML{
 		"number": func() template.HTML {
+			numberLabel := fmt.Sprintf(
+				`<span class="cell-label">%s</span>`, options.Label)
+			integer := (options.FieldType == TableFieldTypeInteger)
+			if options.EditCell {
+				inp, _ := tbl.getComponent("form_number", 0, ut.IM{
+					"value":         options.Value,
+					"fieldname":     options.FieldName,
+					"integer":       integer,
+					"trigger_event": options.TriggerEvent,
+				})
+				return template.HTML(numberLabel + string(inp))
+			}
 			return template.HTML(fmt.Sprintf(
-				`<div class="number-cell">
-				<span class="cell-label">%s</span>
-				<span %s >%s</span>
-			</div>`, options.Label, tbl.getStyle(options.Style), ut.ToString(options.Value, "0")))
+				`<div class="number-cell">%s<span %s >%s</span></div>`,
+				numberLabel, tbl.getStyle(options.Style), ut.ToString(options.Value, "0")))
 		},
 		"date": func() template.HTML {
+			dateLabel := fmt.Sprintf(
+				`<span class="cell-label">%s</span>`, options.Label)
 			var fmtValue string
-			dateFormat := map[string]func(tm time.Time) string{
-				TableFieldTypeDate: func(tm time.Time) string {
+			dateFormat := map[string]func(tm time.Time, ov interface{}) string{
+				TableFieldTypeDate: func(tm time.Time, ov interface{}) string {
 					return tm.Format("2006-01-02")
 				},
-				TableFieldTypeTime: func(tm time.Time) string {
+				TableFieldTypeTime: func(tm time.Time, ov interface{}) string {
+					sv := ut.ToString(ov, "00:00")
+					if len(sv) == 5 && sv[2] == ':' {
+						return sv
+					}
 					return tm.Format("15:04")
 				},
-				TableFieldTypeDateTime: func(tm time.Time) string {
+				TableFieldTypeDateTime: func(tm time.Time, ov interface{}) string {
+					return tm.Format("2006-01-02 15:04")
+				},
+				DateTimeTypeDateTime: func(tm time.Time, ov interface{}) string {
 					return tm.Format("2006-01-02 15:04")
 				},
 			}
 			switch v := options.Value.(type) {
 			case string:
 				tmValue, _ := ut.StringToDateTime(v)
-				fmtValue = dateFormat[options.DateType](tmValue)
+				fmtValue = dateFormat[options.FieldType](tmValue, options.Value)
 			case time.Time:
-				fmtValue = dateFormat[options.DateType](v)
+				fmtValue = dateFormat[options.FieldType](v, options.Value)
 			}
-			return template.HTML(fmt.Sprintf(`<span class="cell-label">%s</span><span>%s</span>`, options.Label, fmtValue))
+			if options.EditCell {
+				inp, _ := tbl.getComponent("form_datetime", 0, ut.IM{
+					"value":         fmtValue,
+					"fieldname":     options.FieldName,
+					"type":          tbl.CheckEnumValue(options.FieldType, DateTimeTypeDateTime, DateTimeType),
+					"required":      options.Required,
+					"trigger_event": options.TriggerEvent,
+				})
+				return template.HTML(dateLabel + string(inp))
+			}
+			return template.HTML(fmt.Sprintf(`%s<span>%s</span>`, dateLabel, fmtValue))
 		},
 		"bool": func() template.HTML {
-			if (options.Value == 1) || (options.Value == "true") || (options.Value == true) {
-				return template.HTML(fmt.Sprintf(
-					`<span class="cell-label">%s</span>
-					<form-icon iconKey="CheckSquare" ></form-icon>
-					<span class="middle"> %s</span>`, options.Label, tbl.LabelYes))
+			boolLabel := fmt.Sprintf(
+				`<span class="cell-label">%s</span>`, options.Label)
+			value := ut.ToString(((options.Value == 1) || (options.Value == "true") || (options.Value == true)), "false")
+			if options.EditCell {
+				inp, _ := tbl.getComponent("form_bool", 0, ut.IM{
+					"value":         options.Value,
+					"fieldname":     options.FieldName,
+					"trigger_event": options.TriggerEvent,
+				})
+				return template.HTML(boolLabel + string(inp))
 			}
+			icon, _ := tbl.getComponent("icon_"+value, 0, ut.IM{})
 			return template.HTML(fmt.Sprintf(
-				`<span class="cell-label">%s</span>
-				<form-icon iconKey="SquareEmpty" ></form-icon>
-				<span class="middle"> %s</span>`, options.Label, tbl.LabelNo))
+				`%s<span class="middle centered">%s</span>`, boolLabel, string(icon)))
 		},
 		"link": func() template.HTML {
 			linkLabel := fmt.Sprintf(
 				`<span class="cell-label">%s</span>`, options.Label)
+			if options.EditCell {
+				inp, _ := tbl.getComponent("form_link", 0, ut.IM{
+					"value":         ut.StringLimit(ut.ToString(options.Value, "..."), ut.ToInteger(options.LinkLimit, 10)),
+					"fieldname":     options.FieldName,
+					"trigger_event": options.TriggerEvent,
+				})
+				if options.InputLink {
+					inp, _ = tbl.getComponent("form_string", 0, ut.IM{
+						"value": options.Value, "fieldname": options.FieldName,
+						"trigger_event": options.TriggerEvent,
+					})
+				}
+				return template.HTML(linkLabel + string(inp))
+			}
 			var link template.HTML
 			link, _ = tbl.getComponent("link_cell", 0, ut.IM{
 				"value": options.Value, "fieldname": options.FieldName, "result": options.ResultValue, "row": options.RowData,
@@ -621,12 +951,31 @@ func (tbl *Table) cellFormat(fmtType string, options cellFormatOptions) template
 			return template.HTML(linkLabel + string(link))
 		},
 		"string": func() template.HTML {
-			return template.HTML(fmt.Sprintf(
-				`<span class="cell-label">%s</span>
-				<span %s >%s</span>`, options.Label, tbl.getStyle(options.Style), options.Value))
+			stringLabel := fmt.Sprintf(
+				`<span class="cell-label">%s</span>`, options.Label)
+			if options.EditCell {
+				inp, _ := tbl.getComponent("form_string", 0, ut.IM{
+					"value": options.Value, "fieldname": options.FieldName,
+					"options": options.Options, "required": options.Required,
+					"trigger_event": options.TriggerEvent,
+				})
+				return template.HTML(stringLabel + string(inp))
+			}
+			for _, opt := range options.Options {
+				if opt.Value == options.Value {
+					return template.HTML(stringLabel + fmt.Sprintf(
+						`<span %s >%s</span>`, tbl.getStyle(options.Style), opt.Text))
+				}
+			}
+			return template.HTML(stringLabel + fmt.Sprintf(
+				`<span %s >%s</span>`, tbl.getStyle(options.Style), options.Value))
 		},
 	}
 	return fmtMap[fmtType]()
+}
+
+func (tbl *Table) columnsEditCell(row ut.IM, rowIndex int64, readOnly bool) bool {
+	return tbl.Editable && (int64(rowIndex) == tbl.EditIndex-1) && !ut.ToBoolean(row["disabled"], false) && !readOnly
 }
 
 func (tbl *Table) columns() (cols []TableColumn) {
@@ -664,99 +1013,169 @@ func (tbl *Table) columns() (cols []TableColumn) {
 			setFieldType := map[string]func(){
 				TableFieldTypeNumber: func() {
 					coldef.HeaderStyle["text-align"] = TextAlignRight
-					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}) template.HTML {
+					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}, rowIndex int64) template.HTML {
 						style := ut.SM{}
 						if col.Field.Format {
 							style["font-weight"] = "bold"
+							style["color"] = "green"
 							if evalue, found := row["edited"].(bool); found && evalue {
 								style["text-decoration"] = "line-through"
 							} else if ut.ToFloat(value, 0) != 0 {
 								style["color"] = "red"
-							} else {
-								style["color"] = "green"
 							}
 						}
 						return tbl.cellFormat("number", cellFormatOptions{
-							Value: ut.ToFloat(value, 0),
-							Label: col.Field.Label,
-							Style: style,
+							Value:        ut.ToFloat(value, 0),
+							Label:        col.Field.Label,
+							Style:        style,
+							FieldType:    col.Field.FieldType,
+							EditCell:     tbl.columnsEditCell(row, rowIndex, col.Field.ReadOnly),
+							FieldName:    col.Field.Name,
+							TriggerEvent: col.Field.TriggerEvent,
 						})
 					}
 				},
 				TableFieldTypeDateTime: func() {
-					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}) template.HTML {
+					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}, rowIndex int64) template.HTML {
 						return tbl.cellFormat("date", cellFormatOptions{
-							Value:    value,
-							Label:    col.Field.Label,
-							DateType: col.Field.FieldType,
+							Value:        value,
+							Label:        col.Field.Label,
+							FieldType:    col.Field.FieldType,
+							EditCell:     tbl.columnsEditCell(row, rowIndex, col.Field.ReadOnly),
+							FieldName:    col.Field.Name,
+							Required:     col.Field.Required,
+							TriggerEvent: col.Field.TriggerEvent,
 						})
 					}
 				},
 				TableFieldTypeBool: func() {
-					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}) template.HTML {
+					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}, rowIndex int64) template.HTML {
 						return tbl.cellFormat("bool", cellFormatOptions{
-							Value: value,
-							Label: col.Field.Label,
+							Value:        value,
+							Label:        col.Field.Label,
+							EditCell:     tbl.columnsEditCell(row, rowIndex, col.Field.ReadOnly),
+							FieldName:    col.Field.Name,
+							TriggerEvent: col.Field.TriggerEvent,
 						})
 					}
 				},
 				TableFieldTypeLink: func() {
-					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}) template.HTML {
+					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}, rowIndex int64) template.HTML {
 						return tbl.cellFormat("link", cellFormatOptions{
-							Value:       value,
-							Label:       col.Field.Label,
-							FieldName:   col.Field.Name,
-							ResultValue: row[col.Field.Name],
-							RowData:     row,
+							Value:        value,
+							Label:        col.Field.Label,
+							FieldName:    col.Field.Name,
+							ResultValue:  row[col.Field.Name],
+							RowData:      row,
+							EditCell:     tbl.columnsEditCell(row, rowIndex, col.Field.ReadOnly),
+							LinkLimit:    col.Field.LinkLimit,
+							InputLink:    col.Field.InputLink,
+							TriggerEvent: col.Field.TriggerEvent,
 						})
 					}
 				},
 				TableFieldTypeMeta: func() {
-					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}) template.HTML {
+					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}, rowIndex int64) template.HTML {
 						fieldType := tbl.CheckEnumValue(ut.ToString(row[field.Name+"_meta"], ""), TableFieldTypeString, TableMetaType)
 						mResult := map[string]func() template.HTML{
 							TableFieldTypeBool: func() template.HTML {
 								return tbl.cellFormat("bool", cellFormatOptions{
-									Value: value,
-									Label: col.Field.Label,
+									Value:        value,
+									Label:        col.Field.Label,
+									EditCell:     tbl.columnsEditCell(row, rowIndex, col.Field.ReadOnly),
+									FieldName:    col.Field.Name,
+									TriggerEvent: col.Field.TriggerEvent,
 								})
 							},
 							TableFieldTypeInteger: func() template.HTML {
 								return tbl.cellFormat("number", cellFormatOptions{
-									Value: ut.ToFloat(value, 0),
-									Label: col.Field.Label,
-									Style: ut.SM{},
+									Value:        ut.ToFloat(value, 0),
+									Label:        col.Field.Label,
+									Style:        ut.SM{},
+									FieldType:    col.Field.FieldType,
+									EditCell:     tbl.columnsEditCell(row, rowIndex, col.Field.ReadOnly),
+									FieldName:    col.Field.Name,
+									TriggerEvent: col.Field.TriggerEvent,
 								})
 							},
 							TableFieldTypeNumber: func() template.HTML {
 								return tbl.cellFormat("number", cellFormatOptions{
-									Value: ut.ToFloat(value, 0),
-									Label: col.Field.Label,
-									Style: ut.SM{},
+									Value:        ut.ToFloat(value, 0),
+									Label:        col.Field.Label,
+									Style:        ut.SM{},
+									FieldType:    col.Field.FieldType,
+									EditCell:     tbl.columnsEditCell(row, rowIndex, col.Field.ReadOnly),
+									FieldName:    col.Field.Name,
+									TriggerEvent: col.Field.TriggerEvent,
 								})
 							},
 							TableFieldTypeLink: func() template.HTML {
 								return tbl.cellFormat("link", cellFormatOptions{
-									Value:       ut.ToString(value, ""),
-									Label:       col.Field.Label,
-									FieldName:   field.Name,
-									ResultValue: row[field.Name],
-									RowData:     row,
+									Value:        ut.ToString(value, ""),
+									Label:        col.Field.Label,
+									FieldName:    field.Name,
+									ResultValue:  row[field.Name],
+									RowData:      row,
+									EditCell:     tbl.columnsEditCell(row, rowIndex, col.Field.ReadOnly),
+									LinkLimit:    col.Field.LinkLimit,
+									InputLink:    col.Field.InputLink,
+									TriggerEvent: col.Field.TriggerEvent,
+								})
+							},
+							TableFieldTypeDate: func() template.HTML {
+								return tbl.cellFormat("date", cellFormatOptions{
+									Value:        value,
+									Label:        col.Field.Label,
+									FieldType:    DateTimeTypeDate,
+									EditCell:     tbl.columnsEditCell(row, rowIndex, col.Field.ReadOnly),
+									FieldName:    col.Field.Name,
+									Required:     col.Field.Required,
+									TriggerEvent: col.Field.TriggerEvent,
+								})
+							},
+							TableFieldTypeTime: func() template.HTML {
+								return tbl.cellFormat("date", cellFormatOptions{
+									Value:        value,
+									Label:        col.Field.Label,
+									FieldType:    DateTimeTypeTime,
+									EditCell:     tbl.columnsEditCell(row, rowIndex, col.Field.ReadOnly),
+									FieldName:    col.Field.Name,
+									Required:     col.Field.Required,
+									TriggerEvent: col.Field.TriggerEvent,
+								})
+							},
+							TableFieldTypeDateTime: func() template.HTML {
+								return tbl.cellFormat("date", cellFormatOptions{
+									Value:        value,
+									Label:        col.Field.Label,
+									FieldType:    DateTimeTypeDateTime,
+									EditCell:     tbl.columnsEditCell(row, rowIndex, col.Field.ReadOnly),
+									FieldName:    col.Field.Name,
+									Required:     col.Field.Required,
+									TriggerEvent: col.Field.TriggerEvent,
 								})
 							},
 						}
-						if slices.Contains([]string{TableFieldTypeBool, TableFieldTypeInteger, TableFieldTypeNumber, TableFieldTypeLink}, fieldType) {
+						if slices.Contains([]string{
+							TableFieldTypeBool, TableFieldTypeInteger, TableFieldTypeNumber, TableFieldTypeLink, TableFieldTypeDate,
+							TableFieldTypeTime, TableFieldTypeDateTime}, fieldType) {
 							return mResult[fieldType]()
 						}
+						options := SelectOptionRangeValidation(row[field.Name+"_options"], []SelectOption{})
 						return tbl.cellFormat("string", cellFormatOptions{
-							Value: ut.ToString(value, ""),
-							Label: col.Field.Label,
-							Style: ut.SM{},
+							Value:        ut.ToString(value, ""),
+							Label:        col.Field.Label,
+							Style:        ut.SM{},
+							EditCell:     tbl.columnsEditCell(row, rowIndex, col.Field.ReadOnly),
+							FieldName:    field.Name,
+							Options:      options,
+							Required:     col.Field.Required,
+							TriggerEvent: col.Field.TriggerEvent,
 						})
 					}
 				},
 				TableFieldTypeString: func() {
-					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}) template.HTML {
+					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}, rowIndex int64) template.HTML {
 						style := ut.SM{}
 						if color, found := row[col.Field.Name+"_color"].(string); found {
 							style["color"] = color
@@ -764,18 +1183,27 @@ func (tbl *Table) columns() (cols []TableColumn) {
 						for key, ivalue := range row {
 							if key == col.Field.Name+"_link" {
 								return tbl.cellFormat("link", cellFormatOptions{
-									Value:       ut.ToString(ivalue, ""),
-									Label:       col.Field.Label,
-									FieldName:   col.Field.Name,
-									ResultValue: row[col.Field.Name],
-									RowData:     row,
+									Value:        ut.ToString(ivalue, ""),
+									Label:        col.Field.Label,
+									FieldName:    col.Field.Name,
+									ResultValue:  row[col.Field.Name],
+									RowData:      row,
+									EditCell:     false,
+									LinkLimit:    col.Field.LinkLimit,
+									InputLink:    true,
+									TriggerEvent: col.Field.TriggerEvent,
 								})
 							}
 						}
 						return tbl.cellFormat("string", cellFormatOptions{
-							Value: ut.ToString(value, ""),
-							Label: col.Field.Label,
-							Style: style,
+							Value:        ut.ToString(value, ""),
+							Label:        col.Field.Label,
+							Style:        style,
+							EditCell:     tbl.columnsEditCell(row, rowIndex, col.Field.ReadOnly),
+							FieldName:    field.Name,
+							Options:      col.Field.Options,
+							Required:     col.Field.Required,
+							TriggerEvent: col.Field.TriggerEvent,
 						})
 					}
 				},
@@ -825,6 +1253,53 @@ func (tbl *Table) filterRows() (rows []ut.IM) {
 	return rows
 }
 
+func (tbl *Table) tableRowID(row ut.IM, index int) string {
+	rowID := ""
+	if id, found := row[tbl.RowKey]; found {
+		rowID = tbl.Id + "_row_" + ut.ToString(id, "")
+	} else {
+		rowID = tbl.Id + "_row_" + ut.ToString(index, "")
+	}
+	if (tbl.RowSelected && !tbl.Editable) || (tbl.Editable && (int64(index) != tbl.EditIndex-1)) {
+		lbl := &Label{BaseComponent: BaseComponent{
+			Id: rowID, Name: "data_row", Data: ut.IM{
+				"row": row, "index": index,
+			},
+			OnResponse:   tbl.response,
+			RequestValue: tbl.RequestValue,
+			RequestMap:   tbl.RequestMap,
+		}}
+		if tbl.Editable {
+			lbl.Name = "edit_row"
+		}
+		lbl.SetProperty("request_map", lbl)
+	}
+	return rowID
+}
+
+func (tbl *Table) tableMap(key string, row ut.IM, index int) bool {
+	rows := tbl.filterRows()
+	pageCount := int64(math.Ceil(float64(len(rows)) / float64(tbl.PageSize)))
+	rMap := map[string]func() bool{
+		"styleMap": func() bool {
+			return len(tbl.Style) > 0
+		},
+		"topPagination": func() bool {
+			return ((pageCount > 1) && ((tbl.Pagination == PaginationTypeTop) || tbl.Pagination == PaginationTypeAll))
+		},
+		"bottomPagination": func() bool {
+			return ((pageCount > 1) && ((tbl.Pagination == PaginationTypeBottom) || tbl.Pagination == PaginationTypeAll))
+		},
+		"formBtn": func() bool {
+			return tbl.Editable && (int64(index) == tbl.EditIndex-1) && !ut.ToBoolean(row["disabled"], false)
+		},
+		"rowTrigger": func() bool {
+			return (tbl.RowSelected && !tbl.Editable) || (tbl.Editable && (int64(index) != tbl.EditIndex-1))
+		},
+	}
+	return rMap[key]()
+}
+
 /*
 Based on the values, it will generate the html code of the [Table] or return with an error message.
 */
@@ -837,16 +1312,16 @@ func (tbl *Table) Render() (html template.HTML, err error) {
 
 	funcMap := map[string]any{
 		"styleMap": func() bool {
-			return len(tbl.Style) > 0
+			return tbl.tableMap("styleMap", ut.IM{}, 0)
 		},
 		"customClass": func() string {
 			return strings.Join(tbl.Class, " ")
 		},
 		"topPagination": func() bool {
-			return ((pageCount > 1) && ((tbl.Pagination == PaginationTypeTop) || tbl.Pagination == PaginationTypeAll))
+			return tbl.tableMap("topPagination", ut.IM{}, 0)
 		},
 		"bottomPagination": func() bool {
-			return ((pageCount > 1) && ((tbl.Pagination == PaginationTypeBottom) || tbl.Pagination == PaginationTypeAll))
+			return tbl.tableMap("bottomPagination", ut.IM{}, 0)
 		},
 		"tableComponent": func(name string) (template.HTML, error) {
 			return tbl.getComponent(name, pageCount, ut.IM{})
@@ -865,41 +1340,32 @@ func (tbl *Table) Render() (html template.HTML, err error) {
 		},
 		"colID": func(col TableColumn) string {
 			colID := tbl.Id + "_header_" + col.Id
-			lbl := &Label{BaseComponent: BaseComponent{
-				Id: colID, Name: "header_sort",
-				Data:         ut.IM{"fieldname": col.Id, "fieldtype": col.Field.FieldType},
-				OnResponse:   tbl.response,
-				RequestValue: tbl.RequestValue,
-				RequestMap:   tbl.RequestMap,
-			}}
-			lbl.SetProperty("request_map", lbl)
-			return colID
-		},
-		"rowID": func(row ut.IM, index int) string {
-			rowID := ""
-			if id, found := row[tbl.RowKey]; found {
-				rowID = tbl.Id + "_row_" + ut.ToString(id, "")
-			} else {
-				rowID = tbl.Id + "_row_" + ut.ToString(index, "")
-			}
-			if tbl.RowSelected {
+			if !tbl.Unsortable {
 				lbl := &Label{BaseComponent: BaseComponent{
-					Id: rowID, Name: "data_row", Data: ut.IM{
-						"row": row, "index": index,
-					},
+					Id: colID, Name: "header_sort",
+					Data:         ut.IM{"fieldname": col.Id, "fieldtype": col.Field.FieldType},
 					OnResponse:   tbl.response,
 					RequestValue: tbl.RequestValue,
 					RequestMap:   tbl.RequestMap,
 				}}
 				lbl.SetProperty("request_map", lbl)
 			}
-			return rowID
+			return colID
 		},
-		"pointerClass": func(row ut.IM) string {
+		"rowTrigger": func(index int) bool {
+			return tbl.tableMap("rowTrigger", ut.IM{}, index)
+		},
+		"formBtn": func(row ut.IM, index int) bool {
+			return tbl.tableMap("formBtn", row, index)
+		},
+		"rowID": func(row ut.IM, index int) string {
+			return tbl.tableRowID(row, index)
+		},
+		"pointerClass": func(row ut.IM, index int) string {
 			if disabled, found := row["disabled"].(bool); found && disabled {
 				return "cursor-disabled"
 			}
-			if tbl.RowSelected {
+			if (tbl.RowSelected && !tbl.Editable) || (tbl.Editable && (int64(index) != tbl.EditIndex-1)) {
 				return "cursor-pointer"
 			}
 			return ""
@@ -908,7 +1374,7 @@ func (tbl *Table) Render() (html template.HTML, err error) {
 			return cols
 		},
 		"sortClass": func(colID string) string {
-			if tbl.SortCol == colID {
+			if tbl.SortCol == colID && !tbl.Unsortable {
 				if tbl.SortAsc {
 					return "sort-asc"
 				}
@@ -919,9 +1385,9 @@ func (tbl *Table) Render() (html template.HTML, err error) {
 		"cellStyle": func(styleMap ut.SM) bool {
 			return len(styleMap) > 0
 		},
-		"cellValue": func(row ut.IM, col TableColumn) template.HTML {
+		"cellValue": func(row ut.IM, col TableColumn, rowIndex int) template.HTML {
 			if col.Cell != nil {
-				return col.Cell(row, col, row[col.Id])
+				return col.Cell(row, col, row[col.Id], int64(rowIndex))
 			}
 			return template.HTML(ut.ToString(row[col.Id], ""))
 		},
@@ -933,42 +1399,54 @@ func (tbl *Table) Render() (html template.HTML, err error) {
 	<div class="cell" >{{ tableComponent "filter" }}</div>
 	{{ if .AddItem }}<div class="cell" style="width: 20px;" >{{ tableComponent "btn_add" }}</div>{{ end }}
 	</div>{{ end }}</div>{{ end }}
-	<div class="table-wrap" ><table class="ui-table"
-	{{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}>
-	<thead><tr>{{ range $icol, $col := cols }}
-	<th id="{{ colID $col }}" name="header_cell" 
-	class="sort {{ sortClass $col.Id }}" 
+	<div class="table-wrap" >{{ if $.Editable }}<form id="{{ .Id }}" name="table_form" 
 	{{ if ne $.EventURL "" }} hx-post="{{ $.EventURL }}" hx-target="{{ $.Target }}" {{ if ne $.Sync "none" }} hx-sync="{{ $.Sync }}"{{ end }} hx-swap="{{ $.Swap }}"{{ end }}
-	{{ if ne $.Indicator "none" }} hx-indicator="#{{ $.Indicator }}"{{ end }} 
+	{{ if ne $.Indicator "none" }} hx-indicator="#{{ $.Indicator }}"{{ end }} >{{ end }}<table class="ui-table"
+	{{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}>
+	{{ if not $.HideHeader }}<thead><tr>{{ range $icol, $col := cols }}
+	<th id="{{ colID $col }}" name="header_cell" 
+	class="{{ if not $.Unsortable }}sort {{ end }}{{ sortClass $col.Id }}" 
+	{{ if and (ne $.EventURL "") (not $.Unsortable) }} hx-post="{{ $.EventURL }}" hx-target="{{ $.Target }}" {{ if ne $.Sync "none" }} hx-sync="{{ $.Sync }}"{{ end }} hx-swap="{{ $.Swap }}"{{ end }}
+	{{ if and (ne $.Indicator "none") (not $.Unsortable) }} hx-indicator="#{{ $.Indicator }}"{{ end }} 
 	{{ if cellStyle $col.HeaderStyle }} style="{{ range $key, $value := $col.HeaderStyle }}{{ $key }}:{{ $value }};{{ end }}"{{ end }} 
 	>{{ $col.Header }}</th>
-	{{ end }}</tr></thead>
+	{{ end }}</tr></thead>{{ end }}
 	<tbody>{{ range $index, $row := pageRows }}
-	<tr id="{{ rowID $row $index }}" class="{{ pointerClass $row }}" 
-	{{ if and ($.RowSelected) (ne $.EventURL "") }} hx-post="{{ $.EventURL }}" hx-target="{{ $.Target }}" {{ if ne $.Sync "none" }} hx-sync="{{ $.Sync }}"{{ end }} hx-swap="{{ $.Swap }}"{{ end }}
-	{{ if and ($.RowSelected) (ne $.Indicator "none") }} hx-indicator="#{{ $.Indicator }}"{{ end }}
+	<tr id="{{ rowID $row $index }}" class="{{ pointerClass $row $index }}" 
+	{{ if and (rowTrigger $index) (ne $.EventURL "") }} hx-post="{{ $.EventURL }}" hx-target="{{ $.Target }}" {{ if ne $.Sync "none" }} hx-sync="{{ $.Sync }}"{{ end }} hx-swap="{{ $.Swap }}"{{ end }}
+	{{ if and (rowTrigger $index) (ne $.Indicator "none") }} hx-indicator="#{{ $.Indicator }}"{{ end }}
 	>{{ range $icol, $col := cols }}<td
 	{{ if cellStyle $col.CellStyle }} style="{{ range $key, $value := $col.CellStyle }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}
-	>{{ cellValue $row $col }}</td>{{ end }}</tr>
+	>{{ cellValue $row $col $index }}</td>{{ end }}</tr>
+	{{ if formBtn $row $index }}<tr><td class="ui-table-form" colspan="{{ len cols }}">{{ tableComponent "form_btn" }}</td></tr>{{ end }}
 	{{ end }}</tbody>
-	</table></div>
+	</table>{{ if $.Editable }}</form>{{ end }}</div>
 	{{ if bottomPagination }}<div>{{ tableComponent "bottom_pagination" }}</div>{{ end }}
 	</div>`
 
-	return ut.TemplateBuilder("table", tpl, funcMap, tbl)
+	if html, err = ut.TemplateBuilder("table", tpl, funcMap, tbl); err == nil && tbl.EventURL != "" {
+		tbl.SetProperty("request_map", tbl)
+	}
+	return html, err
 }
 
 var testTableFields []TableField = []TableField{
-	{Name: "name", FieldType: TableFieldTypeString, Label: "Name", TextAlign: TextAlignLeft},
+	{Name: "name", FieldType: TableFieldTypeString, Label: "Name", TextAlign: TextAlignLeft, Required: true},
+	{Name: "enum", FieldType: TableFieldTypeString, Label: "Enums", Required: true, Options: []SelectOption{
+		{Value: "blue", Text: "Blue"}, {Value: "red", Text: "Red"}, {Value: "green", Text: "Green"},
+		{Value: "yellow", Text: "Yellow"}, {Value: "purple", Text: "Purple"},
+		{Value: "orange", Text: "Orange"}, {Value: "pink", Text: "Pink"},
+	}},
 	{Name: "valid", FieldType: TableFieldTypeBool, Label: "Valid"},
 	{Name: "date", FieldType: TableFieldTypeDate, Label: "From"},
 	{Name: "start", FieldType: TableFieldTypeTime},
 	{Name: "stamp", FieldType: TableFieldTypeDateTime, Label: "Stamp"},
 	{Name: "levels", FieldType: TableFieldTypeNumber, Label: "Levels", Format: true, VerticalAlign: VerticalAlignMiddle},
-	{Name: "product", FieldType: TableFieldTypeLink, Label: "Product"},
+	{Name: "product", FieldType: TableFieldTypeLink, Label: "Product", LinkLimit: 5},
+	{Name: "url", FieldType: TableFieldTypeLink, Label: "Homepage", InputLink: true},
 	{Name: "deffield", FieldType: TableFieldTypeMeta, Label: "Multiple type"},
 	{Column: &TableColumn{Id: "editor", Header: "Custom",
-		Cell: func(row ut.IM, col TableColumn, value interface{}) template.HTML {
+		Cell: func(row ut.IM, col TableColumn, value interface{}, rowIndex int64) template.HTML {
 			btn := Button{
 				ButtonStyle: ButtonStylePrimary, Label: "Hello", Disabled: ut.ToBoolean(row["disabled"], false), Small: true}
 			res, _ := btn.Render()
@@ -978,39 +1456,47 @@ var testTableFields []TableField = []TableField{
 }
 
 var testTableRows []ut.IM = []ut.IM{
-	{"id": 1, "name": "Name1", "levels": 0, "valid": "true",
+	{"id": 1, "name": "Name1", "enum": "blue", "levels": 0, "valid": "true",
 		"date": "2000-03-06", "start": "2019-04-23T05:30:00+02:00", "stamp": "2020-04-20T10:30:00+02:00",
-		"name_color": "red", "product": "Product1",
+		"name_color": "red", "product": "Product1", "url": "https://www.google.com",
 		"deffield": "Customer 1", "deffield_meta": TableFieldTypeLink},
-	{"id": 2, "name": "Name2", "name_link": "Name Link",
-		"levels": 20, "valid": 1,
+	{"id": 2, "name": "Name2", "name_link": "Name Link", "enum": "red", "levels": 20, "valid": 1,
 		"date": "2008-04-07", "start": "2019-04-23T11:30:00+02:00", "stamp": "2020-04-25T10:30:00+02:00",
-		"name_color": "red", "edited": true, "product": "Product2",
+		"name_color": "red", "edited": true, "product": "Product Name 2", "url": "https://www.google.com",
 		"deffield": "true", "deffield_meta": TableFieldTypeBool},
-	{"id": 3, "name": "Name3", "levels": 40, "valid": "false",
+	{"id": 3, "name": "Name3", "enum": "blue", "levels": 40, "valid": "false",
 		"date": "2022-01-01", "start": "2019-04-23T10:27:00+02:00", "stamp": "2020-04-09T10:30:00+02:00",
-		"name_color": "orange", "disabled": true, "product": "Product2",
+		"name_color": "orange", "disabled": true, "product": "Product2", "url": "https://www.google.com",
 		"deffield": 123, "deffield_meta": TableFieldTypeInteger},
-	{"id": 4, "name": "Name4", "levels": 40, "valid": "false",
+	{"id": 4, "name": "Name4", "enum": "yellow", "levels": 40, "valid": "false",
 		"date": "2022-01-01", "start": "2019-04-23T10:27:00+02:00", "stamp": "2020-04-09T10:30:00+02:00",
-		"name_color": "orange", "disabled": true, "product": "Product1",
+		"name_color": "orange", "disabled": true, "product": "Product1", "url": "https://www.google.com",
 		"deffield": 123.45, "deffield_meta": TableFieldTypeNumber},
-	{"id": 5, "name": "Name5", "levels": 401234.345, "valid": 0,
+	{"id": 5, "name": "Name5", "enum": "purple", "levels": 401234.345, "valid": 0,
 		"date": "2015-07-26", "start": "", "stamp": time.Now(),
-		"name_color": "orange", "product": "Product3",
+		"name_color": "orange", "product": "Product3", "url": "https://www.google.com",
 		"deffield": "value Orange", "deffield_meta": TableFieldTypeString},
-	{"id": 6, "name": "Name6", "levels": 40, "valid": false,
+	{"id": 6, "name": "Name6", "enum": "blue", "levels": 40, "valid": false,
 		"date": "1999-11-07", "start": "2019-04-23T10:30:00+02:00", "stamp": "2020-04-11T10:30:00+02:00",
-		"product": "Product1", "deffield": "Customer 2", "deffield_meta": TableFieldTypeLink},
-	{"id": 7, "name": "Name7", "levels": 60, "valid": true,
+		"product": "Product1", "url": "https://www.google.com", "deffield": "2019-04-23", "deffield_meta": TableFieldTypeDate},
+	{"id": 7, "name": "Name7", "enum": "pink", "levels": 60, "valid": true,
 		"date": "2020-06-06", "start": "2019-04-23T04:10:00+02:00", "stamp": "2020-04-18T10:30:00+02:00",
-		"name_color": "green", "product": "Product2",
-		"deffield": "Customer 7", "deffield_meta": TableFieldTypeLink},
+		"name_color": "green", "product": "Product2", "url": "https://www.google.com",
+		"deffield": "14:20", "deffield_meta": TableFieldTypeTime},
+	{"id": 8, "name": "Name8", "enum": "pink", "levels": 60, "valid": true,
+		"date": "2020-06-06", "start": "2019-04-23T04:10:00+02:00", "stamp": "2020-04-18T10:30:00+02:00",
+		"name_color": "green", "product": "Product2", "url": "https://www.google.com",
+		"deffield": "2020-04-23T14:20", "deffield_meta": TableFieldTypeDateTime},
+	{"id": 9, "name": "Name9", "enum": "pink", "levels": 60, "valid": true,
+		"date": "2020-06-06", "start": "2019-04-23T04:10:00+02:00", "stamp": "2020-04-18T10:30:00+02:00",
+		"name_color": "green", "product": "Product2", "url": "https://www.google.com",
+		"deffield": "car", "deffield_meta": TableFieldTypeString,
+		"deffield_options": []SelectOption{{Value: "car", Text: "Car"}, {Value: "bike", Text: "Bike"}, {Value: "boat", Text: "Boat"}}},
 }
 
 var testTableResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt ResponseEvent) (re ResponseEvent) {
 	switch evt.Name {
-	case TableEventAddItem, TableEventEditCell, TableEventRowSelected:
+	case TableEventAddItem, TableEventEditCell, TableEventRowSelected, TableEventFormChange:
 		re = ResponseEvent{
 			Trigger: &Toast{
 				Type:    ToastTypeInfo,
@@ -1086,7 +1572,29 @@ func TestTable(cc ClientComponent) []TestComponent {
 			},
 		},
 		{
-			Label:         "Bottom pagination",
+			Label:         "Editable table",
+			ComponentType: ComponentTypeTable,
+			Component: &Table{
+				BaseComponent: BaseComponent{
+					Id:           id + "_table_editable",
+					EventURL:     eventURL,
+					OnResponse:   testTableResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
+				},
+				Rows:              testTableRows,
+				Fields:            testTableFields,
+				Pagination:        PaginationTypeBottom,
+				PageSize:          5,
+				TableFilter:       true,
+				FilterPlaceholder: "Placeholder text",
+				AddIcon:           IconCheck,
+				AddItem:           true,
+				Editable:          true,
+				EditIndex:         1,
+			}},
+		{
+			Label:         "Bottom pagination and hide header",
 			ComponentType: ComponentTypeTable,
 			Component: &Table{
 				BaseComponent: BaseComponent{
@@ -1106,6 +1614,7 @@ func TestTable(cc ClientComponent) []TestComponent {
 				AddIcon:           IconCheck,
 				AddItem:           true,
 				TablePadding:      "16px",
+				HideHeader:        true,
 			}},
 		{
 			Label:         "Filtered",
@@ -1131,7 +1640,7 @@ func TestTable(cc ClientComponent) []TestComponent {
 				SortAsc:       true,
 			}},
 		{
-			Label:         "Filtered CaseSensitive",
+			Label:         "Filtered CaseSensitive and Unsortable",
 			ComponentType: ComponentTypeTable,
 			Component: &Table{
 				BaseComponent: BaseComponent{
@@ -1152,6 +1661,7 @@ func TestTable(cc ClientComponent) []TestComponent {
 				AddItem:       true,
 				SortCol:       "name",
 				SortAsc:       true,
+				Unsortable:    true,
 			}},
 	}
 }

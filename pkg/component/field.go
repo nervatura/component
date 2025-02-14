@@ -527,7 +527,7 @@ func TestField(cc ClientComponent) []TestComponent {
 					"name":         "button",
 					"button_style": ButtonStylePrimary,
 					"label":        "Primary",
-					"icon":         "Check",
+					"icon":         IconCheck,
 				},
 			}},
 		{
@@ -542,7 +542,7 @@ func TestField(cc ClientComponent) []TestComponent {
 					"name":        "url_link",
 					"link_style":  LinkStyleBorder,
 					"label":       "Search",
-					"icon":        "Search",
+					"icon":        IconSearch,
 					"href":        "https://www.google.com",
 					"link_target": "_blank",
 				},

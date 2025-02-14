@@ -47,7 +47,7 @@ For example:
 	  ButtonStyle:     ButtonStylePrimary,
 	  Align:    TextAlignCenter,
 	  Label:    "Primary",
-	  Icon:     "Check",
+	  Icon:     IconCheck,
 	  Selected: true
 	}
 */
@@ -82,6 +82,8 @@ type Button struct {
 	HideLabel bool `json:"hide_label"`
 	// The badge value of the button
 	Badge string `json:"badge"`
+	// The attribute specifies the form the button belongs to. Only when [Type] is [ButtonTypeSubmit].
+	FormId string `json:"form_id"`
 }
 
 /*
@@ -104,6 +106,7 @@ func (btn *Button) Properties() ut.IM {
 			"selected":        btn.Selected,
 			"hide_label":      btn.HideLabel,
 			"badge":           btn.Badge,
+			"form_id":         btn.FormId,
 		})
 }
 
@@ -204,6 +207,10 @@ func (btn *Button) SetProperty(propName string, propValue interface{}) interface
 			btn.Badge = ut.ToString(propValue, "")
 			return btn.Badge
 		},
+		"form_id": func() interface{} {
+			btn.FormId = ut.ToString(propValue, "")
+			return btn.FormId
+		},
 		"indicator": func() interface{} {
 			btn.Indicator = btn.Validation(propName, propValue).(string)
 			return btn.Indicator
@@ -264,7 +271,8 @@ func (btn *Button) Render() (html template.HTML, err error) {
 			return btn.getComponent(name)
 		},
 	}
-	tpl := `<button id="{{ .Id }}" name="{{ .Name }}" type="{{ .Type }}"
+	tpl := `<button id="{{ .Id }}" name="{{ .Name }}" type="{{ .Type }}" value="{{ .Name }}"
+	{{ if and (eq .Type "submit") (ne .FormId "") }} form="{{ .FormId }}"{{ end }}
 	{{ if or (eq .ButtonStyle "primary") (eq .ButtonStyle "border") }} button-type="{{ .ButtonStyle }}"{{ end }}
 	{{ if ne .EventURL "" }} hx-post="{{ .EventURL }}" hx-target="{{ .Target }}" {{ if ne .Sync "none" }} hx-sync="{{ .Sync }}"{{ end }} hx-swap="{{ .Swap }}"{{ end }}
 	{{ if ne .Indicator "none" }} hx-indicator="#{{ .Indicator }}"{{ end }}

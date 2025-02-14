@@ -12,12 +12,11 @@ import (
 const (
 	ComponentTypeLogin = "login"
 
-	LoginEventChange = "change"
-	LoginEventLogin  = "login"
-	LoginEventAuth   = "auth"
-	LoginEventTheme  = "theme"
-	LoginEventLang   = "lang"
-	LoginEventHelp   = "help"
+	LoginEventLogin = "login"
+	LoginEventAuth  = "auth"
+	LoginEventTheme = "theme"
+	LoginEventLang  = "lang"
+	LoginEventHelp  = "help"
 )
 
 var loginDefaultLabel ut.SM = ut.SM{
@@ -239,22 +238,35 @@ func (lgn *Login) SetProperty(propName string, propValue interface{}) interface{
 	return propValue
 }
 
+/*
+If the OnResponse function of the [Login] is implemented, the function calls it after the [TriggerEvent]
+is processed, otherwise the function's return [ResponseEvent] is the processed [TriggerEvent].
+*/
+func (lgn *Login) OnRequest(te TriggerEvent) (re ResponseEvent) {
+	evt := ResponseEvent{
+		Trigger: lgn, TriggerName: lgn.Name,
+		Name: LoginEventLogin,
+	}
+	for _, v := range []string{"username", "password", "database"} {
+		if te.Values.Has(v) {
+			lgn.SetProperty("data", ut.IM{v: te.Values.Get(v)})
+		}
+	}
+	if lgn.OnResponse != nil {
+		return lgn.OnResponse(evt)
+	}
+	return evt
+}
+
 func (lgn *Login) response(evt ResponseEvent) (re ResponseEvent) {
 	lgnEvt := ResponseEvent{
 		Trigger: lgn, TriggerName: lgn.Name, Value: evt.Value,
 	}
 	switch evt.TriggerName {
 
-	case "username", "password", "database":
-		lgnEvt.Name = LoginEventChange
-		lgn.SetProperty("data", ut.IM{evt.TriggerName: lgnEvt.Value})
-
 	case "theme":
 		lgnEvt.Name = LoginEventTheme
 		lgn.SetProperty("theme", loginThemeMap[lgn.Theme][0])
-
-	case "login":
-		lgnEvt.Name = LoginEventLogin
 
 	case "auth":
 		value := ut.ToString(evt.Trigger.GetProperty("data").(ut.IM)["id"], "")
@@ -277,24 +289,17 @@ func (lgn *Login) response(evt ResponseEvent) (re ResponseEvent) {
 }
 
 func (lgn *Login) getComponent(name string, authIdx int) (html template.HTML, err error) {
-	var loginDisabled bool = ((ut.ToString(lgn.Data["username"], "") == "") || (ut.ToString(lgn.Data["database"], "") == ""))
-	if lgn.HideDatabase {
-		loginDisabled = (ut.ToString(lgn.Data["username"], "") == "")
-	}
-
-	ccInp := func(itype string) *Input {
+	ccInp := func(itype string, required, focus bool) *Input {
 		inp := &Input{
 			BaseComponent: BaseComponent{
 				Id: lgn.Id + "_" + name, Name: name,
-				EventURL:     lgn.EventURL,
-				Target:       lgn.Target,
-				OnResponse:   lgn.response,
-				RequestValue: lgn.RequestValue,
-				RequestMap:   lgn.RequestMap,
 			},
-			Type:  itype,
-			Label: lgn.Labels["login_"+name],
-			Full:  true,
+			Type:      itype,
+			Label:     lgn.Labels["login_"+name],
+			Required:  required,
+			Invalid:   (ut.ToString(lgn.Data[name], "") == "") && required,
+			AutoFocus: focus,
+			Full:      true,
 		}
 		inp.SetProperty("value", ut.ToString(lgn.Data[name], ""))
 		return inp
@@ -326,19 +331,19 @@ func (lgn *Login) getComponent(name string, authIdx int) (html template.HTML, er
 	}
 	ccMap := map[string]func() ClientComponent{
 		"username": func() ClientComponent {
-			return ccInp(InputTypeString)
+			return ccInp(InputTypeString, true, true)
 		},
 		"login_username": func() ClientComponent {
 			return ccLbl()
 		},
 		"password": func() ClientComponent {
-			return ccInp(InputTypePassword)
+			return ccInp(InputTypePassword, false, false)
 		},
 		"login_password": func() ClientComponent {
 			return ccLbl()
 		},
 		"database": func() ClientComponent {
-			return ccInp(InputTypeString)
+			return ccInp(InputTypeString, true, false)
 		},
 		"login_database": func() ClientComponent {
 			return ccLbl()
@@ -351,16 +356,11 @@ func (lgn *Login) getComponent(name string, authIdx int) (html template.HTML, er
 			return &Button{
 				BaseComponent: BaseComponent{
 					Id: lgn.Id + "_" + name, Name: name,
-					EventURL:     lgn.EventURL,
-					Target:       lgn.Target,
-					OnResponse:   lgn.response,
-					RequestValue: lgn.RequestValue,
-					RequestMap:   lgn.RequestMap,
 				},
 				ButtonStyle: ButtonStylePrimary,
+				Type:        ButtonTypeSubmit,
 				Label:       lgn.Labels["login_"+name],
-				Disabled:    loginDisabled,
-				Full:        true, AutoFocus: true,
+				Full:        true,
 			}
 		},
 		"theme": func() ClientComponent {
@@ -469,7 +469,9 @@ func (lgn *Login) Render() (html template.HTML, err error) {
 	}
 	tpl := `<div id="{{ .Id }}" class="login-modal {{ customClass }}" theme="{{ .Theme }}" 
 	{{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}>
-	<div class="middle"><div class="dialog">
+	<div class="middle"><div class="dialog"><form id="{{ .Id }}" name="login_form"
+	{{ if ne .EventURL "" }} hx-post="{{ .EventURL }}" hx-target="{{ .Target }}" {{ if ne .Sync "none" }} hx-sync="{{ .Sync }}"{{ end }} hx-swap="{{ .Swap }}"{{ end }}
+	{{ if ne .Indicator "none" }} hx-indicator="#{{ .Indicator }}"{{ end }}>
 	<div class="row title">
 	<div class="cell title-cell login-title-cell" ><span>{{ msg "title_login" }}</span></div>
 	<div class="cell version-cell" ><span>{{ .Version }}</span></div>
@@ -517,9 +519,12 @@ func (lgn *Login) Render() (html template.HTML, err error) {
 	</div>
 	{{ end }}
 	</div>
-	</div></div></div>`
+	</form></div></div></div>`
 
-	return ut.TemplateBuilder("login", tpl, funcMap, lgn)
+	if html, err = ut.TemplateBuilder("login", tpl, funcMap, lgn); err == nil && lgn.EventURL != "" {
+		lgn.SetProperty("request_map", lgn)
+	}
+	return html, err
 }
 
 var testLoginLabels map[string]ut.SM = map[string]ut.SM{

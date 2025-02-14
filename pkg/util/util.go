@@ -51,6 +51,13 @@ func ToString(value interface{}, defValue string) string {
 	return defValue
 }
 
+func StringLimit(value string, length int64) string {
+	if int64(len(value)) <= length {
+		return value
+	}
+	return value[:length] + "..."
+}
+
 // ToFloat - safe float64 conversion
 func ToFloat(value interface{}, defValue float64) float64 {
 	if floatValue, valid := value.(float64); valid {
@@ -198,6 +205,9 @@ func StringToDateTime(value string) (time.Time, error) {
 	}
 	if err != nil {
 		tm, err = time.Parse("2006-01-02T15:04:05Z", value)
+	}
+	if err != nil {
+		tm, err = time.Parse("2006-01-02T15:04", value)
 	}
 	if err != nil {
 		tm, err = time.Parse("2006-01-02 15:04:05", value)

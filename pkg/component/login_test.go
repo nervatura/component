@@ -1,6 +1,7 @@
 package component
 
 import (
+	"net/url"
 	"reflect"
 	"testing"
 
@@ -176,15 +177,6 @@ func TestLogin_response(t *testing.T) {
 		args   args
 	}{
 		{
-			name: "change",
-			args: args{
-				evt: ResponseEvent{
-					TriggerName: "username",
-					Name:        LoginEventChange,
-				},
-			},
-		},
-		{
 			name: "theme",
 			fields: fields{
 				BaseComponent: BaseComponent{
@@ -307,6 +299,74 @@ func TestLogin_msg(t *testing.T) {
 			if got := lgn.msg(tt.args.labelID); got != tt.want {
 				t.Errorf("Login.msg() = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func TestLogin_OnRequest(t *testing.T) {
+	type fields struct {
+		BaseComponent BaseComponent
+		Version       string
+		Lang          string
+		HideDatabase  bool
+		HidePassword  bool
+		Theme         string
+		Labels        ut.SM
+		Locales       []SelectOption
+		AuthButtons   []LoginAuthButton
+		ShowHelp      bool
+		HelpURL       string
+	}
+	type args struct {
+		te TriggerEvent
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+	}{
+		{
+			name: "base",
+			args: args{
+				te: TriggerEvent{
+					Id:     "id",
+					Values: url.Values{"username": {"user"}, "password": {"pass"}, "database": {"db"}},
+				},
+			},
+		},
+		{
+			name: "OnResponse",
+			fields: fields{
+				BaseComponent: BaseComponent{
+					OnResponse: func(evt ResponseEvent) (re ResponseEvent) {
+						evt.Trigger = &Login{}
+						return evt
+					},
+				},
+			},
+			args: args{
+				te: TriggerEvent{
+					Id: "id",
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			lgn := &Login{
+				BaseComponent: tt.fields.BaseComponent,
+				Version:       tt.fields.Version,
+				Lang:          tt.fields.Lang,
+				HideDatabase:  tt.fields.HideDatabase,
+				HidePassword:  tt.fields.HidePassword,
+				Theme:         tt.fields.Theme,
+				Labels:        tt.fields.Labels,
+				Locales:       tt.fields.Locales,
+				AuthButtons:   tt.fields.AuthButtons,
+				ShowHelp:      tt.fields.ShowHelp,
+				HelpURL:       tt.fields.HelpURL,
+			}
+			lgn.OnRequest(tt.args.te)
 		})
 	}
 }
