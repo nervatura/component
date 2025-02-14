@@ -1277,6 +1277,21 @@ func (tbl *Table) tableRowID(row ut.IM, index int) string {
 	return rowID
 }
 
+func (tbl *Table) tableColID(col TableColumn) string {
+	colID := tbl.Id + "_header_" + col.Id
+	if !tbl.Unsortable {
+		lbl := &Label{BaseComponent: BaseComponent{
+			Id: colID, Name: "header_sort",
+			Data:         ut.IM{"fieldname": col.Id, "fieldtype": col.Field.FieldType},
+			OnResponse:   tbl.response,
+			RequestValue: tbl.RequestValue,
+			RequestMap:   tbl.RequestMap,
+		}}
+		lbl.SetProperty("request_map", lbl)
+	}
+	return colID
+}
+
 func (tbl *Table) tableMap(key string, row ut.IM, index int) bool {
 	rows := tbl.filterRows()
 	pageCount := int64(math.Ceil(float64(len(rows)) / float64(tbl.PageSize)))
@@ -1339,18 +1354,7 @@ func (tbl *Table) Render() (html template.HTML, err error) {
 			return rows
 		},
 		"colID": func(col TableColumn) string {
-			colID := tbl.Id + "_header_" + col.Id
-			if !tbl.Unsortable {
-				lbl := &Label{BaseComponent: BaseComponent{
-					Id: colID, Name: "header_sort",
-					Data:         ut.IM{"fieldname": col.Id, "fieldtype": col.Field.FieldType},
-					OnResponse:   tbl.response,
-					RequestValue: tbl.RequestValue,
-					RequestMap:   tbl.RequestMap,
-				}}
-				lbl.SetProperty("request_map", lbl)
-			}
-			return colID
+			return tbl.tableColID(col)
 		},
 		"rowTrigger": func(index int) bool {
 			return tbl.tableMap("rowTrigger", ut.IM{}, index)
