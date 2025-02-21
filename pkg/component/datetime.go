@@ -12,7 +12,7 @@ import (
 const (
 	ComponentTypeDateTime = "datetime"
 
-	DateTimeEventChange = "change"
+	DateTimeEventChange = "datetime_change"
 
 	DateTimeTypeDate     = "date"
 	DateTimeTypeTime     = "time"

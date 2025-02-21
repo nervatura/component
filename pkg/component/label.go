@@ -11,7 +11,7 @@ import (
 const (
 	ComponentTypeLabel = "label"
 
-	LabelEventClick = "click"
+	LabelEventClick = "label_click"
 )
 
 /*

@@ -11,7 +11,7 @@ import (
 const (
 	ComponentTypeLink = "link"
 
-	LinkEventClick = "click"
+	LinkEventClick = "link_click"
 
 	LinkStyleDefault  = ""
 	LinkStyleButton   = "button"

@@ -116,11 +116,13 @@ func (row *Row) getComponent(index int, coltype string) (html template.HTML, err
 	ccMap := map[string]func() ClientComponent{
 		"field": func() ClientComponent {
 			field := &row.Columns[index].Value
-			field.Id = row.Id + "_" + ut.ToString(index, "") + "_" + field.Name
-			field.EventURL = row.EventURL
-			field.OnResponse = row.OnResponse
-			field.RequestValue = row.RequestValue
-			field.RequestMap = row.RequestMap
+			if row.EventURL != "" {
+				field.Id = row.Id + "_" + ut.ToString(index, "") + "_" + field.Name
+				field.EventURL = row.EventURL
+				field.OnResponse = row.OnResponse
+				field.RequestValue = row.RequestValue
+				field.RequestMap = row.RequestMap
+			}
 			return field
 		},
 		"label": func() ClientComponent {
@@ -157,19 +159,22 @@ func (row *Row) Render() (html template.HTML, err error) {
 			return (len(row.Columns) >= 1) && (len(row.Columns) <= 4) && !row.FieldCol
 		},
 		"colClass": func() string {
-			cols := []string{"m12 l12", "m6 l6", "m4 l4", "m3 l3"}
-			return cols[len(row.Columns)-1]
+			cols := []string{"s12 m12 l12", "s12 m6 l6", "s12 m4 l4", "s12 m3 l3"}
+			if row.Full {
+				return cols[len(row.Columns)-1]
+			}
+			return ""
 		},
 	}
 	tpl := `<div id="{{ .Id }}" name="{{ .Name }}" 
-	class="row section-tiny {{ customClass }}{{ if .Full }} full{{ end }}
+	class="row section-tiny {{ customClass }}{{ if .Full }} full{{ else }} mobile{{ end }}
 	{{ if .BorderTop }} border-top{{ end }}{{ if .BorderBottom }} border-bottom{{ end }}"
 	{{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}
 	>{{ if fieldCol }}<div class="cell padding-small hide-small" style="width: 150px;" >{{ rowComponent 0 "label" }}</div>
 	<div class="cell padding-small" ><div class="section-tiny-bottom hide-medium hide-large" >{{ rowComponent 0 "label" }}</div>
 	{{ rowComponent 0 "field" }}</div>{{ end }}
 	{{ if validCol }}{{ range $index, $col := .Columns }}
-	<div class="cell padding-small s12 {{ colClass }}" >
+	<div class="cell padding-small {{ colClass }}" >
 	<div class="section-tiny-bottom">{{ rowComponent $index "label" }}</div>{{ rowComponent $index "field" }}</div>
 	{{ end }}{{ end }}
 	</div>`
@@ -359,6 +364,70 @@ func TestRow(cc ClientComponent) []TestComponent {
 					}},
 				},
 				Full:         true,
+				BorderTop:    true,
+				BorderBottom: true,
+				FieldCol:     false,
+			}},
+		{
+			Label:         "Form buttons row",
+			ComponentType: ComponentTypeRow,
+			Component: &Row{
+				BaseComponent: BaseComponent{
+					Id: id + "_buttons_row",
+					//EventURL:     eventURL,
+					//OnResponse:   testFieldResponse,
+					//RequestValue: requestValue,
+					//RequestMap:   requestMap,
+				},
+				Columns: []RowColumn{
+					{Value: Field{
+						Type: FieldTypeButton,
+						Value: ut.IM{
+							"name":         "update",
+							"type":         ButtonTypeSubmit,
+							"button_style": ButtonStyleBorder,
+							"icon":         IconCheck,
+							"style": ut.SM{
+								"border-color": "green", "fill": "green",
+							},
+							"auto_focus": true,
+						},
+					}},
+					{Value: Field{
+						Type: FieldTypeButton,
+						Value: ut.IM{
+							"name":         "cancel",
+							"type":         ButtonTypeSubmit,
+							"button_style": ButtonStyleBorder,
+							"icon":         IconReply,
+							"style":        ut.SM{},
+						},
+					}},
+					{Value: Field{
+						Type: FieldTypeLabel,
+						Value: ut.IM{
+							"name":  "gap",
+							"value": "",
+							"style": ut.SM{
+								"width":   "25px",
+								"display": "block",
+							},
+						},
+					}},
+					{Value: Field{
+						Type: FieldTypeButton,
+						Value: ut.IM{
+							"name":         "delete",
+							"type":         ButtonTypeSubmit,
+							"button_style": ButtonStyleBorder,
+							"icon":         IconTimes,
+							"style": ut.SM{
+								"border-color": "red", "fill": "red",
+							},
+						},
+					}},
+				},
+				Full:         false,
 				BorderTop:    true,
 				BorderBottom: true,
 				FieldCol:     false,

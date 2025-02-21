@@ -12,8 +12,8 @@ import (
 const (
 	ComponentTypeEditor = "editor"
 
-	EditorEventView  = "edit_view"
-	EditorEventField = "edit_field"
+	EditorEventView  = "editor_view"
+	EditorEventField = "editor_field"
 )
 
 type EditorView struct {
@@ -219,13 +219,15 @@ func (edi *Editor) getComponent(name string, view EditorView, index int) (html t
 		},
 		"view_row": func() ClientComponent {
 			row := &edi.Rows[index]
-			row.Id = edi.Id + "_" + name + "_" + ut.ToString(index, "")
-			row.Name = name
-			row.EventURL = edi.EventURL
-			row.Target = edi.Target
-			row.OnResponse = edi.response
-			row.RequestValue = edi.RequestValue
-			row.RequestMap = edi.RequestMap
+			if edi.EventURL != "" {
+				row.Id = edi.Id + "_" + name + "_" + ut.ToString(index, "")
+				row.Name = name
+				row.EventURL = edi.EventURL
+				row.Target = edi.Target
+				row.OnResponse = edi.response
+				row.RequestValue = edi.RequestValue
+				row.RequestMap = edi.RequestMap
+			}
 			return row
 		},
 		"view_table": func() ClientComponent {
@@ -268,7 +270,7 @@ func (edi *Editor) Render() (html template.HTML, err error) {
 	tpl := `<div id="{{ .Id }}"
 	class="{{ customClass }}"
 	{{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}>
-	<div class="page"><div class="editor">
+	<div class="editor">
 	<div class="editor-title"><div class="cell">{{ editorComponent "title" }}</div></div>
 	<div class="section-container" >
 	{{ range $index, $view := .Views }}
@@ -278,9 +280,7 @@ func (edi *Editor) Render() (html template.HTML, err error) {
 	{{ range $tbl_index, $tbl := $.Tables }}{{ viewComponent "view_table" $view $tbl_index }}{{ end }}
 	</div>{{ end }}
 	{{ end }}
-	</div></div>
-	</div>
-	</div>`
+	</div></div></div>`
 
 	return ut.TemplateBuilder("editor", tpl, funcMap, edi)
 }

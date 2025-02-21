@@ -11,9 +11,9 @@ import (
 const (
 	ComponentTypeSearch = "search"
 
-	SearchEventSearch   = "search"
-	SearchEventSelected = "selected"
-	SearchEventHelp     = "help"
+	SearchEventSearch   = "search_search"
+	SearchEventSelected = "search_selected"
+	SearchEventHelp     = "search_help"
 
 	SearchDefaultPlaceholder = "Search conditions"
 	SearchDefaultTitle       = "Search for data"

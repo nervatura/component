@@ -11,8 +11,8 @@ import (
 const (
 	ComponentTypeMenuBar = "menubar"
 
-	MenuBarEventSide  = "side"
-	MenuBarEventValue = "value"
+	MenuBarEventSide  = "menubar_side"
+	MenuBarEventValue = "menubar_value"
 )
 
 // [MenuBar] item data

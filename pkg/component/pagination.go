@@ -12,8 +12,8 @@ import (
 const (
 	ComponentTypePagination = "pagination"
 
-	PaginationEventValue    = "value"
-	PaginationEventPageSize = "page_size"
+	PaginationEventValue    = "pagination_value"
+	PaginationEventPageSize = "pagination_page_size"
 )
 
 // [Pagination] PageSize values

@@ -11,9 +11,9 @@ import (
 
 // [Demo] constants
 const (
-	DemoEventChange   = "change"
-	DemoEventTheme    = "theme"
-	DemoEventViewSize = "view_size"
+	DemoEventChange   = "demo_change"
+	DemoEventTheme    = "demo_theme"
+	DemoEventViewSize = "demo_view_size"
 
 	ComponentGroupAtom     = "atom"
 	ComponentGroupMolecule = "molecule"
@@ -97,11 +97,11 @@ var DemoMap map[string][]DemoView = map[string][]DemoView{
 		{ComponentType: ct.ComponentTypeMenuBar, TestData: ct.TestMenuBar},
 		{ComponentType: ct.ComponentTypePagination, TestData: ct.TestPagination},
 		{ComponentType: ct.ComponentTypeSideBar, TestData: ct.TestSidebar},
-		{ComponentType: ct.ComponentTypeInputBox, TestData: ct.TestInputBox},
 	},
 	ComponentGroupTemplate: {
 		{ComponentType: ct.ComponentTypeLogin, TestData: ct.TestLogin},
 		{ComponentType: ct.ComponentTypeBrowser, TestData: ct.TestBrowser},
+		{ComponentType: ct.ComponentTypeForm, TestData: ct.TestForm},
 		{ComponentType: ct.ComponentTypeEditor, TestData: ct.TestEditor},
 		{ComponentType: ct.ComponentTypeSearch, TestData: ct.TestSearch},
 	},
@@ -284,11 +284,11 @@ func (sto *Demo) response(evt ct.ResponseEvent) (re ct.ResponseEvent) {
 	}
 	var value interface{}
 	switch evt.TriggerName {
-	case "theme":
+	case DemoEventTheme:
 		stoEvt.Name = DemoEventTheme
 		value = sto.SetProperty("theme", testIcoMap[sto.Theme][0])
 
-	case "view_size":
+	case DemoEventViewSize:
 		stoEvt.Name = DemoEventViewSize
 		value = sto.SetProperty("view_size", testIcoMap[sto.ViewSize][0])
 

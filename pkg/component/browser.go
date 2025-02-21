@@ -16,17 +16,17 @@ import (
 const (
 	ComponentTypeBrowser = "browser"
 
-	BrowserEventChange       = "change"
-	BrowserEventSearch       = "search"
-	BrowserEventBookmark     = "bookmark"
-	BrowserEventExport       = "export"
-	BrowserEventHelp         = "help"
-	BrowserEventView         = "view"
-	BrowserEventAddFilter    = "add_filter"
-	BrowserEventChangeFilter = "change_filter"
-	BrowserEventShowTotal    = "show_total"
-	BrowserEventSetColumn    = "set_column"
-	BrowserEventEditRow      = "edit_row"
+	BrowserEventChange       = "browser_change"
+	BrowserEventSearch       = "browser_search"
+	BrowserEventBookmark     = "browser_bookmark"
+	BrowserEventExport       = "browser_export"
+	BrowserEventHelp         = "browser_help"
+	BrowserEventView         = "browser_view"
+	BrowserEventAddFilter    = "browser_add_filter"
+	BrowserEventChangeFilter = "browser_change_filter"
+	BrowserEventShowTotal    = "browser_show_total"
+	BrowserEventSetColumn    = "browser_set_column"
+	BrowserEventEditRow      = "browser_edit_row"
 	BrowserExportLimit       = 40000
 )
 
@@ -758,7 +758,8 @@ func (bro *Browser) filterTable() *Table {
 		return options
 	}
 	var fields []TableField = []TableField{
-		{Name: "field", FieldType: TableFieldTypeString, Label: bro.msg("browser_filter"), Options: fieldOptions(), TriggerEvent: true},
+		{Name: "field", FieldType: TableFieldTypeString, Label: bro.msg("browser_filter"),
+			Options: fieldOptions(), TriggerEvent: true, Required: true},
 		{Name: "comp", FieldType: TableFieldTypeMeta, Label: bro.msg("browser_comparison"), Required: true},
 		{Name: "value", FieldType: TableFieldTypeMeta, Label: bro.msg("browser_value")},
 	}

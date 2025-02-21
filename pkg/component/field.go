@@ -27,6 +27,7 @@ const (
 	FieldTypeUpload   = "upload"
 	FieldTypeSelector = "selector"
 	FieldTypeList     = "list"
+	FieldTypeLabel    = "label"
 )
 
 // [Field] Type values
@@ -34,7 +35,8 @@ var FieldType []string = []string{
 	FieldTypeButton, FieldTypeUrlLink, FieldTypeString, FieldTypeText, FieldTypeColor, FieldTypePassword,
 	FieldTypeInteger, FieldTypeNumber, FieldTypeDate, FieldTypeTime, FieldTypeDateTime,
 	FieldTypeBool, FieldTypeSelect, FieldTypeLink, FieldTypeUpload, FieldTypeSelector,
-	FieldTypeList}
+	FieldTypeList, FieldTypeLabel,
+}
 
 // Multi-type input component
 type Field struct {
@@ -43,6 +45,8 @@ type Field struct {
 	Type string `json:"type"`
 	// Any valid value based on control type
 	Value ut.IM `json:"value"`
+	// Set trigger event if the field is inside a form
+	FormTrigger bool `json:"form_trigger"`
 }
 
 /*
@@ -52,8 +56,9 @@ func (fld *Field) Properties() ut.IM {
 	return ut.MergeIM(
 		fld.BaseComponent.Properties(),
 		ut.IM{
-			"type":  fld.Type,
-			"value": fld.Value,
+			"type":         fld.Type,
+			"value":        fld.Value,
+			"form_trigger": fld.FormTrigger,
 		})
 }
 
@@ -103,6 +108,10 @@ func (fld *Field) SetProperty(propName string, propValue interface{}) interface{
 			fld.Value = fld.Validation(propName, propValue).(ut.IM)
 			return fld.Value
 		},
+		"form_trigger": func() interface{} {
+			fld.FormTrigger = ut.ToBoolean(propValue, false)
+			return fld.FormTrigger
+		},
 	}
 	if _, found := pm[propName]; found {
 		return fld.SetRequestValue(propName, pm[propName](), []string{})
@@ -114,44 +123,40 @@ func (fld *Field) SetProperty(propName string, propValue interface{}) interface{
 }
 
 func (fld *Field) getComponent() (html template.HTML, err error) {
-	ccInp := func() *Input {
-		inp := &Input{
-			BaseComponent: BaseComponent{
+	ccBase := func() BaseComponent {
+		if fld.EventURL != "" {
+			return BaseComponent{
 				Id:           fld.Id + "_" + fld.Type,
 				EventURL:     fld.EventURL,
 				OnResponse:   fld.OnResponse,
 				RequestValue: fld.RequestValue,
 				RequestMap:   fld.RequestMap,
-			},
-			Type: fld.Type,
-			Full: true,
+			}
+		}
+		return BaseComponent{
+			Id: fld.Id + "_" + fld.Type,
+		}
+	}
+	ccInp := func() *Input {
+		inp := &Input{
+			BaseComponent: ccBase(),
+			Type:          fld.Type,
+			Full:          true,
 		}
 		return inp
 	}
 	ccNum := func() *NumberInput {
 		inp := &NumberInput{
-			BaseComponent: BaseComponent{
-				Id:           fld.Id + "_" + fld.Type,
-				EventURL:     fld.EventURL,
-				OnResponse:   fld.OnResponse,
-				RequestValue: fld.RequestValue,
-				RequestMap:   fld.RequestMap,
-			},
-			Full: true,
+			BaseComponent: ccBase(),
+			Full:          true,
 		}
 		return inp
 	}
 	ccDti := func() *DateTime {
 		dti := &DateTime{
-			BaseComponent: BaseComponent{
-				Id:           fld.Id + "_" + fld.Type,
-				EventURL:     fld.EventURL,
-				OnResponse:   fld.OnResponse,
-				RequestValue: fld.RequestValue,
-				RequestMap:   fld.RequestMap,
-			},
-			Type: fld.Type,
-			Full: true,
+			BaseComponent: ccBase(),
+			Type:          fld.Type,
+			Full:          true,
 		}
 		return dti
 	}
@@ -178,41 +183,23 @@ func (fld *Field) getComponent() (html template.HTML, err error) {
 		},
 		FieldTypeUpload: func() ClientComponent {
 			inp := &Upload{
-				BaseComponent: BaseComponent{
-					Id:           fld.Id + "_" + fld.Type,
-					EventURL:     fld.EventURL,
-					OnResponse:   fld.OnResponse,
-					RequestValue: fld.RequestValue,
-					RequestMap:   fld.RequestMap,
-				},
-				Full: true,
+				BaseComponent: ccBase(),
+				Full:          true,
 			}
 			setProperty(inp)
 			return inp
 		},
 		FieldTypeSelector: func() ClientComponent {
 			inp := &Selector{
-				BaseComponent: BaseComponent{
-					Id:           fld.Id + "_" + fld.Type,
-					EventURL:     fld.EventURL,
-					OnResponse:   fld.OnResponse,
-					RequestValue: fld.RequestValue,
-					RequestMap:   fld.RequestMap,
-				},
-				Full: true,
+				BaseComponent: ccBase(),
+				Full:          true,
 			}
 			setProperty(inp)
 			return inp
 		},
 		FieldTypeList: func() ClientComponent {
 			inp := &List{
-				BaseComponent: BaseComponent{
-					Id:           fld.Id + "_" + fld.Type,
-					EventURL:     fld.EventURL,
-					OnResponse:   fld.OnResponse,
-					RequestValue: fld.RequestValue,
-					RequestMap:   fld.RequestMap,
-				},
+				BaseComponent: ccBase(),
 			}
 			setProperty(inp)
 			return inp
@@ -224,14 +211,8 @@ func (fld *Field) getComponent() (html template.HTML, err error) {
 		},
 		FieldTypeButton: func() ClientComponent {
 			btn := &Button{
-				BaseComponent: BaseComponent{
-					Id:           fld.Id + "_" + fld.Type,
-					EventURL:     fld.EventURL,
-					OnResponse:   fld.OnResponse,
-					RequestValue: fld.RequestValue,
-					RequestMap:   fld.RequestMap,
-				},
-				Full: true,
+				BaseComponent: ccBase(),
+				Full:          true,
 			}
 			setProperty(btn)
 			return btn
@@ -290,15 +271,9 @@ func (fld *Field) getComponent() (html template.HTML, err error) {
 		FieldTypeSelect: func() ClientComponent {
 			options := SelectOptionRangeValidation(fld.Value["options"], []SelectOption{})
 			sel := &Select{
-				BaseComponent: BaseComponent{
-					Id:           fld.Id + "_" + fld.Type,
-					EventURL:     fld.EventURL,
-					OnResponse:   fld.OnResponse,
-					RequestValue: fld.RequestValue,
-					RequestMap:   fld.RequestMap,
-				},
-				Options: options,
-				Full:    true,
+				BaseComponent: ccBase(),
+				Options:       options,
+				Full:          true,
 			}
 			setProperty(sel)
 			if _, found := fld.Value["value"]; found {
@@ -308,33 +283,28 @@ func (fld *Field) getComponent() (html template.HTML, err error) {
 		},
 		FieldTypeLink: func() ClientComponent {
 			lbl := &Label{
-				BaseComponent: BaseComponent{
-					Id:           fld.Id + "_" + fld.Type,
-					EventURL:     fld.EventURL,
-					OnResponse:   fld.OnResponse,
-					RequestValue: fld.RequestValue,
-					RequestMap:   fld.RequestMap,
-				},
-				Border: true,
-				Full:   true,
+				BaseComponent: ccBase(),
+				Border:        true,
+				Full:          true,
 			}
 			setProperty(lbl)
 			return lbl
 		},
 		FieldTypeBool: func() ClientComponent {
 			tgl := &Toggle{
-				BaseComponent: BaseComponent{
-					Id:           fld.Id + "_" + fld.Type,
-					EventURL:     fld.EventURL,
-					OnResponse:   fld.OnResponse,
-					RequestValue: fld.RequestValue,
-					RequestMap:   fld.RequestMap,
-				},
-				Border: true,
-				Full:   true,
+				BaseComponent: ccBase(),
+				Border:        true,
+				Full:          true,
 			}
 			setProperty(tgl)
 			return tgl
+		},
+		FieldTypeLabel: func() ClientComponent {
+			lbl := &Label{
+				BaseComponent: ccBase(),
+			}
+			setProperty(lbl)
+			return lbl
 		},
 	}
 	cc := ccMap[fld.Type]()
@@ -725,6 +695,20 @@ func TestField(cc ClientComponent) []TestComponent {
 					"pagination":  PaginationTypeNone,
 					"delete_item": true,
 					"edit_icon":   "Plus",
+				},
+			}},
+		{
+			Label:         "Label",
+			ComponentType: ComponentTypeField,
+			Component: &Field{
+				BaseComponent: BaseComponent{
+					Id: id + "_label",
+				},
+				Type: FieldTypeLabel,
+				Value: ut.IM{
+					"name":      "label",
+					"value":     "Label value",
+					"left_icon": IconInfoCircle,
 				},
 			}},
 	}

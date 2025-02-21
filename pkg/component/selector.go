@@ -11,12 +11,12 @@ import (
 const (
 	ComponentTypeSelector = "selector"
 
-	SelectorEventFilterChange = "filter_change"
-	SelectorEventLink         = "link"
-	SelectorEventSearch       = "search"
-	SelectorEventDelete       = "delete"
-	SelectorEventShowModal    = "modal"
-	SelectorEventSelected     = "selected"
+	SelectorEventFilterChange = "selector_filter_change"
+	SelectorEventLink         = "selector_link"
+	SelectorEventSearch       = "selector_search"
+	SelectorEventDelete       = "selector_delete"
+	SelectorEventShowModal    = "selector_modal"
+	SelectorEventSelected     = "selector_selected"
 
 	SelectorDefaultPlaceholder = "Search conditions"
 	SelectorDefaultTitle       = "Search for data"

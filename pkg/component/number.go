@@ -12,7 +12,7 @@ import (
 const (
 	ComponentTypeNumberInput = "number"
 
-	NumberEventChange = "change"
+	NumberEventChange = "number_change"
 )
 
 /*

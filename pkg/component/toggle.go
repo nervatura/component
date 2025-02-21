@@ -11,7 +11,7 @@ import (
 const (
 	ComponentTypeToggle = "toggle"
 
-	ToggleEventChange = "change"
+	ToggleEventChange = "toggle_change"
 )
 
 // Creates an toggle or checkbox control

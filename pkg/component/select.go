@@ -11,7 +11,7 @@ import (
 const (
 	ComponentTypeSelect = "select"
 
-	SelectEventChange = "change"
+	SelectEventChange = "select_change"
 )
 
 // [Select] control item

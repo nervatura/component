@@ -12,7 +12,7 @@ import (
 const (
 	ComponentTypeInput = "input"
 
-	InputEventChange = "change"
+	InputEventChange = "input_change"
 
 	InputTypeString   = "text"
 	InputTypeText     = "area"

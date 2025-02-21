@@ -10,7 +10,7 @@
 }
 
 .list li:nth-child(odd) {
-  background-color: rgba(var(--functional-yellow),0.1);
+  background-color: rgba(var(--functional-beige),0.4);
 }
 
 .list-row {

@@ -11,8 +11,8 @@ import (
 const (
 	ComponentTypeInputBox = "inputbox"
 
-	InputBoxEventOK     = "input_ok"
-	InputBoxEventCancel = "input_cancel"
+	InputBoxEventOK     = "inputbox_ok"
+	InputBoxEventCancel = "inputbox_cancel"
 
 	InputBoxTypeCancel   = "IBOX_CANCEL"
 	InputBoxTypeOK       = "IBOX_OK"
@@ -80,7 +80,7 @@ func (ibx *InputBox) GetProperty(propName string) interface{} {
 }
 
 /*
-It checks the value given to the property of the [Pagination] and always returns a valid value
+It checks the value given to the property of the [InputBox] and always returns a valid value
 */
 func (ibx *InputBox) Validation(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{

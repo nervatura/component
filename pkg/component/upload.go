@@ -11,7 +11,7 @@ import (
 const (
 	ComponentTypeUpload = "upload"
 
-	UploadEventUpload         = "upload"
+	UploadEventUpload         = "upload_upload"
 	UploadDefaultPlaceholder  = "Choose file to upload"
 	UploadDefaultToastMessage = "Successful file upload"
 )

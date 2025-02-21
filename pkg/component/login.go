@@ -12,11 +12,11 @@ import (
 const (
 	ComponentTypeLogin = "login"
 
-	LoginEventLogin = "login"
-	LoginEventAuth  = "auth"
-	LoginEventTheme = "theme"
-	LoginEventLang  = "lang"
-	LoginEventHelp  = "help"
+	LoginEventLogin = "login_login"
+	LoginEventAuth  = "login_auth"
+	LoginEventTheme = "login_theme"
+	LoginEventLang  = "login_lang"
+	LoginEventHelp  = "login_help"
 )
 
 var loginDefaultLabel ut.SM = ut.SM{

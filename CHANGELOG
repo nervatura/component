@@ -1,3 +1,7 @@
+## 1.7.24
+- Field component: add FieldTypeLabel and FormTrigger option
+- new InputForm component
+
 ## 1.7.23
 - Toggle component: change the input base and form compatibility component
 - Login component: form base LoginEventLogin event

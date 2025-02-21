@@ -16,11 +16,11 @@ import (
 const (
 	ComponentTypeTable = "table"
 
-	TableEventCurrentPage  = "current_page"
-	TableEventFilterChange = "filter_change"
-	TableEventAddItem      = "add_item"
-	TableEventEditCell     = "edit_cell"
-	TableEventRowSelected  = "row_selected"
+	TableEventCurrentPage  = "table_current_page"
+	TableEventFilterChange = "table_filter_change"
+	TableEventAddItem      = "table_add_item"
+	TableEventEditCell     = "table_edit_cell"
+	TableEventRowSelected  = "table_row_selected"
 	TableEventSort         = "table_sort"
 	TableEventFormEdit     = "table_form_edit"
 	TableEventFormUpdate   = "table_form_update"
@@ -536,15 +536,19 @@ func (tbl *Table) OnRequest(te TriggerEvent) (re ResponseEvent) {
 }
 
 func (tbl *Table) formEvent(evt ResponseEvent) (re ResponseEvent) {
-	tblEvt := ResponseEvent{
-		Trigger: tbl, TriggerName: tbl.Name,
-		Name: TableEventFormChange,
-	}
 	rowIndex := tbl.formRowIndex()
 	if _, found := evt.Trigger.(*Button); !found {
 		tbl.Rows[rowIndex][evt.TriggerName] = evt.Value
 	}
-	tblEvt.Value = ut.IM{"row": tbl.Rows[rowIndex], "index": rowIndex, "field": evt.TriggerName, "value": evt.Value}
+	tblEvt := ResponseEvent{
+		Trigger: tbl, TriggerName: tbl.Name,
+		Name: TableEventFormChange,
+		Value: ut.IM{
+			"name": evt.TriggerName, "event": evt.Name, "value": evt.Value,
+			"row": tbl.Rows[rowIndex], "index": rowIndex,
+			"trigger": evt.Trigger, "data": tbl.Data,
+		},
+	}
 	if tbl.OnResponse != nil {
 		return tbl.OnResponse(tblEvt)
 	}
@@ -799,6 +803,17 @@ func (tbl *Table) getComponent(name string, pageCount int64, data ut.IM) (html t
 							"icon":         IconReply,
 							"style": ut.SM{
 								"border-color": "white", "fill": "white",
+							},
+						},
+					}},
+					{Value: Field{
+						Type: FieldTypeLabel,
+						Value: ut.IM{
+							"name":  "gap",
+							"value": "",
+							"style": ut.SM{
+								"width":   "25px",
+								"display": "block",
 							},
 						},
 					}},

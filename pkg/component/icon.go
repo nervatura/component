@@ -12,7 +12,7 @@ const (
 	ComponentTypeIcon = "icon"
 
 	IconDefaultIcon = IconExclamationTriangle
-	IconEventClick  = "click"
+	IconEventClick  = "icon_click"
 )
 
 const (

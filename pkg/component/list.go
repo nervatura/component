@@ -13,11 +13,11 @@ import (
 const (
 	ComponentTypeList = "list"
 
-	ListEventCurrentPage  = "current_page"
-	ListEventFilterChange = "filter_change"
-	ListEventAddItem      = "add_item"
-	ListEventEditItem     = "edit_item"
-	ListEventDelete       = "delete_item"
+	ListEventCurrentPage  = "list_current_page"
+	ListEventFilterChange = "list_filter_change"
+	ListEventAddItem      = "list_add_item"
+	ListEventEditItem     = "list_edit_item"
+	ListEventDelete       = "list_delete"
 )
 
 /*

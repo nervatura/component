@@ -11,7 +11,7 @@ import (
 const (
 	ComponentTypeButton = "button"
 
-	ButtonEventClick = "click"
+	ButtonEventClick = "button_click"
 
 	ButtonTypeButton   = "button"
 	ButtonTypeReset    = "reset"
