@@ -55,7 +55,6 @@ func TestForm_GetProperty(t *testing.T) {
 				BodyRows:      tt.fields.BodyRows,
 				FooterRows:    tt.fields.FooterRows,
 				Modal:         tt.fields.Modal,
-				SubmitKey:     tt.fields.SubmitKey,
 			}
 			if got := frm.GetProperty(tt.args.propName); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Form.GetProperty() = %v, want %v", got, tt.want)
@@ -110,7 +109,6 @@ func TestForm_Validation(t *testing.T) {
 				BodyRows:      tt.fields.BodyRows,
 				FooterRows:    tt.fields.FooterRows,
 				Modal:         tt.fields.Modal,
-				SubmitKey:     tt.fields.SubmitKey,
 			}
 			if got := frm.Validation(tt.args.propName, tt.args.propValue); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Form.Validation() = %v, want %v", got, tt.want)
@@ -157,7 +155,6 @@ func TestForm_SetProperty(t *testing.T) {
 				BodyRows:      tt.fields.BodyRows,
 				FooterRows:    tt.fields.FooterRows,
 				Modal:         tt.fields.Modal,
-				SubmitKey:     tt.fields.SubmitKey,
 			}
 			if got := frm.SetProperty(tt.args.propName, tt.args.propValue); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Form.SetProperty() = %v, want %v", got, tt.want)
@@ -190,13 +187,12 @@ func TestForm_OnRequest(t *testing.T) {
 				BaseComponent: BaseComponent{
 					Data: ut.IM{},
 				},
-				SubmitKey: "btn_ok",
 			},
 			args: args{
 				te: TriggerEvent{
 					Values: url.Values{
-						"btn_ok": {},
-						"string": {"test"},
+						FormEventOK: {"list"},
+						"string":    {"test"},
 					},
 					Name: FormEventOK,
 				},
@@ -212,7 +208,6 @@ func TestForm_OnRequest(t *testing.T) {
 						return evt
 					},
 				},
-				SubmitKey: "btn_ok",
 			},
 			args: args{
 				te: TriggerEvent{
@@ -231,7 +226,6 @@ func TestForm_OnRequest(t *testing.T) {
 				BodyRows:      tt.fields.BodyRows,
 				FooterRows:    tt.fields.FooterRows,
 				Modal:         tt.fields.Modal,
-				SubmitKey:     tt.fields.SubmitKey,
 			}
 			frm.OnRequest(tt.args.te)
 		})
@@ -262,7 +256,6 @@ func TestForm_triggerEvent(t *testing.T) {
 				BaseComponent: BaseComponent{
 					Data: ut.IM{},
 				},
-				SubmitKey: "btn_ok",
 			},
 			args: args{
 				evt: ResponseEvent{
@@ -283,7 +276,6 @@ func TestForm_triggerEvent(t *testing.T) {
 						return evt
 					},
 				},
-				SubmitKey: "btn_ok",
 			},
 			args: args{
 				evt: ResponseEvent{
@@ -304,7 +296,6 @@ func TestForm_triggerEvent(t *testing.T) {
 				BodyRows:      tt.fields.BodyRows,
 				FooterRows:    tt.fields.FooterRows,
 				Modal:         tt.fields.Modal,
-				SubmitKey:     tt.fields.SubmitKey,
 			}
 			frm.triggerEvent(tt.args.evt)
 		})
@@ -354,7 +345,6 @@ func TestForm_getComponent(t *testing.T) {
 				BodyRows:      tt.fields.BodyRows,
 				FooterRows:    tt.fields.FooterRows,
 				Modal:         tt.fields.Modal,
-				SubmitKey:     tt.fields.SubmitKey,
 			}
 			_, err := frm.getComponent(tt.args.name, tt.args.index)
 			if (err != nil) != tt.wantErr {

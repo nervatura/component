@@ -1,3 +1,7 @@
+## 1.7.25
+- Form component: remove SubmitKey option
+- Editor component: table editing bug fixes
+
 ## 1.7.24
 - Field component: add FieldTypeLabel and FormTrigger option
 - new InputForm component

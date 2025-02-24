@@ -30,8 +30,6 @@ type Form struct {
 	FooterRows []Row `json:"footer_rows"`
 	// The modal mode
 	Modal bool `json:"modal"`
-	// Default submit button key. Default value: "btn_ok"
-	SubmitKey string `json:"submit_key"`
 }
 
 /*
@@ -46,7 +44,6 @@ func (frm *Form) Properties() ut.IM {
 			"body_rows":   frm.BodyRows,
 			"footer_rows": frm.FooterRows,
 			"modal":       frm.Modal,
-			"submit_key":  frm.SubmitKey,
 		})
 }
 
@@ -121,10 +118,6 @@ func (frm *Form) SetProperty(propName string, propValue interface{}) interface{}
 			frm.Modal = frm.Validation(propName, propValue).(bool)
 			return frm.Modal
 		},
-		"submit_key": func() interface{} {
-			frm.SubmitKey = ut.ToString(propValue, "btn_ok")
-			return frm.SubmitKey
-		},
 		"target": func() interface{} {
 			frm.Target = frm.Validation(propName, propValue).(string)
 			return frm.Target
@@ -149,16 +142,17 @@ func (frm *Form) OnRequest(te TriggerEvent) (re ResponseEvent) {
 		Name:  FormEventCancel,
 		Value: ut.IM{"value": ut.IM{}, "data": frm.Data},
 	}
-	if te.Values.Has(frm.SubmitKey) {
+	if te.Values.Has(FormEventOK) {
 		evt.Name = FormEventOK
-		values := ut.IM{}
-		for key, value := range te.Values {
-			if len(value) > 0 && key != frm.SubmitKey {
-				values[key] = value[0]
-			}
-		}
-		evt.Value = ut.IM{"value": values, "data": frm.Data}
 	}
+	values := ut.IM{}
+	for key, value := range te.Values {
+		if len(value) > 0 && !slices.Contains([]string{FormEventOK, FormEventCancel, FormEventChange}, key) {
+			values[key] = value[0]
+		}
+	}
+	evt.Value = ut.IM{"value": values, "data": frm.Data}
+
 	if frm.OnResponse != nil {
 		return frm.OnResponse(evt)
 	}
@@ -179,7 +173,7 @@ func (frm *Form) triggerEvent(evt ResponseEvent) (re ResponseEvent) {
 		evt.Trigger = frm
 		frmEvt.Name = FormEventCancel
 		frmEvt.Value = ut.IM{
-			"name": evt.TriggerName, "event": FormEventCancel, "value": "",
+			"name": evt.TriggerName, "event": FormEventCancel, "value": "btn_close",
 			"form": frm, "data": frm.Data,
 		}
 	}
@@ -356,7 +350,7 @@ func TestForm(cc ClientComponent) []TestComponent {
 							{Value: Field{
 								Type: FieldTypeButton,
 								Value: ut.IM{
-									"name":         "btn_ok",
+									"name":         FormEventOK,
 									"type":         ButtonTypeSubmit,
 									"button_style": ButtonStylePrimary,
 									"icon":         IconCheck,
@@ -376,9 +370,8 @@ func TestForm(cc ClientComponent) []TestComponent {
 						BorderBottom: false,
 					},
 				},
-				Modal:     false,
-				SubmitKey: "btn_ok",
-				Icon:      IconInfoCircle,
+				Modal: false,
+				Icon:  IconInfoCircle,
 			},
 		},
 		{
@@ -423,7 +416,7 @@ func TestForm(cc ClientComponent) []TestComponent {
 							{Value: Field{
 								Type: FieldTypeButton,
 								Value: ut.IM{
-									"name":         "btn_ok",
+									"name":         FormEventOK,
 									"type":         ButtonTypeSubmit,
 									"button_style": ButtonStylePrimary,
 									"icon":         IconCheck,
@@ -435,7 +428,7 @@ func TestForm(cc ClientComponent) []TestComponent {
 							{Value: Field{
 								Type: FieldTypeButton,
 								Value: ut.IM{
-									"name":         "btn_cancel",
+									"name":         FormEventCancel,
 									"type":         ButtonTypeSubmit,
 									"button_style": ButtonStyleDefault,
 									"icon":         IconTimes,
@@ -449,9 +442,8 @@ func TestForm(cc ClientComponent) []TestComponent {
 						BorderBottom: false,
 					},
 				},
-				Modal:     false,
-				SubmitKey: "btn_ok",
-				Icon:      IconExclamationTriangle,
+				Modal: false,
+				Icon:  IconExclamationTriangle,
 			},
 		},
 		{
@@ -494,7 +486,7 @@ func TestForm(cc ClientComponent) []TestComponent {
 							{Value: Field{
 								Type: FieldTypeButton,
 								Value: ut.IM{
-									"name":         "btn_ok",
+									"name":         FormEventOK,
 									"type":         ButtonTypeSubmit,
 									"button_style": ButtonStylePrimary,
 									"icon":         IconCheck,
@@ -506,7 +498,7 @@ func TestForm(cc ClientComponent) []TestComponent {
 							{Value: Field{
 								Type: FieldTypeButton,
 								Value: ut.IM{
-									"name":         "btn_cancel",
+									"name":         FormEventCancel,
 									"type":         ButtonTypeSubmit,
 									"button_style": ButtonStyleDefault,
 									"icon":         IconTimes,
@@ -520,9 +512,8 @@ func TestForm(cc ClientComponent) []TestComponent {
 						BorderBottom: false,
 					},
 				},
-				Modal:     false,
-				SubmitKey: "btn_ok",
-				Icon:      IconQuestionCircle,
+				Modal: false,
+				Icon:  IconQuestionCircle,
 			},
 		},
 		{
@@ -656,7 +647,7 @@ func TestForm(cc ClientComponent) []TestComponent {
 							{Value: Field{
 								Type: FieldTypeButton,
 								Value: ut.IM{
-									"name":         "btn_ok",
+									"name":         FormEventOK,
 									"type":         ButtonTypeSubmit,
 									"button_style": ButtonStylePrimary,
 									"icon":         IconCheck,
@@ -668,7 +659,7 @@ func TestForm(cc ClientComponent) []TestComponent {
 							{Value: Field{
 								Type: FieldTypeButton,
 								Value: ut.IM{
-									"name":         "btn_cancel",
+									"name":         FormEventCancel,
 									"type":         ButtonTypeSubmit,
 									"button_style": ButtonStyleDefault,
 									"icon":         IconTimes,
@@ -682,9 +673,8 @@ func TestForm(cc ClientComponent) []TestComponent {
 						BorderBottom: false,
 					},
 				},
-				Modal:     false,
-				SubmitKey: "btn_ok",
-				Icon:      IconEdit,
+				Modal: false,
+				Icon:  IconEdit,
 			},
 		},
 		{
@@ -735,7 +725,6 @@ func TestForm(cc ClientComponent) []TestComponent {
 				},
 				FooterRows: []Row{},
 				Modal:      false,
-				SubmitKey:  "btn_ok",
 				Icon:       IconSearch,
 			},
 		},
