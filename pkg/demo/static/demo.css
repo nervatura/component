@@ -16,3 +16,19 @@
   position: relative;
   height: auto;
 }
+
+.demo .main .sidebar {
+  position: absolute;
+  height: 100%;
+}
+
+.demo .main {
+  position: relative;
+  height: auto;
+  min-height: auto;
+  top: 0;
+}
+
+.demo .client-menubar {
+  position: relative;
+}

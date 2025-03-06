@@ -356,3 +356,21 @@ func MergeIM(baseMap, valueMap IM) IM {
 	}
 	return baseMap
 }
+
+// ToBoolMap - safe map[string]bool conversion
+func ToBoolMap(im interface{}, defValue map[string]bool) (result map[string]bool) {
+	result = map[string]bool{}
+	if im == nil {
+		return defValue
+	}
+	if values, valid := im.(map[string]bool); valid && len(values) > 0 {
+		return values
+	}
+	if values, valid := im.(IM); valid {
+		for key, value := range values {
+			result[key] = ToBoolean(value, false)
+		}
+		return result
+	}
+	return defValue
+}

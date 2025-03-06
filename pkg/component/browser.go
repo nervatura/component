@@ -98,6 +98,8 @@ Creates an interactive and customizable data search control
 */
 type Browser struct {
 	Table
+	// The caption of the browser
+	Title string `json:"title"`
 	// Current search settings view value
 	View string `json:"view"`
 	// The list of values and labels of selectable views.
@@ -149,6 +151,7 @@ func (bro *Browser) Properties() ut.IM {
 	return ut.MergeIM(
 		bro.Table.Properties(),
 		ut.IM{
+			"title":           bro.Title,
 			"view":            bro.View,
 			"views":           bro.Views,
 			"hide_header":     bro.HideHeader,
@@ -318,6 +321,10 @@ In case of an invalid value, the default value will be set.
 */
 func (bro *Browser) SetProperty(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
+		"title": func() interface{} {
+			bro.Title = ut.ToString(propValue, bro.msg("browser_title"))
+			return bro.Title
+		},
 		"view": func() interface{} {
 			bro.View = ut.ToString(propValue, "default")
 			return bro.View

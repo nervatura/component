@@ -104,6 +104,7 @@ var DemoMap map[string][]DemoView = map[string][]DemoView{
 		{ComponentType: ct.ComponentTypeForm, TestData: ct.TestForm},
 		{ComponentType: ct.ComponentTypeEditor, TestData: ct.TestEditor},
 		{ComponentType: ct.ComponentTypeSearch, TestData: ct.TestSearch},
+		{ComponentType: ct.ComponentTypeClient, TestData: ct.TestClient},
 	},
 }
 
@@ -284,11 +285,11 @@ func (sto *Demo) response(evt ct.ResponseEvent) (re ct.ResponseEvent) {
 	}
 	var value interface{}
 	switch evt.TriggerName {
-	case DemoEventTheme:
+	case "theme":
 		stoEvt.Name = DemoEventTheme
 		value = sto.SetProperty("theme", testIcoMap[sto.Theme][0])
 
-	case DemoEventViewSize:
+	case "view_size":
 		stoEvt.Name = DemoEventViewSize
 		value = sto.SetProperty("view_size", testIcoMap[sto.ViewSize][0])
 

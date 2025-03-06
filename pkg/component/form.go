@@ -301,6 +301,353 @@ var testFormResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt Respo
 	}
 }
 
+func testFormBodyRows(key string) (bodyRows []Row) {
+	switch key {
+	case "info":
+		return []Row{
+			{
+				Columns: []RowColumn{
+					{Label: "Info message label", Value: Field{
+						Type: FieldTypeLabel,
+						Value: ut.IM{
+							"value": "Info message text",
+							"style": ut.SM{
+								"font-weight": "normal",
+								"font-style":  "italic",
+							},
+						},
+					}},
+				},
+				Full:         false,
+				FieldCol:     false,
+				BorderTop:    false,
+				BorderBottom: false,
+			},
+		}
+	case "warning":
+		return []Row{
+			{
+				Columns: []RowColumn{
+					{Label: "The data has changed, but has not been saved!",
+						Value: Field{
+							Type: FieldTypeLabel,
+							Value: ut.IM{
+								"value": "Do you want to save changes?",
+								"style": ut.SM{
+									"font-weight": "normal",
+									"font-style":  "italic",
+								},
+							},
+						}},
+				},
+				Full:         false,
+				FieldCol:     false,
+				BorderTop:    false,
+				BorderBottom: false,
+			},
+		}
+	case "string_input":
+		return []Row{
+			{
+				Columns: []RowColumn{
+					{Label: "Please enter a name",
+						Value: Field{
+							Type: FieldTypeString,
+							Value: ut.IM{
+								"name":       "string",
+								"value":      "default value",
+								"auto_focus": true,
+							},
+						}},
+				},
+				Full:         true,
+				FieldCol:     false,
+				BorderTop:    false,
+				BorderBottom: false,
+			},
+		}
+	case "multiple_input":
+		return []Row{
+			{
+				Columns: []RowColumn{
+					{Label: "Required field",
+						Value: Field{
+							Type: FieldTypeString,
+							Value: ut.IM{
+								"name":        "string",
+								"placeholder": "Required field",
+								"invalid":     true,
+								"auto_focus":  true,
+								"required":    true,
+							},
+						}},
+					{Label: "Select field",
+						Value: Field{
+							Type: FieldTypeSelect,
+							Value: ut.IM{
+								"name": "select",
+								"options": []SelectOption{
+									{Text: "Option 1", Value: "option1"},
+									{Text: "Option 2", Value: "option2"},
+									{Text: "Option 3", Value: "option3"},
+								},
+								"value":   "option1",
+								"is_null": true,
+							},
+						}},
+					{Label: "Date and time field",
+						Value: Field{
+							Type: FieldTypeDateTime,
+							Value: ut.IM{
+								"name":    "datetime",
+								"value":   "2025-01-01 15:00",
+								"is_null": false,
+							},
+						}},
+				},
+				Full:         true,
+				FieldCol:     false,
+				BorderTop:    false,
+				BorderBottom: false,
+			},
+			{
+				Columns: []RowColumn{
+					{Label: "Integer (0-100)",
+						Value: Field{
+							Type: FieldTypeInteger,
+							Value: ut.IM{
+								"name":      "integer",
+								"value":     "80",
+								"max_value": 100,
+								"min_value": 0,
+								"set_max":   true,
+								"set_min":   true,
+							},
+						}},
+					{Label: "Time field",
+						Value: Field{
+							Type: FieldTypeTime,
+							Value: ut.IM{
+								"name":    "time",
+								"value":   "15:00",
+								"is_null": false,
+							},
+						}},
+					{Label: "Boolean",
+						Value: Field{
+							Type: FieldTypeBool,
+							Value: ut.IM{
+								"name":  "boolean",
+								"value": true,
+							},
+							FormTrigger: true,
+						}},
+					{Label: "Color input",
+						Value: Field{
+							Type: FieldTypeColor,
+							Value: ut.IM{
+								"name":  "color",
+								"value": "#845185",
+							},
+						}},
+				},
+				Full:         true,
+				FieldCol:     false,
+				BorderTop:    true,
+				BorderBottom: false,
+			},
+			{
+				Columns: []RowColumn{
+					{Label: "Comment field",
+						Value: Field{
+							Type: FieldTypeText,
+							Value: ut.IM{
+								"name":        "comment",
+								"placeholder": "Enter a comment",
+								"rows":        3,
+							},
+						}},
+				},
+				Full:         true,
+				FieldCol:     false,
+				BorderTop:    true,
+				BorderBottom: false,
+			},
+		}
+	}
+	// "list_selector"
+	return []Row{
+		{
+			Columns: []RowColumn{
+				{Value: Field{
+					Type: FieldTypeList,
+					Value: ut.IM{
+						"name": "list",
+						"rows": []ut.IM{
+							{"lslabel": "Label 1", "lsvalue": "Value row 1"},
+							{"lslabel": "Label 2", "lsvalue": "Value row 2"},
+							{"lslabel": "", "lsvalue": "Value row 3"},
+							{"lslabel": "", "lsvalue": "Value row 6"},
+							{"lslabel": "", "lsvalue": "Value row 6"},
+							{"lslabel": "", "lsvalue": "Value row 6"},
+							{"lslabel": "Label 7", "lsvalue": "Value row 7"},
+							{"lslabel": "Label 8", "lsvalue": "Value row 8"},
+							{"lslabel": "Label 9", "lsvalue": "Value row 9"},
+						},
+						"pagination":          PaginationTypeBottom,
+						"page_size":           5,
+						"hide_paginaton_size": true,
+						"edit_item":           true,
+						"list_filter":         true,
+						"delete_item":         true,
+					},
+					FormTrigger: true,
+				}},
+			},
+			Full:         true,
+			FieldCol:     false,
+			BorderTop:    false,
+			BorderBottom: false,
+		},
+	}
+}
+
+func testFormFooterRows(key string) (footerRows []Row) {
+	switch key {
+	case "info":
+		return []Row{
+			{
+				Columns: []RowColumn{
+					{Value: Field{
+						Type:  FieldTypeLabel,
+						Value: ut.IM{},
+					}},
+					{Value: Field{
+						Type: FieldTypeButton,
+						Value: ut.IM{
+							"name":         FormEventOK,
+							"type":         ButtonTypeSubmit,
+							"button_style": ButtonStylePrimary,
+							"icon":         IconCheck,
+							"label":        "OK",
+							"auto_focus":   true,
+							"selected":     true,
+						},
+					}},
+					{Value: Field{
+						Type:  FieldTypeLabel,
+						Value: ut.IM{},
+					}},
+				},
+				Full:         true,
+				FieldCol:     false,
+				BorderTop:    false,
+				BorderBottom: false,
+			},
+		}
+	case "warning":
+		return []Row{
+			{
+				Columns: []RowColumn{
+					{Value: Field{
+						Type: FieldTypeButton,
+						Value: ut.IM{
+							"name":         FormEventOK,
+							"type":         ButtonTypeSubmit,
+							"button_style": ButtonStylePrimary,
+							"icon":         IconCheck,
+							"label":        "OK",
+							"auto_focus":   true,
+							"selected":     true,
+						},
+					}},
+					{Value: Field{
+						Type: FieldTypeButton,
+						Value: ut.IM{
+							"name":         FormEventCancel,
+							"type":         ButtonTypeSubmit,
+							"button_style": ButtonStyleDefault,
+							"icon":         IconTimes,
+							"label":        "Cancel",
+						},
+					}},
+				},
+				Full:         true,
+				FieldCol:     false,
+				BorderTop:    false,
+				BorderBottom: false,
+			},
+		}
+	case "string_input":
+		return []Row{
+			{
+				Columns: []RowColumn{
+					{Value: Field{
+						Type: FieldTypeButton,
+						Value: ut.IM{
+							"name":         FormEventOK,
+							"type":         ButtonTypeSubmit,
+							"button_style": ButtonStylePrimary,
+							"icon":         IconCheck,
+							"label":        "OK",
+							"auto_focus":   false,
+							"selected":     false,
+						},
+					}},
+					{Value: Field{
+						Type: FieldTypeButton,
+						Value: ut.IM{
+							"name":         FormEventCancel,
+							"type":         ButtonTypeSubmit,
+							"button_style": ButtonStyleDefault,
+							"icon":         IconTimes,
+							"label":        "Cancel",
+						},
+					}},
+				},
+				Full:         true,
+				FieldCol:     false,
+				BorderTop:    false,
+				BorderBottom: false,
+			},
+		}
+	case "multiple_input":
+		return []Row{
+			{
+				Columns: []RowColumn{
+					{Value: Field{
+						Type: FieldTypeButton,
+						Value: ut.IM{
+							"name":         FormEventOK,
+							"type":         ButtonTypeSubmit,
+							"button_style": ButtonStylePrimary,
+							"icon":         IconCheck,
+							"label":        "OK",
+							"auto_focus":   false,
+							"selected":     false,
+						},
+					}},
+					{Value: Field{
+						Type: FieldTypeButton,
+						Value: ut.IM{
+							"name":         FormEventCancel,
+							"type":         ButtonTypeSubmit,
+							"button_style": ButtonStyleDefault,
+							"icon":         IconTimes,
+							"label":        "Cancel",
+						},
+					}},
+				},
+				Full:         true,
+				FieldCol:     false,
+				BorderTop:    false,
+				BorderBottom: false,
+			},
+		}
+	}
+	return []Row{}
+}
+
 // [Form] test and demo data
 func TestForm(cc ClientComponent) []TestComponent {
 	id := ut.ToString(cc.GetProperty("id"), "")
@@ -319,59 +666,11 @@ func TestForm(cc ClientComponent) []TestComponent {
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 				},
-				Title: "Info message",
-				BodyRows: []Row{
-					{
-						Columns: []RowColumn{
-							{Label: "Info message label", Value: Field{
-								Type: FieldTypeLabel,
-								Value: ut.IM{
-									"value": "Info message text",
-									"style": ut.SM{
-										"font-weight": "normal",
-										"font-style":  "italic",
-									},
-								},
-							}},
-						},
-						Full:         false,
-						FieldCol:     false,
-						BorderTop:    false,
-						BorderBottom: false,
-					},
-				},
-				FooterRows: []Row{
-					{
-						Columns: []RowColumn{
-							{Value: Field{
-								Type:  FieldTypeLabel,
-								Value: ut.IM{},
-							}},
-							{Value: Field{
-								Type: FieldTypeButton,
-								Value: ut.IM{
-									"name":         FormEventOK,
-									"type":         ButtonTypeSubmit,
-									"button_style": ButtonStylePrimary,
-									"icon":         IconCheck,
-									"label":        "OK",
-									"auto_focus":   true,
-									"selected":     true,
-								},
-							}},
-							{Value: Field{
-								Type:  FieldTypeLabel,
-								Value: ut.IM{},
-							}},
-						},
-						Full:         true,
-						FieldCol:     false,
-						BorderTop:    false,
-						BorderBottom: false,
-					},
-				},
-				Modal: false,
-				Icon:  IconInfoCircle,
+				Title:      "Info message",
+				BodyRows:   testFormBodyRows("info"),
+				FooterRows: testFormFooterRows("info"),
+				Modal:      false,
+				Icon:       IconInfoCircle,
 			},
 		},
 		{
@@ -388,62 +687,11 @@ func TestForm(cc ClientComponent) []TestComponent {
 						"tag": "next_func",
 					},
 				},
-				Title: "Warning message",
-				BodyRows: []Row{
-					{
-						Columns: []RowColumn{
-							{Label: "The data has changed, but has not been saved!",
-								Value: Field{
-									Type: FieldTypeLabel,
-									Value: ut.IM{
-										"value": "Do you want to save changes?",
-										"style": ut.SM{
-											"font-weight": "normal",
-											"font-style":  "italic",
-										},
-									},
-								}},
-						},
-						Full:         false,
-						FieldCol:     false,
-						BorderTop:    false,
-						BorderBottom: false,
-					},
-				},
-				FooterRows: []Row{
-					{
-						Columns: []RowColumn{
-							{Value: Field{
-								Type: FieldTypeButton,
-								Value: ut.IM{
-									"name":         FormEventOK,
-									"type":         ButtonTypeSubmit,
-									"button_style": ButtonStylePrimary,
-									"icon":         IconCheck,
-									"label":        "OK",
-									"auto_focus":   true,
-									"selected":     true,
-								},
-							}},
-							{Value: Field{
-								Type: FieldTypeButton,
-								Value: ut.IM{
-									"name":         FormEventCancel,
-									"type":         ButtonTypeSubmit,
-									"button_style": ButtonStyleDefault,
-									"icon":         IconTimes,
-									"label":        "Cancel",
-								},
-							}},
-						},
-						Full:         true,
-						FieldCol:     false,
-						BorderTop:    false,
-						BorderBottom: false,
-					},
-				},
-				Modal: false,
-				Icon:  IconExclamationTriangle,
+				Title:      "Warning message",
+				BodyRows:   testFormBodyRows("warning"),
+				FooterRows: testFormFooterRows("warning"),
+				Modal:      false,
+				Icon:       IconExclamationTriangle,
 			},
 		},
 		{
@@ -460,60 +708,11 @@ func TestForm(cc ClientComponent) []TestComponent {
 						"tag": "next_func",
 					},
 				},
-				Title: "String input",
-				BodyRows: []Row{
-					{
-						Columns: []RowColumn{
-							{Label: "Please enter a name",
-								Value: Field{
-									Type: FieldTypeString,
-									Value: ut.IM{
-										"name":       "string",
-										"value":      "default value",
-										"auto_focus": true,
-									},
-								}},
-						},
-						Full:         true,
-						FieldCol:     false,
-						BorderTop:    false,
-						BorderBottom: false,
-					},
-				},
-				FooterRows: []Row{
-					{
-						Columns: []RowColumn{
-							{Value: Field{
-								Type: FieldTypeButton,
-								Value: ut.IM{
-									"name":         FormEventOK,
-									"type":         ButtonTypeSubmit,
-									"button_style": ButtonStylePrimary,
-									"icon":         IconCheck,
-									"label":        "OK",
-									"auto_focus":   false,
-									"selected":     false,
-								},
-							}},
-							{Value: Field{
-								Type: FieldTypeButton,
-								Value: ut.IM{
-									"name":         FormEventCancel,
-									"type":         ButtonTypeSubmit,
-									"button_style": ButtonStyleDefault,
-									"icon":         IconTimes,
-									"label":        "Cancel",
-								},
-							}},
-						},
-						Full:         true,
-						FieldCol:     false,
-						BorderTop:    false,
-						BorderBottom: false,
-					},
-				},
-				Modal: false,
-				Icon:  IconQuestionCircle,
+				Title:      "String input",
+				BodyRows:   testFormBodyRows("string_input"),
+				FooterRows: testFormFooterRows("string_input"),
+				Modal:      false,
+				Icon:       IconQuestionCircle,
 			},
 		},
 		{
@@ -533,148 +732,11 @@ func TestForm(cc ClientComponent) []TestComponent {
 						"min-width": "600px",
 					},
 				},
-				Title: "Multiple fields input",
-				BodyRows: []Row{
-					{
-						Columns: []RowColumn{
-							{Label: "Required field",
-								Value: Field{
-									Type: FieldTypeString,
-									Value: ut.IM{
-										"name":        "string",
-										"placeholder": "Required field",
-										"invalid":     true,
-										"auto_focus":  true,
-										"required":    true,
-									},
-								}},
-							{Label: "Select field",
-								Value: Field{
-									Type: FieldTypeSelect,
-									Value: ut.IM{
-										"name": "select",
-										"options": []SelectOption{
-											{Text: "Option 1", Value: "option1"},
-											{Text: "Option 2", Value: "option2"},
-											{Text: "Option 3", Value: "option3"},
-										},
-										"value":   "option1",
-										"is_null": true,
-									},
-								}},
-							{Label: "Date and time field",
-								Value: Field{
-									Type: FieldTypeDateTime,
-									Value: ut.IM{
-										"name":    "datetime",
-										"value":   "2025-01-01 15:00",
-										"is_null": false,
-									},
-								}},
-						},
-						Full:         true,
-						FieldCol:     false,
-						BorderTop:    false,
-						BorderBottom: false,
-					},
-					{
-						Columns: []RowColumn{
-							{Label: "Integer (0-100)",
-								Value: Field{
-									Type: FieldTypeInteger,
-									Value: ut.IM{
-										"name":      "integer",
-										"value":     "80",
-										"max_value": 100,
-										"min_value": 0,
-										"set_max":   true,
-										"set_min":   true,
-									},
-								}},
-							{Label: "Time field",
-								Value: Field{
-									Type: FieldTypeTime,
-									Value: ut.IM{
-										"name":    "time",
-										"value":   "15:00",
-										"is_null": false,
-									},
-								}},
-							{Label: "Boolean",
-								Value: Field{
-									Type: FieldTypeBool,
-									Value: ut.IM{
-										"name":  "boolean",
-										"value": true,
-									},
-									FormTrigger: true,
-								}},
-							{Label: "Color input",
-								Value: Field{
-									Type: FieldTypeColor,
-									Value: ut.IM{
-										"name":  "color",
-										"value": "#845185",
-									},
-								}},
-						},
-						Full:         true,
-						FieldCol:     false,
-						BorderTop:    true,
-						BorderBottom: false,
-					},
-					{
-						Columns: []RowColumn{
-							{Label: "Comment field",
-								Value: Field{
-									Type: FieldTypeText,
-									Value: ut.IM{
-										"name":        "comment",
-										"placeholder": "Enter a comment",
-										"rows":        3,
-									},
-								}},
-						},
-						Full:         true,
-						FieldCol:     false,
-						BorderTop:    true,
-						BorderBottom: false,
-					},
-				},
-				FooterRows: []Row{
-					{
-						Columns: []RowColumn{
-							{Value: Field{
-								Type: FieldTypeButton,
-								Value: ut.IM{
-									"name":         FormEventOK,
-									"type":         ButtonTypeSubmit,
-									"button_style": ButtonStylePrimary,
-									"icon":         IconCheck,
-									"label":        "OK",
-									"auto_focus":   false,
-									"selected":     false,
-								},
-							}},
-							{Value: Field{
-								Type: FieldTypeButton,
-								Value: ut.IM{
-									"name":         FormEventCancel,
-									"type":         ButtonTypeSubmit,
-									"button_style": ButtonStyleDefault,
-									"icon":         IconTimes,
-									"label":        "Cancel",
-								},
-							}},
-						},
-						Full:         true,
-						FieldCol:     false,
-						BorderTop:    false,
-						BorderBottom: false,
-					},
-				},
-				Modal: false,
-				Icon:  IconEdit,
+				Title:      "Multiple fields input",
+				BodyRows:   testFormBodyRows("multiple_input"),
+				FooterRows: testFormFooterRows("multiple_input"),
+				Modal:      false,
+				Icon:       IconEdit,
 			},
 		},
 		{
@@ -688,42 +750,9 @@ func TestForm(cc ClientComponent) []TestComponent {
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 				},
-				Title: "List selector",
-				BodyRows: []Row{
-					{
-						Columns: []RowColumn{
-							{Value: Field{
-								Type: FieldTypeList,
-								Value: ut.IM{
-									"name": "list",
-									"rows": []ut.IM{
-										{"lslabel": "Label 1", "lsvalue": "Value row 1"},
-										{"lslabel": "Label 2", "lsvalue": "Value row 2"},
-										{"lslabel": "", "lsvalue": "Value row 3"},
-										{"lslabel": "", "lsvalue": "Value row 6"},
-										{"lslabel": "", "lsvalue": "Value row 6"},
-										{"lslabel": "", "lsvalue": "Value row 6"},
-										{"lslabel": "Label 7", "lsvalue": "Value row 7"},
-										{"lslabel": "Label 8", "lsvalue": "Value row 8"},
-										{"lslabel": "Label 9", "lsvalue": "Value row 9"},
-									},
-									"pagination":          PaginationTypeBottom,
-									"page_size":           5,
-									"hide_paginaton_size": true,
-									"edit_item":           true,
-									"list_filter":         true,
-									"delete_item":         true,
-								},
-								FormTrigger: true,
-							}},
-						},
-						Full:         true,
-						FieldCol:     false,
-						BorderTop:    false,
-						BorderBottom: false,
-					},
-				},
-				FooterRows: []Row{},
+				Title:      "List selector",
+				BodyRows:   testFormBodyRows("list_selector"),
+				FooterRows: testFormFooterRows("list_selector"),
 				Modal:      false,
 				Icon:       IconSearch,
 			},

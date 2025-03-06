@@ -302,6 +302,126 @@ var testEditorResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt Res
 	}
 }
 
+func testEditorViews() []EditorView {
+	return []EditorView{
+		{
+			Key:   "main",
+			Label: "Main input",
+			Icon:  IconShoppingCart,
+		},
+		{
+			Key:   "item",
+			Label: "Item rows",
+			Icon:  IconUser,
+			Badge: "3",
+		},
+	}
+}
+
+func testEditorRows(key string) []Row {
+	if key == "main" {
+		return []Row{
+			{
+				Columns: []RowColumn{
+					{Label: "Select", Value: Field{
+						Type: FieldTypeSelect,
+						Value: ut.IM{
+							"name":    "select",
+							"is_null": true,
+							"options": []SelectOption{
+								{Value: "value1", Text: "Text 1"},
+								{Value: "value2", Text: "Text 2"},
+								{Value: "value3", Text: "Text 3"},
+							},
+							"value": "value2",
+						},
+					}},
+					{Label: "Selector", Value: Field{
+						Type: FieldTypeSelector,
+						Value: ut.IM{
+							"name":    "selector",
+							"value":   SelectOption{Value: "12345", Text: "Customer Name"},
+							"fields":  testSelectorFields,
+							"rows":    testSelectorRows,
+							"link":    true,
+							"is_null": true,
+						},
+					}},
+				},
+				Full:         true,
+				BorderTop:    true,
+				BorderBottom: true,
+				FieldCol:     false,
+			},
+			{
+				Columns: []RowColumn{
+					{Label: "Button", Value: Field{
+						Type: FieldTypeButton,
+						Value: ut.IM{
+							"name":         "button",
+							"button_style": ButtonStylePrimary,
+							"label":        "Primary",
+							"icon":         IconCheck,
+						},
+					}},
+					{Label: "DateTime", Value: Field{
+						Type: FieldTypeDateTime,
+						Value: ut.IM{
+							"name":    "datetime",
+							"is_null": false,
+						},
+					}},
+					{Label: "Link", Value: Field{
+						Type: FieldTypeLink,
+						Value: ut.IM{
+							"name":  "link",
+							"value": "Product name",
+						},
+					}},
+				},
+				Full:         true,
+				BorderTop:    true,
+				BorderBottom: true,
+				FieldCol:     false,
+			},
+			{
+				Columns: []RowColumn{
+					{Label: "Note", Value: Field{
+						Type: FieldTypeText,
+						Value: ut.IM{
+							"name":  "text",
+							"value": `Long text&#13;&#10;Next row...`,
+						},
+					}},
+				},
+				Full:         true,
+				BorderTop:    true,
+				BorderBottom: true,
+				FieldCol:     false,
+			},
+		}
+	}
+	return []Row{}
+}
+
+func testEditorTable(key string) []Table {
+	if key == "item" {
+		return []Table{
+			{
+				Fields: []TableField{
+					{Name: "custnumber", Label: "Customer No."},
+					{Name: "custname", Label: "Customer Name", FieldType: TableFieldTypeLink},
+					{Name: "taxnumber", Label: "Taxnumber"},
+					{Name: "address", Label: "Address"},
+				},
+				Rows:        testBrowserRows["customer"](),
+				RowSelected: true,
+			},
+		}
+	}
+	return []Table{}
+}
+
 // [Editor] test and demo data
 func TestEditor(cc ClientComponent) []TestComponent {
 	id := ut.ToString(cc.GetProperty("id"), "")
@@ -320,102 +440,11 @@ func TestEditor(cc ClientComponent) []TestComponent {
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 				},
-				Title: "Editor",
-				View:  "main",
-				Views: []EditorView{
-					{
-						Key:   "main",
-						Label: "Main input",
-						Icon:  IconShoppingCart,
-					},
-					{
-						Key:   "item",
-						Label: "Item rows",
-						Icon:  IconUser,
-						Badge: "3",
-					},
-				},
-				Rows: []Row{
-					{
-						Columns: []RowColumn{
-							{Label: "Select", Value: Field{
-								Type: FieldTypeSelect,
-								Value: ut.IM{
-									"name":    "select",
-									"is_null": true,
-									"options": []SelectOption{
-										{Value: "value1", Text: "Text 1"},
-										{Value: "value2", Text: "Text 2"},
-										{Value: "value3", Text: "Text 3"},
-									},
-									"value": "value2",
-								},
-							}},
-							{Label: "Selector", Value: Field{
-								Type: FieldTypeSelector,
-								Value: ut.IM{
-									"name":    "selector",
-									"value":   SelectOption{Value: "12345", Text: "Customer Name"},
-									"fields":  testSelectorFields,
-									"rows":    testSelectorRows,
-									"link":    true,
-									"is_null": true,
-								},
-							}},
-						},
-						Full:         true,
-						BorderTop:    true,
-						BorderBottom: true,
-						FieldCol:     false,
-					},
-					{
-						Columns: []RowColumn{
-							{Label: "Button", Value: Field{
-								Type: FieldTypeButton,
-								Value: ut.IM{
-									"name":         "button",
-									"button_style": ButtonStylePrimary,
-									"label":        "Primary",
-									"icon":         IconCheck,
-								},
-							}},
-							{Label: "DateTime", Value: Field{
-								Type: FieldTypeDateTime,
-								Value: ut.IM{
-									"name":    "datetime",
-									"is_null": false,
-								},
-							}},
-							{Label: "Link", Value: Field{
-								Type: FieldTypeLink,
-								Value: ut.IM{
-									"name":  "link",
-									"value": "Product name",
-								},
-							}},
-						},
-						Full:         true,
-						BorderTop:    true,
-						BorderBottom: true,
-						FieldCol:     false,
-					},
-					{
-						Columns: []RowColumn{
-							{Label: "Note", Value: Field{
-								Type: FieldTypeText,
-								Value: ut.IM{
-									"name":  "text",
-									"value": `Long text&#13;&#10;Next row...`,
-								},
-							}},
-						},
-						Full:         true,
-						BorderTop:    true,
-						BorderBottom: true,
-						FieldCol:     false,
-					},
-				},
-				Tables: []Table{},
+				Title:  "Editor",
+				View:   "main",
+				Views:  testEditorViews(),
+				Rows:   testEditorRows("main"),
+				Tables: testEditorTable("main"),
 			}},
 		{
 			Label:         "Item editor",
@@ -428,34 +457,11 @@ func TestEditor(cc ClientComponent) []TestComponent {
 					RequestValue: requestValue,
 					RequestMap:   requestMap,
 				},
-				Title: "Editor",
-				View:  "item",
-				Views: []EditorView{
-					{
-						Key:   "main",
-						Label: "Main input",
-						Icon:  IconShoppingCart,
-					},
-					{
-						Key:   "item",
-						Label: "Item rows",
-						Icon:  IconUser,
-						Badge: "3",
-					},
-				},
-				Rows: []Row{},
-				Tables: []Table{
-					{
-						Fields: []TableField{
-							{Name: "custnumber", Label: "Customer No."},
-							{Name: "custname", Label: "Customer Name", FieldType: TableFieldTypeLink},
-							{Name: "taxnumber", Label: "Taxnumber"},
-							{Name: "address", Label: "Address"},
-						},
-						Rows:        testBrowserRows["customer"](),
-						RowSelected: true,
-					},
-				},
+				Title:  "Editor",
+				View:   "item",
+				Views:  testEditorViews(),
+				Rows:   testEditorRows("item"),
+				Tables: testEditorTable("item"),
 			}},
 	}
 }

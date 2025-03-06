@@ -968,3 +968,55 @@ func TestStringLimit(t *testing.T) {
 		})
 	}
 }
+
+func TestToBoolMap(t *testing.T) {
+	type args struct {
+		im       interface{}
+		defValue map[string]bool
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantResult map[string]bool
+	}{
+		{
+			name: "ok",
+			args: args{
+				im:       map[string]bool{"key": true},
+				defValue: map[string]bool{},
+			},
+			wantResult: map[string]bool{"key": true},
+		},
+		{
+			name: "nil",
+			args: args{
+				im:       nil,
+				defValue: map[string]bool{},
+			},
+			wantResult: map[string]bool{},
+		},
+		{
+			name: "empty",
+			args: args{
+				im:       []map[string]bool{},
+				defValue: map[string]bool{},
+			},
+			wantResult: map[string]bool{},
+		},
+		{
+			name: "interface",
+			args: args{
+				im:       IM{"key": true},
+				defValue: map[string]bool{},
+			},
+			wantResult: map[string]bool{"key": true},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if gotResult := ToBoolMap(tt.args.im, tt.args.defValue); !reflect.DeepEqual(gotResult, tt.wantResult) {
+				t.Errorf("ToBoolMap() = %v, want %v", gotResult, tt.wantResult)
+			}
+		})
+	}
+}

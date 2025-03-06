@@ -1,3 +1,8 @@
+## 1.7.26
+- new Client component
+- removed InputBox component
+- Browser component: add Title option
+
 ## 1.7.25
 - Form component: remove SubmitKey option
 - Editor component: table editing bug fixes
