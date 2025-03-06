@@ -25,6 +25,9 @@ var clientIcoMap map[string][]string = map[string][]string{
 	ThemeDark: {ThemeLight, "Sun"}, ThemeLight: {ThemeDark, "Moon"},
 }
 
+/*
+The [Client] Ticket struct represents a user authentication ticket with various properties.
+*/
 type Ticket struct {
 	SessionID  string `json:"session_id"`
 	Host       string `json:"host"`
@@ -48,6 +51,9 @@ func (t *Ticket) Valid() bool {
 	return t != nil && t.SessionID != "" && t.User != nil && !t.expired()
 }
 
+/*
+The Client component is a main application component that can be used to implement all the main functions of a typical client application.
+*/
 type Client struct {
 	BaseComponent
 	Version           string                                   `json:"version"`
@@ -371,6 +377,9 @@ func (cli *Client) getDataIM(key string, data ut.IM) ut.IM {
 
 }
 
+/*
+The GetSearchVisibleColumns function retrieves the visible columns from the search data.
+*/
 func (cli *Client) GetSearchVisibleColumns(icols map[string]bool) (cols map[string]bool) {
 	searchData := cli.getDataIM("search", cli.Data)
 	searchView := cli.getDataIM(ut.ToString(searchData["view"], ""), searchData)
@@ -387,6 +396,9 @@ func (cli *Client) GetSearchVisibleColumns(icols map[string]bool) (cols map[stri
 	return cols
 }
 
+/*
+The Labels function retrieves the labels that are used in the client.
+*/
 func (cli *Client) Labels() ut.SM {
 	if cli.ClientLabels != nil {
 		return cli.ClientLabels(cli.Lang)
@@ -394,6 +406,9 @@ func (cli *Client) Labels() ut.SM {
 	return ut.SM{}
 }
 
+/*
+The GetSearchFilters function retrieves the filters from the search data.
+*/
 func (cli *Client) GetSearchFilters(value string, cfFilters interface{}) (filters []BrowserFilter) {
 	searchData := cli.getDataIM("search", cli.Data)
 	searchView := cli.getDataIM(ut.ToString(searchData["view"], ""), searchData)
@@ -557,6 +572,9 @@ func (cli *Client) getComponent(name string) (html template.HTML, err error) {
 	return html, err
 }
 
+/*
+The CleanComponent function cleans the request value and request map for a given component name.
+*/
 func (cli *Client) CleanComponent(name string) {
 	for key := range cli.RequestValue {
 		if strings.HasPrefix(key, cli.Id+"_"+name) {
@@ -566,6 +584,9 @@ func (cli *Client) CleanComponent(name string) {
 	}
 }
 
+/*
+The Msg function retrieves a label from the client's labels.
+*/
 func (cli *Client) Msg(labelID string) string {
 	if label, found := cli.Labels()[labelID]; found {
 		return label
@@ -573,6 +594,9 @@ func (cli *Client) Msg(labelID string) string {
 	return labelID
 }
 
+/*
+The GetStateData function retrieves the state, value, and data from the client's data.
+*/
 func (cli *Client) GetStateData() (state, value string, data ut.IM) {
 	cliData := ut.ToIM(cli.GetProperty("data"), ut.IM{})
 	if editor, found := cliData["editor"].(ut.IM); found {
@@ -588,11 +612,17 @@ func (cli *Client) GetStateData() (state, value string, data ut.IM) {
 	return "browser", ut.ToString(search["view"], ""), search
 }
 
+/*
+The SetConfigValue function sets a value in the client's config.
+*/
 func (cli *Client) SetConfigValue(key string, value interface{}) {
 	cli.Data["config"] = ut.MergeIM(ut.ToIM(cli.Data["config"], ut.IM{}), ut.IM{key: value})
 	cli.SetProperty("data", cli.Data)
 }
 
+/*
+The SetEditor function sets the editor data and view state.
+*/
 func (cli *Client) SetEditor(editorKey, viewName string, data ut.IM) {
 	editorData := ut.MergeIM(data, ut.IM{"key": editorKey, "view": viewName})
 	cli.Data["editor"] = editorData
@@ -600,6 +630,9 @@ func (cli *Client) SetEditor(editorKey, viewName string, data ut.IM) {
 	cli.CleanComponent("login")
 }
 
+/*
+The ResetEditor function clean the editor data and restores the last search state.
+*/
 func (cli *Client) ResetEditor() {
 	delete(cli.Data, "editor")
 	cli.SetProperty("data", cli.Data)
@@ -608,6 +641,9 @@ func (cli *Client) ResetEditor() {
 	cli.CleanComponent("login")
 }
 
+/*
+The SetSearch function sets the search data and view state.
+*/
 func (cli *Client) SetSearch(viewName string, data ut.IM, simple bool) {
 	cli.Data["search"] = ut.MergeIM(data, ut.IM{"view": viewName, "simple": simple})
 	delete(cli.Data, "editor")
@@ -617,6 +653,9 @@ func (cli *Client) SetSearch(viewName string, data ut.IM, simple bool) {
 	cli.CleanComponent("login")
 }
 
+/*
+The SetForm function sets the form or modal data and view state.
+*/
 func (cli *Client) SetForm(formKey string, data ut.IM, index int64, modal bool) {
 	if modal {
 		cli.Data["modal"] = ut.IM{"key": formKey, "data": data}
