@@ -333,6 +333,9 @@ func TestClient_response(t *testing.T) {
 			fields: fields{
 				BaseComponent: BaseComponent{
 					Data: ut.IM{},
+					OnResponse: func(evt ResponseEvent) (re ResponseEvent) {
+						return evt
+					},
 				},
 			},
 			args: args{

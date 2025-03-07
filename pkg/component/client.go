@@ -21,19 +21,24 @@ const (
 	ClientEventForm     = "client_form"
 )
 
-var clientIcoMap map[string][]string = map[string][]string{
+var ClientIcoMap map[string][]string = map[string][]string{
 	ThemeDark: {ThemeLight, "Sun"}, ThemeLight: {ThemeDark, "Moon"},
 }
 
 /*
-The [Client] Ticket struct represents a user authentication ticket with various properties.
+The [Client] Login Ticket struct represents a user authentication ticket with various properties.
 */
 type Ticket struct {
-	SessionID  string `json:"session_id"`
-	Host       string `json:"host"`
+	// Login session ID.
+	SessionID string `json:"session_id"`
+	// Login frontend client host address. Optional.
+	Host string `json:"host"`
+	// Login authentication method. Example: password, google, facebook, etc. Optional.
 	AuthMethod string `json:"auth_method"`
-	Database   string `json:"database"`
-	User       ut.IM  `json:"user,omitempty"`
+	// Database is the login database name of the ticket. Optional.
+	Database string `json:"database"`
+	// User is the user information of the ticket.
+	User ut.IM `json:"user,omitempty"`
 	// Expiry is the expiration time of the ticket.
 	Expiry time.Time `json:"expiry,omitempty"`
 }
@@ -46,36 +51,91 @@ func (t *Ticket) expired() bool {
 	return t.Expiry.Round(0).Before(time.Now())
 }
 
-// Valid reports whether t is non-nil, has an SessionID, and is not expired.
+/*
+Checking the validity of the login ticket. The ticket is valid if has a SessionID and User, and its validity time is less
+than the current time or zero. The ticket is checked every time the Client component is displayed. In case of an invalid ticket,
+the login form is automatically displayed. The LoginDisabled option disables the verification.
+*/
 func (t *Ticket) Valid() bool {
 	return t != nil && t.SessionID != "" && t.User != nil && !t.expired()
 }
 
 /*
-The Client component is a main application component that can be used to implement all the main functions of a typical client application.
+The Client component is a main application component that can be used to implement all the main functions of a
+typical client application. It allows you to use the following components: [Login], [MenuBar], [SideBar], [Search],
+[Browser], [Editor], modal and simple [Form].
 */
 type Client struct {
 	BaseComponent
-	Version           string                                   `json:"version"`
-	Ticket            Ticket                                   `json:"ticket"`
-	Theme             string                                   `json:"theme"`
-	Lang              string                                   `json:"lang"`
-	SideBarVisibility string                                   `json:"sidebar_visibility"`
-	LoginDisabled     bool                                     `json:"login_disabled"`
-	LoginURL          string                                   `json:"login_url"`
-	LoginButtons      []LoginAuthButton                        `json:"login_buttons"`
-	HideSideBar       bool                                     `json:"hide_side_bar"`
-	HideMenu          bool                                     `json:"hide_menu"`
-	ClientLabels      func(lang string) ut.SM                  `json:"-"`
-	ClientMenu        func(labels ut.SM, config ut.IM) MenuBar `json:"-"`
-	ClientSideBar     func(
+	// Application version value
+	Version string `json:"version"`
+	/*
+		The theme of the control.
+		[Theme] variable constants: [ThemeLight], [ThemeDark]. Default value: [ThemeLight]
+	*/
+	Theme string `json:"theme"`
+	// Current ui language
+	Lang string `json:"lang"`
+	// User authentication ticket
+	Ticket Ticket `json:"ticket"`
+	/*
+		Specifies whether the login verification is disabled. By default, it will display the
+		login form based on the Validation function of the login [Ticket]. Default value: false
+	*/
+	LoginDisabled bool `json:"login_disabled"`
+	//	The redirect url of the login page. Default value: "/"
+	LoginURL string `json:"login_url"`
+	/*
+		The buttons of the login page.
+	*/
+	LoginButtons []LoginAuthButton `json:"login_buttons"`
+	/*
+		Specifies whether the side bar is hidden. Default value: false
+	*/
+	HideSideBar bool `json:"hide_side_bar"`
+	/*
+		The visibility of the side bar if HideSideBar is false.
+		[SideBarVisibility] variable constants: [SideBarVisibilityAuto], [SideBarVisibilityShow], [SideBarVisibilityHide].
+		Default value: [SideBarVisibilityAuto]
+	*/
+	SideBarVisibility string `json:"sidebar_visibility"`
+	// Specifies whether the main menu is hidden. Default value: false
+	HideMenu bool `json:"hide_menu"`
+	// Custom UI and any message text.
+	ClientLabels func(lang string) ut.SM `json:"-"`
+	/* Custom main menu. The function is called before each display of the Client component if it also affects the
+	display of the [MenuBar] component.
+	*/
+	ClientMenu func(labels ut.SM, config ut.IM) MenuBar `json:"-"`
+	/* Custom side bar. The function is called before each display of the Client component if it also affects the
+	display of the [SideBar] component.
+	*/
+	ClientSideBar func(
 		moduleKey string, labels ut.SM, data ut.IM) SideBar `json:"-"`
-	ClientLogin     func(labels ut.SM, config ut.IM) Login                                  `json:"-"`
-	ClientSearch    func(viewName string, labels ut.SM, searchData ut.IM) Search            `json:"-"`
-	ClientBrowser   func(viewName string, labels ut.SM, searchData ut.IM) Browser           `json:"-"`
-	ClientEditor    func(editorKey, viewName string, labels ut.SM, editorData ut.IM) Editor `json:"-"`
-	ClientModalForm func(formKey string, labels ut.SM, data ut.IM) Form                     `json:"-"`
-	ClientForm      func(editorKey, formKey string, labels ut.SM, data ut.IM) Form          `json:"-"`
+	/* Custom login form. The function is called before each display of the Client component if it also affects the
+	display of the [Login] component.
+	*/
+	ClientLogin func(labels ut.SM, config ut.IM) Login `json:"-"`
+	/* Custom search form. The function is called before each display of the Client component if it also affects the
+	display of the [Search] component.
+	*/
+	ClientSearch func(viewName string, labels ut.SM, searchData ut.IM) Search `json:"-"`
+	/* Custom advanced search component. The function is called before each display of the Client component if it also affects the
+	display of the [Browser] component.
+	*/
+	ClientBrowser func(viewName string, labels ut.SM, searchData ut.IM) Browser `json:"-"`
+	/* Custom editor component. The function is called before each display of the Client component if it also affects the
+	display of the [Editor] component.
+	*/
+	ClientEditor func(editorKey, viewName string, labels ut.SM, editorData ut.IM) Editor `json:"-"`
+	/* Custom modal form. The function is called before each display of the Client component if it also affects the
+	display of the modal [Form] component.
+	*/
+	ClientModalForm func(formKey string, labels ut.SM, data ut.IM) Form `json:"-"`
+	/* Custom simple form. The function is called before each display of the Client component if it also affects the
+	display of the [Form] component.
+	*/
+	ClientForm func(editorKey, formKey string, labels ut.SM, data ut.IM) Form `json:"-"`
 }
 
 /*
@@ -236,6 +296,91 @@ func (cli *Client) OnRequest(te TriggerEvent) (re ResponseEvent) {
 	return re
 }
 
+func (cli *Client) responseBrowser(evt ResponseEvent) (re ResponseEvent) {
+	re = ResponseEvent{
+		Trigger: cli, TriggerName: cli.Name, Value: evt.Value,
+	}
+	searchData := cli.getDataIM("search", cli.Data)
+	searchView := cli.getDataIM(ut.ToString(searchData["view"], ""), searchData)
+	if !slices.Contains([]string{
+		BrowserEventSearch, BrowserEventSetColumn,
+		BrowserEventAddFilter, BrowserEventChangeFilter, BrowserEventEditRow,
+	}, evt.Name) {
+		return evt
+	}
+	switch evt.Name {
+	case BrowserEventSetColumn:
+		searchView["visible_columns"] = evt.Trigger.GetProperty("visible_columns")
+	case BrowserEventAddFilter, BrowserEventChangeFilter:
+		searchView["filters"] = evt.Trigger.GetProperty("filters")
+	default:
+		re.Value = evt.Value
+	}
+	cli.SetProperty("data", ut.MergeIM(cli.Data, ut.IM{"search": searchData}))
+	re.Name = evt.Name
+	re.Header = ut.SM{
+		HeaderRetarget: "#" + cli.Id,
+	}
+	if cli.OnResponse != nil {
+		return cli.OnResponse(re)
+	}
+	return re
+}
+
+func (cli *Client) responseLogin(evt ResponseEvent) (re ResponseEvent) {
+	re = ResponseEvent{
+		Trigger: cli, TriggerName: cli.Name, Value: evt.Value,
+	}
+	re.Name = evt.Name
+	re.Value = evt.Trigger.GetProperty("data")
+	re.Header = ut.SM{
+		HeaderRetarget: "#" + cli.Id,
+	}
+	if evt.Name == LoginEventLang {
+		cli.SetProperty("lang", evt.Value)
+	}
+	if evt.Name == LoginEventTheme {
+		re.Name = ClientEventTheme
+		cli.SetProperty("theme", ClientIcoMap[cli.Theme][0])
+	}
+	if evt.Name == LoginEventAuth {
+		re.Value = evt.Value
+	}
+	if evt.Name == LoginEventLogin && !ut.ToBoolean(evt.Trigger.GetProperty("hide_database"), false) {
+		if values, found := re.Value.(ut.IM); found && ut.ToString(values["database"], "") != cli.Ticket.Database {
+			cli.Ticket.Database = ut.ToString(values["database"], "")
+		}
+	}
+	return re
+}
+
+func (cli *Client) responseMainMenu(evt ResponseEvent) (re ResponseEvent) {
+	re = ResponseEvent{
+		Trigger: cli, TriggerName: cli.Name, Value: evt.Value,
+	}
+	if evt.Name == MenuBarEventSide {
+		sdValues := ut.SM{
+			SideBarVisibilityAuto: SideBarVisibilityShow,
+			SideBarVisibilityShow: SideBarVisibilityAuto,
+			SideBarVisibilityHide: SideBarVisibilityShow,
+		}
+		re.Name = ClientEventSide
+		cli.SetProperty("sidebar_visibility", sdValues[cli.SideBarVisibility])
+	} else {
+		switch evt.Value {
+		case "theme":
+			re.Name = ClientEventTheme
+			cli.SetProperty("theme", ClientIcoMap[cli.Theme][0])
+		case "logout":
+			re.Name = ClientEventLogOut
+			cli.SetProperty("token", "")
+		default:
+			re.Name = ClientEventModule
+		}
+	}
+	return re
+}
+
 func (cli *Client) response(evt ResponseEvent) (re ResponseEvent) {
 	admEvt := ResponseEvent{
 		Trigger: cli, TriggerName: cli.Name, Value: evt.Value,
@@ -267,27 +412,7 @@ func (cli *Client) response(evt ResponseEvent) (re ResponseEvent) {
 		}
 
 	case "browser":
-		searchData := cli.getDataIM("search", cli.Data)
-		searchView := cli.getDataIM(ut.ToString(searchData["view"], ""), searchData)
-		if !slices.Contains([]string{
-			BrowserEventSearch, BrowserEventSetColumn,
-			BrowserEventAddFilter, BrowserEventChangeFilter, BrowserEventEditRow,
-		}, evt.Name) {
-			return evt
-		}
-		switch evt.Name {
-		case BrowserEventSetColumn:
-			searchView["visible_columns"] = evt.Trigger.GetProperty("visible_columns")
-		case BrowserEventAddFilter, BrowserEventChangeFilter:
-			searchView["filters"] = evt.Trigger.GetProperty("filters")
-		default:
-			admEvt.Value = evt.Value
-		}
-		cli.SetProperty("data", ut.MergeIM(cli.Data, ut.IM{"search": searchData}))
-		admEvt.Name = evt.Name
-		admEvt.Header = ut.SM{
-			HeaderRetarget: "#" + cli.Id,
-		}
+		return cli.responseBrowser(evt)
 
 	case "editor":
 		if evt.Name == EditorEventView {
@@ -315,51 +440,13 @@ func (cli *Client) response(evt ResponseEvent) (re ResponseEvent) {
 		}
 
 	case "login":
-		admEvt.Name = evt.Name
-		admEvt.Value = evt.Trigger.GetProperty("data")
-		admEvt.Header = ut.SM{
-			HeaderRetarget: "#" + cli.Id,
-		}
-		if evt.Name == LoginEventLang {
-			cli.SetProperty("lang", evt.Value)
-		}
-		if evt.Name == LoginEventTheme {
-			admEvt.Name = ClientEventTheme
-			cli.SetProperty("theme", clientIcoMap[cli.Theme][0])
-		}
-		if evt.Name == LoginEventAuth {
-			admEvt.Value = evt.Value
-		}
-		if evt.Name == LoginEventLogin && !ut.ToBoolean(evt.Trigger.GetProperty("hide_database"), false) {
-			if values, found := admEvt.Value.(ut.IM); found && ut.ToString(values["database"], "") != cli.Ticket.Database {
-				cli.Ticket.Database = ut.ToString(values["database"], "")
-			}
-		}
+		admEvt = cli.responseLogin(evt)
 
 	case "side_menu":
 		admEvt.Name = ClientEventSideMenu
 
 	case "main_menu":
-		if evt.Name == MenuBarEventSide {
-			sdValues := ut.SM{
-				SideBarVisibilityAuto: SideBarVisibilityShow,
-				SideBarVisibilityShow: SideBarVisibilityAuto,
-				SideBarVisibilityHide: SideBarVisibilityShow,
-			}
-			admEvt.Name = ClientEventSide
-			cli.SetProperty("sidebar_visibility", sdValues[cli.SideBarVisibility])
-		} else {
-			switch evt.Value {
-			case "theme":
-				admEvt.Name = ClientEventTheme
-				cli.SetProperty("theme", clientIcoMap[cli.Theme][0])
-			case "logout":
-				admEvt.Name = ClientEventLogOut
-				cli.SetProperty("token", "")
-			default:
-				admEvt.Name = ClientEventModule
-			}
-		}
+		admEvt = cli.responseMainMenu(evt)
 
 	default:
 	}
@@ -522,11 +609,10 @@ func (cli *Client) getComponent(name string) (html template.HTML, err error) {
 			return &sea
 		},
 		"browser": func() ClientComponent {
-			searchData := ut.MergeIM(stateData, ut.IM{"session_id": cli.Ticket.SessionID})
 			bro := Browser{}
 			if cli.ClientBrowser != nil {
-				bro = cli.ClientBrowser(ut.ToString(searchData["view"], ""), labels,
-					ut.MergeIM(searchData, ut.IM{"config": config}))
+				bro = cli.ClientBrowser(ut.ToString(stateData["view"], ""), labels,
+					ut.MergeIM(stateData, ut.IM{"config": config}))
 			}
 			bro.BaseComponent = ccBase(bro.Data)
 			bro.SetProperty("filters", cli.GetSearchFilters("", bro.Filters))
@@ -804,7 +890,7 @@ func testClientMenu(labels ut.SM, config ut.IM) MenuBar {
 	hideExit := ut.ToBoolean(config["login_disabled"], false)
 	mnu := MenuBar{
 		Items: []MenuBarItem{
-			{Value: "theme", Label: labels["theme_"+clientIcoMap[theme][0]], Icon: clientIcoMap[theme][1]},
+			{Value: "theme", Label: labels["theme_"+ClientIcoMap[theme][0]], Icon: ClientIcoMap[theme][1]},
 			{Value: "search", Label: labels["mnu_search"], Icon: IconSearch},
 			{Value: "setting", Label: labels["mnu_setting"], Icon: IconCog},
 			{Value: "info", Label: labels["mnu_info"], Icon: IconInfoCircle},

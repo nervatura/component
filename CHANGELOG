@@ -1,3 +1,6 @@
+## 1.7.27
+- Client component: code refactoring and function documentation
+
 ## 1.7.26
 - new Client component
 - removed InputBox component
