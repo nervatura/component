@@ -770,7 +770,6 @@ func (cli *Client) Render() (html template.HTML, err error) {
 			return cli.getComponent(name)
 		},
 		"validTicket": func() bool {
-			fmt.Println("validTicket", cli.Ticket.Valid())
 			return cli.Ticket.Valid()
 		},
 		"clientState": func() string {

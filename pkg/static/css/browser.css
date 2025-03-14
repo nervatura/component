@@ -54,7 +54,8 @@
 }
 
 .col-box {
-  display: table;
+  display: flex;
+  flex-flow: row wrap;
   width: 100%;
   border: 0.5px solid rgba(var(--neutral-1), 0.2);
   border-radius: 4px;
@@ -84,7 +85,6 @@
 
 .col-cell {
   padding: 2px 4px;
-  float: left;
   cursor: pointer;
 }
 

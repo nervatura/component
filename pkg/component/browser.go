@@ -322,7 +322,7 @@ In case of an invalid value, the default value will be set.
 func (bro *Browser) SetProperty(propName string, propValue interface{}) interface{} {
 	pm := map[string]func() interface{}{
 		"title": func() interface{} {
-			bro.Title = ut.ToString(propValue, bro.msg("browser_title"))
+			bro.Title = ut.ToString(propValue, browserDefaultLabel["browser_title"])
 			return bro.Title
 		},
 		"view": func() interface{} {
@@ -1041,7 +1041,7 @@ func (bro *Browser) Render() (html template.HTML, err error) {
 	tpl := `<div id="{{ .Id }}" name="{{ .Name }}" class="row full {{ customClass }}"
 	{{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}
 	><div class="panel">
-	<div class="panel-title"><div class="cell title-cell"><span>{{ msg "browser_title" }}</span></div></div>
+	<div class="panel-title"><div class="cell title-cell"><span>{{ .Title }}</span></div></div>
 	<div class="panel-container" >
 	<div class="row full" ><div class="cell" >{{ browserComponent "hide_header" }}</div></div>
 	{{ if ne .HideHeader true }}<div class="filter-panel" >
@@ -1321,7 +1321,8 @@ func TestBrowser(cc ClientComponent) []TestComponent {
 					HidePaginatonSize: false,
 					PageSize:          5,
 				},
-				View: "customer",
+				View:  "customer",
+				Title: "Customer Data",
 				Views: []SelectOption{
 					{Value: "customer", Text: "Customer Data"},
 					{Value: "meta", Text: "Metadata"},
