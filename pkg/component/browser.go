@@ -519,7 +519,7 @@ func (bro *Browser) filterEvent(evt ResponseEvent) (re ResponseEvent) {
 		bro.SetProperty("filters", filters)
 
 	case TableEventFormChange:
-		if ut.ToString(evtData["field"], "") == "field" {
+		if ut.ToString(evtData["name"], "") == "field" {
 			rows := ut.ToIMA(evt.Trigger.GetProperty("rows"), []ut.IM{})
 			field := ut.ToString(evtData["value"], "")
 			rows[filterIndex]["comp"] = browserFilterComp[0].Value

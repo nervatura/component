@@ -993,7 +993,7 @@ func TestBrowser_filterEvent(t *testing.T) {
 						},
 					},
 					Name: TableEventFormChange,
-					Value: ut.IM{"index": 0, "field": "field",
+					Value: ut.IM{"index": 0, "name": "field",
 						"row": ut.IM{"field": "name", "comp": "eq", "value": "test"}},
 				},
 			},
