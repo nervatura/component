@@ -287,6 +287,7 @@ func (sel *Selector) getComponent(name string) (html template.HTML, err error) {
 				OnResponse:   sel.response,
 				RequestValue: sel.RequestValue,
 				RequestMap:   sel.RequestMap,
+				Indicator:    IndicatorSpinner,
 			},
 			Type:        InputTypeString,
 			Label:       sel.FilterPlaceholder,

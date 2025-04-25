@@ -170,35 +170,35 @@ func (cli *Client) Properties() ut.IM {
 /*
 Returns the value of the property of the [Client] with the specified name.
 */
-func (cli *Client) GetProperty(propName string) interface{} {
+func (cli *Client) GetProperty(propName string) any {
 	return cli.Properties()[propName]
 }
 
 /*
 It checks the value given to the property of the [Client] and always returns a valid value
 */
-func (cli *Client) Validation(propName string, propValue interface{}) interface{} {
-	pm := map[string]func() interface{}{
-		"ticket": func() interface{} {
+func (cli *Client) Validation(propName string, propValue any) any {
+	pm := map[string]func() any{
+		"ticket": func() any {
 			if value, valid := propValue.(Ticket); valid {
 				return value
 			}
 			return Ticket{}
 		},
-		"theme": func() interface{} {
+		"theme": func() any {
 			return cli.CheckEnumValue(ut.ToString(propValue, ""), ThemeLight, Theme)
 		},
-		"sidebar_visibility": func() interface{} {
+		"sidebar_visibility": func() any {
 			return cli.CheckEnumValue(ut.ToString(propValue, ""), SideBarVisibilityAuto, SideBarVisibility)
 		},
-		"login_buttons": func() interface{} {
+		"login_buttons": func() any {
 			value := []LoginAuthButton{}
 			if buttons, valid := propValue.([]LoginAuthButton); valid {
 				value = buttons
 			}
 			return value
 		},
-		"target": func() interface{} {
+		"target": func() any {
 			cli.SetProperty("id", cli.Id)
 			value := ut.ToString(propValue, cli.Id)
 			if value != "this" && !strings.HasPrefix(value, "#") {
@@ -220,49 +220,49 @@ func (cli *Client) Validation(propName string, propValue interface{}) interface{
 Setting a property of the [Client] value safely. Checks the entered value.
 In case of an invalid value, the default value will be set.
 */
-func (cli *Client) SetProperty(propName string, propValue interface{}) interface{} {
-	pm := map[string]func() interface{}{
-		"version": func() interface{} {
+func (cli *Client) SetProperty(propName string, propValue any) any {
+	pm := map[string]func() any{
+		"version": func() any {
 			cli.Version = ut.ToString(propValue, "1.0.0")
 			return cli.Version
 		},
-		"theme": func() interface{} {
+		"theme": func() any {
 			cli.Theme = cli.Validation(propName, propValue).(string)
 			return cli.Theme
 		},
-		"ticket": func() interface{} {
+		"ticket": func() any {
 			cli.Ticket = cli.Validation(propName, propValue).(Ticket)
 			return cli.Ticket
 		},
-		"lang": func() interface{} {
+		"lang": func() any {
 			cli.Lang = ut.ToString(propValue, "en")
 			return cli.Lang
 		},
-		"sidebar_visibility": func() interface{} {
+		"sidebar_visibility": func() any {
 			cli.SideBarVisibility = cli.Validation(propName, propValue).(string)
 			return cli.SideBarVisibility
 		},
-		"login_disabled": func() interface{} {
+		"login_disabled": func() any {
 			cli.LoginDisabled = ut.ToBoolean(propValue, false)
 			return cli.LoginDisabled
 		},
-		"login_url": func() interface{} {
+		"login_url": func() any {
 			cli.LoginURL = ut.ToString(propValue, "/")
 			return cli.LoginURL
 		},
-		"login_buttons": func() interface{} {
+		"login_buttons": func() any {
 			cli.LoginButtons = cli.Validation(propName, propValue).([]LoginAuthButton)
 			return cli.LoginButtons
 		},
-		"hide_side_bar": func() interface{} {
+		"hide_side_bar": func() any {
 			cli.HideSideBar = ut.ToBoolean(propValue, false)
 			return cli.HideSideBar
 		},
-		"hide_menu": func() interface{} {
+		"hide_menu": func() any {
 			cli.HideMenu = ut.ToBoolean(propValue, false)
 			return cli.HideMenu
 		},
-		"target": func() interface{} {
+		"target": func() any {
 			cli.Target = cli.Validation(propName, propValue).(string)
 			return cli.Target
 		},
@@ -493,34 +493,35 @@ func (cli *Client) Labels() ut.SM {
 	return ut.SM{}
 }
 
+func (cli *Client) ToFilters(value string, cfFilters []any) (filters []BrowserFilter) {
+	for _, filter := range cfFilters {
+		if filterMap, valid := filter.(ut.IM); valid {
+			filters = append(filters, BrowserFilter{
+				Or:    ut.ToBoolean(filterMap["or"], false),
+				Field: ut.ToString(filterMap["field"], ""),
+				Comp:  ut.ToString(filterMap["comp"], ""),
+				Value: ut.ToString(filterMap["value"], value),
+			})
+		}
+	}
+	return filters
+}
+
 /*
 The GetSearchFilters function retrieves the filters from the search data.
 */
-func (cli *Client) GetSearchFilters(value string, cfFilters interface{}) (filters []BrowserFilter) {
+func (cli *Client) GetSearchFilters(value string, cfFilters any) (filters []BrowserFilter) {
 	searchData := cli.getDataIM("search", cli.Data)
 	searchView := cli.getDataIM(ut.ToString(searchData["view"], ""), searchData)
 	filters = []BrowserFilter{}
 	if dfilters, found := searchView["filters"].([]BrowserFilter); found {
 		return dfilters
 	}
-	toFilters := func(dfilters []interface{}) (f []BrowserFilter) {
-		for _, filter := range dfilters {
-			if filterMap, valid := filter.(ut.IM); valid {
-				filters = append(filters, BrowserFilter{
-					Or:    ut.ToBoolean(filterMap["or"], false),
-					Field: ut.ToString(filterMap["field"], ""),
-					Comp:  ut.ToString(filterMap["comp"], ""),
-					Value: ut.ToString(filterMap["value"], value),
-				})
-			}
-		}
-		return filters
+	if dfilters, found := searchView["filters"].([]any); found {
+		return cli.ToFilters(value, dfilters)
 	}
-	if dfilters, found := searchView["filters"].([]interface{}); found {
-		return toFilters(dfilters)
-	}
-	if dfilters, found := cfFilters.([]interface{}); found && len(dfilters) > 0 {
-		return toFilters(dfilters)
+	if dfilters, found := cfFilters.([]any); found && len(dfilters) > 0 {
+		return cli.ToFilters(value, dfilters)
 	}
 	if dfilters, found := cfFilters.([]BrowserFilter); found && len(dfilters) > 0 {
 		return dfilters
@@ -701,7 +702,7 @@ func (cli *Client) GetStateData() (state, value string, data ut.IM) {
 /*
 The SetConfigValue function sets a value in the client's config.
 */
-func (cli *Client) SetConfigValue(key string, value interface{}) {
+func (cli *Client) SetConfigValue(key string, value any) {
 	cli.Data["config"] = ut.MergeIM(ut.ToIM(cli.Data["config"], ut.IM{}), ut.IM{key: value})
 	cli.SetProperty("data", cli.Data)
 }

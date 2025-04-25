@@ -1,3 +1,8 @@
+## 1.7.30
+- Search component: set input field indicator while the request is in flight
+- Selector component: set input field indicator while the request is in flight
+- Client component: refactoring GetSearchFilters function
+
 ## 1.7.29
 - Browser component: TableEventFormChange bug fixes
 

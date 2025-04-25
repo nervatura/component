@@ -257,6 +257,7 @@ func (sea *Search) getComponent(name string) (html template.HTML, err error) {
 				OnResponse:   sea.response,
 				RequestValue: sea.RequestValue,
 				RequestMap:   sea.RequestMap,
+				Indicator:    IndicatorSpinner,
 			},
 			Type:        InputTypeString,
 			Label:       sea.FilterPlaceholder,
