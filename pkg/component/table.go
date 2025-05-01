@@ -929,7 +929,7 @@ func (tbl *Table) cellFormat(fmtType string, options cellFormatOptions) template
 		"bool": func() template.HTML {
 			boolLabel := fmt.Sprintf(
 				`<span class="cell-label">%s</span>`, options.Label)
-			value := ut.ToString(((options.Value == 1) || (options.Value == "true") || (options.Value == true)), "false")
+			value := ut.ToString(ut.ToBoolean(options.Value, false), "false")
 			if options.EditCell {
 				inp, _ := tbl.getComponent("form_bool", 0, ut.IM{
 					"value":         options.Value,
@@ -1498,7 +1498,7 @@ var testTableRows []ut.IM = []ut.IM{
 	{"id": 6, "name": "Name6", "enum": "blue", "levels": 40, "valid": false,
 		"date": "1999-11-07", "start": "2019-04-23T10:30:00+02:00", "stamp": "2020-04-11T10:30:00+02:00",
 		"product": "Product1", "url": "https://www.google.com", "deffield": "2019-04-23", "deffield_meta": TableFieldTypeDate},
-	{"id": 7, "name": "Name7", "enum": "pink", "levels": 60, "valid": true,
+	{"id": 7, "name": "Name7", "enum": "pink", "levels": 60, "valid": "1",
 		"date": "2020-06-06", "start": "2019-04-23T04:10:00+02:00", "stamp": "2020-04-18T10:30:00+02:00",
 		"name_color": "green", "product": "Product2", "url": "https://www.google.com",
 		"deffield": "14:20", "deffield_meta": TableFieldTypeTime},

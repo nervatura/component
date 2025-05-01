@@ -166,7 +166,7 @@ func (edi *Editor) response(evt ResponseEvent) (re ResponseEvent) {
 
 	case "view_table":
 		if slices.Contains([]string{TableEventAddItem, TableEventEditCell, TableEventRowSelected,
-			TableEventFormUpdate, TableEventFormDelete, TableEventFormChange}, evt.Name) {
+			TableEventFormUpdate, TableEventFormDelete, TableEventFormChange, TableEventFormCancel}, evt.Name) {
 			admEvt.Name = EditorEventField
 			admEvt.Value = ut.IM{
 				"name": evt.Name, "value": evt.Value, "trigger": evt.Trigger,

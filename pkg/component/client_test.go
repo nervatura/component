@@ -277,12 +277,12 @@ func TestClient_response(t *testing.T) {
 			},
 		},
 		{
-			name:   "table",
+			name:   "browser_table",
 			fields: fields{},
 			args: args{
 				evt: ResponseEvent{
 					Trigger:     &Table{},
-					TriggerName: "table",
+					TriggerName: "browser_table",
 					Name:        TableEventEditCell,
 				},
 			},
@@ -293,7 +293,7 @@ func TestClient_response(t *testing.T) {
 			args: args{
 				evt: ResponseEvent{
 					Trigger:     &Table{},
-					TriggerName: "table",
+					TriggerName: "browser_table",
 					Name:        TableEventSort,
 				},
 			},

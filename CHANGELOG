@@ -1,3 +1,7 @@
+## 1.7.31
+- Editor component: view_table TableEventFormCancel bug fixes
+- Table component: cell format bool value bug fixes
+
 ## 1.7.30
 - Search component: set input field indicator while the request is in flight
 - Selector component: set input field indicator while the request is in flight

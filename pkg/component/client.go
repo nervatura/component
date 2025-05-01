@@ -393,7 +393,7 @@ func (cli *Client) response(evt ResponseEvent) (re ResponseEvent) {
 		delete(data, "modal")
 		cli.SetProperty("data", data)
 
-	case "table", "filter_table", "view_table":
+	case "browser_table", "filter_table", "view_table":
 		if !slices.Contains([]string{
 			TableEventEditCell, TableEventAddItem,
 		}, evt.Name) {

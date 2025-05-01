@@ -555,7 +555,7 @@ func (bro *Browser) response(evt ResponseEvent) (re ResponseEvent) {
 	}
 	bro.SetProperty("filter_index", 0)
 	switch evt.TriggerName {
-	case "table":
+	case "browser_table":
 		broEvt = evt
 
 	case "btn_export":
@@ -708,7 +708,7 @@ func (bro *Browser) getComponentTable() *Table {
 	tbl := &Table{
 		BaseComponent: BaseComponent{
 			Id:           bro.Id + "_table",
-			Name:         "table",
+			Name:         "browser_table",
 			EventURL:     bro.EventURL,
 			OnResponse:   bro.response,
 			RequestValue: bro.RequestValue,
@@ -975,7 +975,7 @@ func (bro *Browser) getComponent(name string, data ut.IM) (html template.HTML, e
 				Width: 9, Height: 24,
 			}
 		},
-		"table": func() ClientComponent {
+		"browser_table": func() ClientComponent {
 			return bro.getComponentTable()
 		},
 	}
@@ -1075,7 +1075,7 @@ func (bro *Browser) Render() (html template.HTML, err error) {
 	<div class="row full section-small-top" ><div class="row full result-border" >
 	<div class="cell result-title" >{{ resultCount }} {{ msg "browser_result" }}</div>
 	</div></div>
-	<div class="row full" >{{ browserComponent "table" }}</div>
+	<div class="row full" >{{ browserComponent "browser_table" }}</div>
 	</div></div>
 	{{ if .ShowTotal }}<div class="modal"><div class="dialog"><div class="panel">
 	<div class="panel-title">

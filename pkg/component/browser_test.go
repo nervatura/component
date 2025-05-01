@@ -432,11 +432,11 @@ func TestBrowser_response(t *testing.T) {
 		args   args
 	}{
 		{
-			name:   "table",
+			name:   "browser_table",
 			fields: fields{},
 			args: args{
 				evt: ResponseEvent{
-					TriggerName: "table",
+					TriggerName: "browser_table",
 					Name:        TableEventEditCell,
 				},
 			},
@@ -455,7 +455,7 @@ func TestBrowser_response(t *testing.T) {
 			},
 			args: args{
 				evt: ResponseEvent{
-					TriggerName: "table",
+					TriggerName: "browser_table",
 					Name:        TableEventEditCell,
 				},
 			},
@@ -948,7 +948,7 @@ func TestBrowser_filterEvent(t *testing.T) {
 			},
 			args: args{
 				evt: ResponseEvent{
-					TriggerName: "table",
+					TriggerName: "browser_table",
 					Name:        TableEventFormDelete,
 					Value:       ut.IM{"index": 0},
 				},
@@ -971,7 +971,7 @@ func TestBrowser_filterEvent(t *testing.T) {
 			},
 			args: args{
 				evt: ResponseEvent{
-					TriggerName: "table",
+					TriggerName: "browser_table",
 					Name:        TableEventFormUpdate,
 					Value:       ut.IM{"index": 0, "row": ut.IM{"field": "name", "comp": "eq", "value": "test"}},
 				},
@@ -986,7 +986,7 @@ func TestBrowser_filterEvent(t *testing.T) {
 			},
 			args: args{
 				evt: ResponseEvent{
-					TriggerName: "table",
+					TriggerName: "browser_table",
 					Trigger: &Table{
 						Rows: []ut.IM{
 							{"field": "name", "comp": "eq", "value": "test"},
@@ -1007,7 +1007,7 @@ func TestBrowser_filterEvent(t *testing.T) {
 			},
 			args: args{
 				evt: ResponseEvent{
-					TriggerName: "table",
+					TriggerName: "browser_table",
 					Trigger: &Table{
 						Rows: []ut.IM{
 							{"field": "name", "comp": "eq", "value": "test"},
@@ -1027,7 +1027,7 @@ func TestBrowser_filterEvent(t *testing.T) {
 			},
 			args: args{
 				evt: ResponseEvent{
-					TriggerName: "table",
+					TriggerName: "browser_table",
 					Trigger: &Table{
 						Rows: []ut.IM{
 							{"field": "name", "comp": "eq", "value": "test"},
