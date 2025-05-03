@@ -429,7 +429,8 @@ func (cli *Client) response(evt ResponseEvent) (re ResponseEvent) {
 
 	case "form":
 		admEvt.Name = ClientEventForm
-		evt.Value = ut.MergeIM(ut.ToIM(evt.Value, ut.IM{}), ut.IM{"event": evt.Name})
+		evtValue := ut.ToIM(evt.Value, ut.IM{})
+		admEvt.Value = ut.MergeIM(evtValue, ut.IM{"event": evt.Name, "form_event": ut.ToString(evtValue["event"], "")})
 		admEvt.Header = ut.SM{
 			HeaderRetarget: "#" + cli.Id,
 		}

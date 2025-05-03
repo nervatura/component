@@ -170,7 +170,7 @@ func TestTable_Validation(t *testing.T) {
 			},
 			want: []TableField{
 				{Name: "name", FieldType: "string", Label: "", TextAlign: "left", VerticalAlign: "middle", Format: false,
-					LinkLimit: 10, InputLink: false, ReadOnly: false, Options: []SelectOption{}},
+					ReadOnly: false, Options: []SelectOption{}},
 			},
 		},
 	}

@@ -151,10 +151,6 @@ type TableField struct {
 	Options []SelectOption `json:"options"`
 	// Specifies that the [TableFieldTypeString] input element is required when Editable is true
 	Required bool `json:"required"`
-	// Label text limit when [TableFieldTypeLink] button type and Editable is true. Default value: 10
-	LinkLimit int64 `json:"link_limit"`
-	// Button (default) or string input control when [TableFieldTypeLink] and Editable is true
-	InputLink bool `json:"input_link"`
 	/* Trigger a TableEventFormChange event when the field value changes while the row is being modified.
 	This can be useful if the field value affects the possible values ​​of other fields in the row.
 	Only Editable is true. */
@@ -231,8 +227,6 @@ func (tbl *Table) tableFieldsValidation(propValue interface{}) []TableField {
 					TextAlign:     tbl.CheckEnumValue(ut.ToString(values["text_align"], ""), TextAlignLeft, TextAlign),
 					VerticalAlign: tbl.CheckEnumValue(ut.ToString(values["vertical_align"], ""), VerticalAlignMiddle, VerticalAlign),
 					Format:        ut.ToBoolean(values["format"], false),
-					LinkLimit:     ut.ToInteger(values["link_limit"], 10),
-					InputLink:     ut.ToBoolean(values["input_link"], false),
 					ReadOnly:      ut.ToBoolean(values["readonly"], false),
 					Options:       SelectOptionRangeValidation(values["options"], []SelectOption{}),
 					Required:      ut.ToBoolean(values["required"], false),
@@ -500,7 +494,7 @@ func (tbl *Table) OnRequest(te TriggerEvent) (re ResponseEvent) {
 		TableEventFormUpdate: func(fieldName string) {
 			for _, field := range tbl.Fields {
 				fieldType := tbl.CheckEnumValue(ut.ToString(row[field.Name+"_meta"], ""), field.FieldType, TableMetaType)
-				if _, found := row[field.Name]; found && ((fieldType != TableFieldTypeLink) || (fieldType == TableFieldTypeLink && field.InputLink)) {
+				if _, found := row[field.Name]; found && ((fieldType != TableFieldTypeLink) || (fieldType == TableFieldTypeLink)) {
 					value := te.Values.Get(field.Name)
 					if fieldType == TableFieldTypeBool {
 						value = ut.ToString(te.Values.Has(field.Name), "false")
@@ -768,16 +762,6 @@ func (tbl *Table) getComponent(name string, pageCount int64, data ut.IM) (html t
 			inp.SetProperty("value", ut.ToString(data["value"], ""))
 			return inp
 		},
-		"form_link": func() ClientComponent {
-			btn := &Button{
-				BaseComponent: formBase(true),
-				Type:          ButtonTypeButton,
-				ButtonStyle:   ButtonStyleBorder,
-				Full:          true,
-			}
-			btn.SetProperty("label", ut.ToString(data["value"], ""))
-			return btn
-		},
 		"form_btn": func() ClientComponent {
 			return &Row{
 				Columns: []RowColumn{
@@ -861,8 +845,6 @@ type cellFormatOptions struct {
 	EditCell     bool
 	Options      []SelectOption
 	Required     bool
-	LinkLimit    int64
-	InputLink    bool
 	TriggerEvent bool
 }
 
@@ -946,17 +928,10 @@ func (tbl *Table) cellFormat(fmtType string, options cellFormatOptions) template
 			linkLabel := fmt.Sprintf(
 				`<span class="cell-label">%s</span>`, options.Label)
 			if options.EditCell {
-				inp, _ := tbl.getComponent("form_link", 0, ut.IM{
-					"value":         ut.StringLimit(ut.ToString(options.Value, "..."), ut.ToInteger(options.LinkLimit, 10)),
-					"fieldname":     options.FieldName,
+				inp, _ := tbl.getComponent("form_string", 0, ut.IM{
+					"value": options.Value, "fieldname": options.FieldName,
 					"trigger_event": options.TriggerEvent,
 				})
-				if options.InputLink {
-					inp, _ = tbl.getComponent("form_string", 0, ut.IM{
-						"value": options.Value, "fieldname": options.FieldName,
-						"trigger_event": options.TriggerEvent,
-					})
-				}
 				return template.HTML(linkLabel + string(inp))
 			}
 			var link template.HTML
@@ -1083,8 +1058,6 @@ func (tbl *Table) columns() (cols []TableColumn) {
 							ResultValue:  row[col.Field.Name],
 							RowData:      row,
 							EditCell:     tbl.columnsEditCell(row, rowIndex, col.Field.ReadOnly),
-							LinkLimit:    col.Field.LinkLimit,
-							InputLink:    col.Field.InputLink,
 							TriggerEvent: col.Field.TriggerEvent,
 						})
 					}
@@ -1132,8 +1105,6 @@ func (tbl *Table) columns() (cols []TableColumn) {
 									ResultValue:  row[field.Name],
 									RowData:      row,
 									EditCell:     tbl.columnsEditCell(row, rowIndex, col.Field.ReadOnly),
-									LinkLimit:    col.Field.LinkLimit,
-									InputLink:    col.Field.InputLink,
 									TriggerEvent: col.Field.TriggerEvent,
 								})
 							},
@@ -1204,8 +1175,6 @@ func (tbl *Table) columns() (cols []TableColumn) {
 									ResultValue:  row[col.Field.Name],
 									RowData:      row,
 									EditCell:     false,
-									LinkLimit:    col.Field.LinkLimit,
-									InputLink:    true,
 									TriggerEvent: col.Field.TriggerEvent,
 								})
 							}
@@ -1461,8 +1430,8 @@ var testTableFields []TableField = []TableField{
 	{Name: "start", FieldType: TableFieldTypeTime},
 	{Name: "stamp", FieldType: TableFieldTypeDateTime, Label: "Stamp"},
 	{Name: "levels", FieldType: TableFieldTypeNumber, Label: "Levels", Format: true, VerticalAlign: VerticalAlignMiddle},
-	{Name: "product", FieldType: TableFieldTypeLink, Label: "Product", LinkLimit: 5},
-	{Name: "url", FieldType: TableFieldTypeLink, Label: "Homepage", InputLink: true},
+	{Name: "product", FieldType: TableFieldTypeLink, Label: "Product", TriggerEvent: true},
+	{Name: "url", FieldType: TableFieldTypeLink, Label: "Homepage", TriggerEvent: true},
 	{Name: "deffield", FieldType: TableFieldTypeMeta, Label: "Multiple type"},
 	{Column: &TableColumn{Id: "editor", Header: "Custom",
 		Cell: func(row ut.IM, col TableColumn, value interface{}, rowIndex int64) template.HTML {
