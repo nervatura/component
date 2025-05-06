@@ -277,6 +277,23 @@ func TestClient_response(t *testing.T) {
 			},
 		},
 		{
+			name: "modal_change",
+			fields: fields{
+				BaseComponent: BaseComponent{
+					OnResponse: func(evt ResponseEvent) (re ResponseEvent) {
+						return evt
+					},
+				},
+			},
+			args: args{
+				evt: ResponseEvent{
+					Trigger:     &Form{},
+					TriggerName: "modal",
+					Name:        FormEventChange,
+				},
+			},
+		},
+		{
 			name:   "browser_table",
 			fields: fields{},
 			args: args{

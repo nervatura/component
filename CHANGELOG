@@ -1,3 +1,6 @@
+## 1.7.33
+- Client component: modal form FormEventChange bug fixes
+
 ## 1.7.32
 - Table component: remove LinkLimit and InputLink options
 - Client component: ClientEventForm origin event name bug fixes

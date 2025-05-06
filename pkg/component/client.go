@@ -381,6 +381,18 @@ func (cli *Client) responseMainMenu(evt ResponseEvent) (re ResponseEvent) {
 	return re
 }
 
+func (cli *Client) responseModal(evt ResponseEvent) (re ResponseEvent) {
+	if evt.Name == FormEventChange {
+		return evt
+	}
+	data := cli.GetProperty("data").(ut.IM)
+	delete(data, "modal")
+	cli.SetProperty("data", data)
+	return ResponseEvent{
+		Trigger: cli, TriggerName: evt.Name, Value: evt.Value, Name: evt.Name,
+	}
+}
+
 func (cli *Client) response(evt ResponseEvent) (re ResponseEvent) {
 	admEvt := ResponseEvent{
 		Trigger: cli, TriggerName: cli.Name, Value: evt.Value,
@@ -388,10 +400,7 @@ func (cli *Client) response(evt ResponseEvent) (re ResponseEvent) {
 	switch evt.TriggerName {
 
 	case "modal":
-		admEvt.Name = evt.Name
-		data := cli.GetProperty("data").(ut.IM)
-		delete(data, "modal")
-		cli.SetProperty("data", data)
+		admEvt = cli.responseModal(evt)
 
 	case "browser_table", "filter_table", "view_table":
 		if !slices.Contains([]string{
