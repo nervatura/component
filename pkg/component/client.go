@@ -383,7 +383,7 @@ func (cli *Client) responseMainMenu(evt ResponseEvent) (re ResponseEvent) {
 
 func (cli *Client) responseModal(evt ResponseEvent) (re ResponseEvent) {
 	admEvt := ResponseEvent{
-		Trigger: cli, TriggerName: cli.Name, Value: evt.Value,
+		Trigger: cli, TriggerName: cli.Name, Name: evt.Name, Value: evt.Value,
 		Header: ut.MergeSM(evt.Header, ut.SM{
 			HeaderRetarget: "#" + cli.Id,
 		}),
