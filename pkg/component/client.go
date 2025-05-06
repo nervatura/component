@@ -382,14 +382,22 @@ func (cli *Client) responseMainMenu(evt ResponseEvent) (re ResponseEvent) {
 }
 
 func (cli *Client) responseModal(evt ResponseEvent) (re ResponseEvent) {
-	if evt.Name != FormEventChange {
-		data := cli.GetProperty("data").(ut.IM)
-		delete(data, "modal")
-		cli.SetProperty("data", data)
+	admEvt := ResponseEvent{
+		Trigger: cli, TriggerName: cli.Name, Value: evt.Value,
+		Header: ut.MergeSM(evt.Header, ut.SM{
+			HeaderRetarget: "#" + cli.Id,
+		}),
 	}
-	return ResponseEvent{
-		Trigger: cli, TriggerName: evt.Name, Value: evt.Value, Name: evt.Name,
+	if evt.Name == FormEventChange {
+		admEvt.Header = ut.MergeSM(evt.Header, ut.SM{
+			HeaderRetarget: "#" + cli.Id + "_modal",
+		})
+		return admEvt
 	}
+	data := cli.GetProperty("data").(ut.IM)
+	delete(data, "modal")
+	cli.SetProperty("data", data)
+	return admEvt
 }
 
 func (cli *Client) response(evt ResponseEvent) (re ResponseEvent) {
