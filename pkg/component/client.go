@@ -382,12 +382,11 @@ func (cli *Client) responseMainMenu(evt ResponseEvent) (re ResponseEvent) {
 }
 
 func (cli *Client) responseModal(evt ResponseEvent) (re ResponseEvent) {
-	if evt.Name == FormEventChange {
-		return evt
+	if evt.Name != FormEventChange {
+		data := cli.GetProperty("data").(ut.IM)
+		delete(data, "modal")
+		cli.SetProperty("data", data)
 	}
-	data := cli.GetProperty("data").(ut.IM)
-	delete(data, "modal")
-	cli.SetProperty("data", data)
 	return ResponseEvent{
 		Trigger: cli, TriggerName: evt.Name, Value: evt.Value, Name: evt.Name,
 	}
