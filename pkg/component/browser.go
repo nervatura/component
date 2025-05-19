@@ -38,6 +38,7 @@ var browserDefaultLabel ut.SM = ut.SM{
 	"browser_total":        "Total",
 	"browser_filter":       "Filter",
 	"browser_comparison":   "?",
+	"browser_value":        "Value",
 	"browser_filters":      "Filter criterias",
 	"browser_search":       "Search",
 	"browser_bookmark":     "Bookmark",

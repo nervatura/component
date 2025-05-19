@@ -305,6 +305,7 @@ func (cli *Client) responseBrowser(evt ResponseEvent) (re ResponseEvent) {
 	if !slices.Contains([]string{
 		BrowserEventSearch, BrowserEventSetColumn,
 		BrowserEventAddFilter, BrowserEventChangeFilter, BrowserEventEditRow,
+		BrowserEventBookmark,
 	}, evt.Name) {
 		return evt
 	}
