@@ -389,7 +389,7 @@ func TestClient_response(t *testing.T) {
 				evt: ResponseEvent{
 					Trigger:     &Browser{},
 					TriggerName: "browser",
-					Name:        BrowserEventBookmark,
+					Name:        BrowserEventHelp,
 				},
 			},
 		},

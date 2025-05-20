@@ -45,6 +45,8 @@ type Label struct {
 	RightIcon string `json:"right_icon"`
 	// Icon component style settings. Example: ut.SM{"fill": "orange"}
 	IconStyle ut.SM `json:"icon_style"`
+	// The label is not clickable when EventURL is set
+	Static bool `json:"static"`
 }
 
 /*
@@ -61,6 +63,7 @@ func (lbl *Label) Properties() ut.IM {
 			"left_icon":  lbl.LeftIcon,
 			"right_icon": lbl.RightIcon,
 			"icon_style": lbl.IconStyle,
+			"static":     lbl.Static,
 		})
 }
 
@@ -136,6 +139,10 @@ func (lbl *Label) SetProperty(propName string, propValue interface{}) interface{
 			lbl.IconStyle = lbl.Validation(propName, propValue).(ut.SM)
 			return lbl.IconStyle
 		},
+		"static": func() interface{} {
+			lbl.Static = ut.ToBoolean(propValue, false)
+			return lbl.Static
+		},
 	}
 	if _, found := pm[propName]; found {
 		return lbl.SetRequestValue(propName, pm[propName](), []string{})
@@ -203,11 +210,11 @@ func (lbl *Label) Render() (html template.HTML, err error) {
 		},
 	}
 	head := `id="{{ .Id }}" name="{{ .Name }}"
-	{{ if ne .EventURL "" }} hx-post="{{ .EventURL }}" hx-target="{{ .Target }}" {{ if ne .Sync "none" }} hx-sync="{{ .Sync }}"{{ end }} hx-swap="{{ .Swap }}"{{ end }}
+	{{ if and (ne .EventURL "") (ne .Static true) }} hx-post="{{ .EventURL }}" hx-target="{{ .Target }}" {{ if ne .Sync "none" }} hx-sync="{{ .Sync }}"{{ end }} hx-swap="{{ .Swap }}"{{ end }}
 	{{ if ne .Indicator "none" }} hx-indicator="#{{ .Indicator }}"{{ end }}`
 	tpl := `{{ if or (ne .LeftIcon "") (ne .RightIcon "") }}<div ` + head + `
 	 class="label row{{ if .Border }} label-border{{ end }}{{ if .Full }} full{{ end }}
-	 {{ if ne .EventURL "" }} label-link{{ else }} label-text{{ end }}{{ if and (ne .LeftIcon "") (.Centered) }} centered{{ end }} {{ customClass }}"
+	 {{ if and (ne .EventURL "") (ne .Static true) }} label-link{{ else }} label-text{{ end }}{{ if and (ne .LeftIcon "") (.Centered) }} centered{{ end }} {{ customClass }}"
 	>{{ if ne .LeftIcon "" }}
 	<div class="cell label-icon-left">{{ labelComponent "left_icon" }}</div>
 	<div class="cell label-info-left bold"
@@ -221,12 +228,12 @@ func (lbl *Label) Render() (html template.HTML, err error) {
 	{{ end }}</div>
 	{{ else }}
 	{{ if .Border }}<div ` + head + ` class="label-border{{ if .Full }} full{{ end }}"><span {{ else }}<span ` + head + `{{ end }}
-	 class="label bold{{ if ne .EventURL "" }} label-link{{ else }} label-text{{ end }} {{ customClass }}"
+	 class="label bold{{ if and (ne .EventURL "") (ne .Static true) }} label-link{{ else }} label-text{{ end }} {{ customClass }}"
 	 {{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}
 	>{{ .Value }}</span>{{ if .Border }}</div>{{ end }}
 	{{ end }}`
 
-	if html, err = ut.TemplateBuilder("label", tpl, funcMap, lbl); err == nil && lbl.EventURL != "" {
+	if html, err = ut.TemplateBuilder("label", tpl, funcMap, lbl); err == nil && (lbl.EventURL != "" && !lbl.Static) {
 		lbl.SetProperty("request_map", lbl)
 	}
 	return html, nil
