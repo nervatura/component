@@ -773,6 +773,14 @@ func (cli *Client) SetForm(formKey string, data ut.IM, index int64, modal bool) 
 }
 
 /*
+The CloseModal function closes the modal form.
+*/
+func (cli *Client) CloseModal() {
+	delete(cli.Data, "modal")
+	cli.SetProperty("data", cli.Data)
+}
+
+/*
 Based on the values, it will generate the html code of the [Client] or return with an error message.
 */
 func (cli *Client) Render() (html template.HTML, err error) {

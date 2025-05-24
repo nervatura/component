@@ -1201,3 +1201,75 @@ func TestClient_SetConfigValue(t *testing.T) {
 		})
 	}
 }
+
+func TestClient_CloseModal(t *testing.T) {
+	type fields struct {
+		BaseComponent     BaseComponent
+		Version           string
+		Theme             string
+		Lang              string
+		Ticket            Ticket
+		LoginDisabled     bool
+		LoginURL          string
+		LoginButtons      []LoginAuthButton
+		HideSideBar       bool
+		SideBarVisibility string
+		HideMenu          bool
+		ClientLabels      func(lang string) ut.SM
+		ClientMenu        func(labels ut.SM, config ut.IM) MenuBar
+		ClientSideBar     func(moduleKey string, labels ut.SM, data ut.IM) SideBar
+		ClientLogin       func(labels ut.SM, config ut.IM) Login
+		ClientSearch      func(viewName string, labels ut.SM, searchData ut.IM) Search
+		ClientBrowser     func(viewName string, labels ut.SM, searchData ut.IM) Browser
+		ClientEditor      func(editorKey, viewName string, labels ut.SM, editorData ut.IM) Editor
+		ClientModalForm   func(formKey string, labels ut.SM, data ut.IM) Form
+		ClientForm        func(editorKey, formKey string, labels ut.SM, data ut.IM) Form
+	}
+	tests := []struct {
+		name   string
+		fields fields
+	}{
+		{
+			name: "default",
+			fields: fields{
+				BaseComponent: BaseComponent{
+					Data: ut.IM{
+						"modal": ut.IM{
+							"key": "form",
+							"data": ut.IM{
+								"key": "form",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cli := &Client{
+				BaseComponent:     tt.fields.BaseComponent,
+				Version:           tt.fields.Version,
+				Theme:             tt.fields.Theme,
+				Lang:              tt.fields.Lang,
+				Ticket:            tt.fields.Ticket,
+				LoginDisabled:     tt.fields.LoginDisabled,
+				LoginURL:          tt.fields.LoginURL,
+				LoginButtons:      tt.fields.LoginButtons,
+				HideSideBar:       tt.fields.HideSideBar,
+				SideBarVisibility: tt.fields.SideBarVisibility,
+				HideMenu:          tt.fields.HideMenu,
+				ClientLabels:      tt.fields.ClientLabels,
+				ClientMenu:        tt.fields.ClientMenu,
+				ClientSideBar:     tt.fields.ClientSideBar,
+				ClientLogin:       tt.fields.ClientLogin,
+				ClientSearch:      tt.fields.ClientSearch,
+				ClientBrowser:     tt.fields.ClientBrowser,
+				ClientEditor:      tt.fields.ClientEditor,
+				ClientModalForm:   tt.fields.ClientModalForm,
+				ClientForm:        tt.fields.ClientForm,
+			}
+			cli.CloseModal()
+		})
+	}
+}
