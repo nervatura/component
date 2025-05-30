@@ -263,6 +263,7 @@ func (app *Application) Render() (html template.HTML, err error) {
 			<meta charset="utf-8">
 			<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 			<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+			<meta name="robots" content="noindex, nofollow" />
 			{{ range $index, $value := .Script }}<script src="{{ $value }}"></script>{{ end }}
 			{{ range $index, $link := .HeadLink }}
 			<link rel="{{ $link.Rel }}" href="{{ $link.Href }}" {{ if ne $link.Type "" }}type="{{ $link.Type }}"{{ end }} />

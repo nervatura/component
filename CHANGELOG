@@ -1,3 +1,6 @@
+## 1.7.40
+- Application component: add noindex, nofollow html meta
+
 ## 1.7.39
 - Client component: add CloseModal fuction
 
