@@ -896,6 +896,9 @@ func (tbl *Table) cellFormat(fmtType string, options cellFormatOptions) template
 			case time.Time:
 				fmtValue = dateFormat[options.FieldType](v, options.Value)
 			}
+			if slices.Contains([]string{"", "null"}, ut.ToString(options.Value, "")) {
+				fmtValue = ""
+			}
 			if options.EditCell {
 				inp, _ := tbl.getComponent("form_datetime", 0, ut.IM{
 					"value":         fmtValue,
@@ -1457,7 +1460,7 @@ var testTableRows []ut.IM = []ut.IM{
 		"name_color": "orange", "disabled": true, "product": "Product2", "url": "https://www.google.com",
 		"deffield": 123, "deffield_meta": TableFieldTypeInteger},
 	{"id": 4, "name": "Name4", "enum": "yellow", "levels": 40, "valid": "false",
-		"date": "2022-01-01", "start": "2019-04-23T10:27:00+02:00", "stamp": "2020-04-09T10:30:00+02:00",
+		"date": "2022-01-01", "start": "2019-04-23T10:27:00+02:00", "stamp": nil,
 		"name_color": "orange", "disabled": true, "product": "Product1", "url": "https://www.google.com",
 		"deffield": 123.45, "deffield_meta": TableFieldTypeNumber},
 	{"id": 5, "name": "Name5", "enum": "purple", "levels": 401234.345, "valid": 0,
