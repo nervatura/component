@@ -1,3 +1,6 @@
+## 1.7.42
+- Form component: FormTrigger id bug fixes
+
 ## 1.7.41
 - Table component: TableFieldTypeDate, TableFieldTypeDateTime, DateTimeTypeDateTime empty value bug fixes
 

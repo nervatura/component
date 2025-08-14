@@ -187,7 +187,7 @@ func (frm *Form) getComponent(name string, index int) (html template.HTML, err e
 	checkFieldTrigger := func(row *Row) {
 		for index, column := range row.Columns {
 			if column.Value.FormTrigger {
-				row.Columns[index].Value.Id = frm.Id + "_" + name + "_" + ut.ToString(index, "")
+				row.Columns[index].Value.Id = frm.Id + "_" + column.Value.Name + "_" + ut.ToString(index, "")
 				row.Columns[index].Value.EventURL = frm.EventURL
 				row.Columns[index].Value.Target = frm.Target
 				row.Columns[index].Value.OnResponse = frm.triggerEvent
