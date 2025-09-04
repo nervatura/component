@@ -212,7 +212,7 @@ func (inp *NumberInput) Render() (html template.HTML, err error) {
 			return ut.ToString(inp.Value, "0")
 		},
 	}
-	tpl := `<input id="{{ .Id }}" name="{{ .Name }}" type="number" value="{{ value }}"
+	tpl := `<input id="{{ .Id }}" name="{{ .Name }}" type="number" onfocus="this.select();" value="{{ value }}"
 	{{ if .Integer }} step="1"{{ else }} step="any"{{ end }}
 	{{ if ne .EventURL "" }} hx-post="{{ .EventURL }}" hx-target="{{ .Target }}" {{ if ne .Sync "none" }} hx-sync="{{ .Sync }}"{{ end }} hx-swap="{{ .Swap }}"{{ end }}
 	{{ if ne .Indicator "none" }} hx-indicator="#{{ .Indicator }}"{{ end }}

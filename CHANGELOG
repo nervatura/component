@@ -1,3 +1,6 @@
+## 1.7.43
+- Number component: automatically select all contents of a textbox when it receives focus
+
 ## 1.7.42
 - Form component: FormTrigger id bug fixes
 
