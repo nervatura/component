@@ -264,7 +264,7 @@ func (sb *SideBar) getComponent(index, groupIndex int) (html template.HTML, err 
 	ccBtn := func(idx int, name string) *Button {
 		btn := &Button{
 			BaseComponent: BaseComponent{
-				Id:           sb.Id + "_" + ut.ToString(idx, ""),
+				Id:           sb.Id + "_" + name + "_" + ut.ToString(idx, ""),
 				Name:         name,
 				Data:         ut.IM{"index": idx},
 				Class:        []string{"sidebar-border"},
@@ -281,7 +281,7 @@ func (sb *SideBar) getComponent(index, groupIndex int) (html template.HTML, err 
 	ccLink := func(idx int, name string) *Link {
 		lnk := &Link{
 			BaseComponent: BaseComponent{
-				Id:    sb.Id + "_" + ut.ToString(idx, ""),
+				Id:    sb.Id + "_" + name + "_" + ut.ToString(idx, ""),
 				Name:  name,
 				Data:  ut.IM{"index": idx},
 				Class: []string{"sidebar-border"},
@@ -295,7 +295,7 @@ func (sb *SideBar) getComponent(index, groupIndex int) (html template.HTML, err 
 			st := it.(*SideBarState)
 			el := it.(*SideBarState).Items[groupIndex]
 			btn := ccBtn(index, el.Name)
-			btn.SetProperty("id", btn.Id+"_"+ut.ToString(groupIndex, ""))
+			btn.SetProperty("id", btn.Id+"_"+el.Name+"_"+ut.ToString(groupIndex, ""))
 			btn.SetProperty("icon", el.Icon)
 			btn.SetProperty("label", el.Label)
 			btn.SetProperty("align", ut.ToString(el.Align, TextAlignCenter))
@@ -312,7 +312,7 @@ func (sb *SideBar) getComponent(index, groupIndex int) (html template.HTML, err 
 			if groupIndex >= 0 {
 				el := it.(*SideBarGroup).Items[groupIndex]
 				btn = ccBtn(index, el.Name)
-				btn.SetProperty("id", btn.Id+"_"+ut.ToString(groupIndex, ""))
+				btn.SetProperty("id", btn.Id+"_"+el.Name+"_"+ut.ToString(groupIndex, ""))
 				btn.SetProperty("icon", el.Icon)
 				btn.SetProperty("label", el.Label)
 				btn.SetProperty("align", ut.ToString(el.Align, TextAlignLeft))

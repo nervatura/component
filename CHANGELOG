@@ -1,3 +1,6 @@
+## 1.7.44
+- SideBar component: id bug fixes
+
 ## 1.7.43
 - Number component: automatically select all contents of a textbox when it receives focus
 
