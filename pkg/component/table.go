@@ -117,6 +117,8 @@ type Table struct {
 	Editable bool `json:"editable"`
 	// The table row index from start 1
 	EditIndex int64 `json:"edit_index"`
+	// Disable delete button in edit mode
+	EditDeleteDisabled bool `json:"edit_delete_disabled"`
 	// Hide table header row
 	HideHeader bool `json:"hide_header"`
 }
@@ -180,28 +182,29 @@ func (tbl *Table) Properties() ut.IM {
 	return ut.MergeIM(
 		tbl.BaseComponent.Properties(),
 		ut.IM{
-			"row_key":             tbl.RowKey,
-			"rows":                tbl.Rows,
-			"fields":              tbl.Fields,
-			"pagination":          tbl.Pagination,
-			"current_page":        tbl.CurrentPage,
-			"page_size":           tbl.PageSize,
-			"hide_paginaton_size": tbl.HidePaginatonSize,
-			"table_filter":        tbl.TableFilter,
-			"add_item":            tbl.AddItem,
-			"filter_placeholder":  tbl.FilterPlaceholder,
-			"filter_value":        tbl.FilterValue,
-			"case_sensitive":      tbl.CaseSensitive,
-			"label_add":           tbl.LabelAdd,
-			"add_icon":            tbl.AddIcon,
-			"table_padding":       tbl.TablePadding,
-			"unsortable":          tbl.Unsortable,
-			"sort_col":            tbl.SortCol,
-			"sort_asc":            tbl.SortAsc,
-			"row_selected":        tbl.RowSelected,
-			"editable":            tbl.Editable,
-			"edit_index":          tbl.EditIndex,
-			"hide_header":         tbl.HideHeader,
+			"row_key":              tbl.RowKey,
+			"rows":                 tbl.Rows,
+			"fields":               tbl.Fields,
+			"pagination":           tbl.Pagination,
+			"current_page":         tbl.CurrentPage,
+			"page_size":            tbl.PageSize,
+			"hide_paginaton_size":  tbl.HidePaginatonSize,
+			"table_filter":         tbl.TableFilter,
+			"add_item":             tbl.AddItem,
+			"filter_placeholder":   tbl.FilterPlaceholder,
+			"filter_value":         tbl.FilterValue,
+			"case_sensitive":       tbl.CaseSensitive,
+			"label_add":            tbl.LabelAdd,
+			"add_icon":             tbl.AddIcon,
+			"table_padding":        tbl.TablePadding,
+			"unsortable":           tbl.Unsortable,
+			"sort_col":             tbl.SortCol,
+			"sort_asc":             tbl.SortAsc,
+			"row_selected":         tbl.RowSelected,
+			"editable":             tbl.Editable,
+			"edit_index":           tbl.EditIndex,
+			"hide_header":          tbl.HideHeader,
+			"edit_delete_disabled": tbl.EditDeleteDisabled,
 		})
 }
 
@@ -404,6 +407,10 @@ func (tbl *Table) SetProperty(propName string, propValue interface{}) interface{
 			tbl.HideHeader = ut.ToBoolean(propValue, false)
 			return tbl.HideHeader
 		},
+		"edit_delete_disabled": func() interface{} {
+			tbl.EditDeleteDisabled = ut.ToBoolean(propValue, false)
+			return tbl.EditDeleteDisabled
+		},
 		"edit_index": func() interface{} {
 			tbl.EditIndex = tbl.Validation(propName, propValue).(int64)
 			return tbl.EditIndex
@@ -494,7 +501,8 @@ func (tbl *Table) OnRequest(te TriggerEvent) (re ResponseEvent) {
 		TableEventFormUpdate: func(fieldName string) {
 			for _, field := range tbl.Fields {
 				fieldType := tbl.CheckEnumValue(ut.ToString(row[field.Name+"_meta"], ""), field.FieldType, TableMetaType)
-				if _, found := row[field.Name]; found && ((fieldType != TableFieldTypeLink) || (fieldType == TableFieldTypeLink)) {
+				if _, found := row[field.Name]; found &&
+					((fieldType != TableFieldTypeLink) || (fieldType == TableFieldTypeLink)) && !field.ReadOnly && te.Values.Has(field.Name) {
 					value := te.Values.Get(field.Name)
 					if fieldType == TableFieldTypeBool {
 						value = ut.ToString(te.Values.Has(field.Name), "false")
@@ -811,6 +819,7 @@ func (tbl *Table) getComponent(name string, pageCount int64, data ut.IM) (html t
 							"style": ut.SM{
 								"border-color": "red", "fill": "red",
 							},
+							"disabled": tbl.EditDeleteDisabled,
 						},
 					}},
 				},
