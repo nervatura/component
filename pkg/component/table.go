@@ -747,7 +747,7 @@ func (tbl *Table) getComponent(name string, pageCount int64, data ut.IM) (html t
 				BaseComponent: formBase(ut.ToBoolean(data["trigger_event"], false)),
 				Full:          true,
 			}
-			inp.SetProperty("integer", !ut.ToBoolean(data["integer"], false))
+			inp.SetProperty("integer", ut.ToBoolean(data["integer"], false))
 			inp.SetProperty("value", ut.ToString(data["value"], ""))
 			return inp
 		},
