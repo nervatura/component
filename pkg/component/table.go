@@ -463,18 +463,18 @@ func (tbl *Table) SortRows(fieldName, fieldType string, sortAsc bool) {
 	sort.Slice(tbl.Rows, lessFn)
 }
 
-func (tbl *Table) formRowIndex() (rowIndex int64) {
-	if int(tbl.EditIndex) <= len(tbl.Rows) {
+func (tbl *Table) formRowIndex() (rowIndex, oIdx int64, row ut.IM) {
+	rows := tbl.filterRows()
+	row = ut.IM{}
+	if int(tbl.EditIndex) <= len(rows) && tbl.EditIndex > 0 {
 		rowIndex = tbl.EditIndex - 1
 		if tbl.Pagination != PaginationTypeNone {
 			currentPage := tbl.Validation("current_page", tbl.CurrentPage).(int64)
 			rowIndex = ((currentPage - 1) * tbl.PageSize) + rowIndex
 		}
-		if rowIndex < 0 {
-			rowIndex = 0
-		}
+		row = rows[rowIndex]
 	}
-	return rowIndex
+	return rowIndex, ut.ToInteger(row["o_idx"], 0), row
 }
 
 /*
@@ -486,8 +486,7 @@ func (tbl *Table) OnRequest(te TriggerEvent) (re ResponseEvent) {
 		Trigger: tbl, TriggerName: tbl.Name,
 		Name: TableEventFormUpdate,
 	}
-	rowIndex := tbl.formRowIndex()
-	row := tbl.Rows[rowIndex]
+	rowIndex, oIdx, row := tbl.formRowIndex()
 	eventKey := func() (etype, ekey string) {
 		if te.Values.Has("update") {
 			return TableEventFormUpdate, "update"
@@ -510,14 +509,14 @@ func (tbl *Table) OnRequest(te TriggerEvent) (re ResponseEvent) {
 					row[field.Name] = value
 				}
 			}
-			tbl.Rows[rowIndex] = row
+			tbl.Rows[oIdx] = row
 			tbl.SetProperty("edit_index", 0)
 			evt.Value = ut.IM{"row": row, "index": rowIndex}
 		},
 		TableEventFormDelete: func(fieldName string) {
 			evt.Name = TableEventFormDelete
-			if len(tbl.Rows) > int(rowIndex) {
-				tbl.Rows = append(tbl.Rows[:rowIndex], tbl.Rows[rowIndex+1:]...)
+			if len(tbl.Rows) > int(oIdx) {
+				tbl.Rows = append(tbl.Rows[:oIdx], tbl.Rows[oIdx+1:]...)
 			}
 			tbl.SetProperty("edit_index", 0)
 			evt.Value = ut.IM{"row": row, "index": rowIndex}
@@ -538,16 +537,16 @@ func (tbl *Table) OnRequest(te TriggerEvent) (re ResponseEvent) {
 }
 
 func (tbl *Table) formEvent(evt ResponseEvent) (re ResponseEvent) {
-	rowIndex := tbl.formRowIndex()
+	rowIndex, _, row := tbl.formRowIndex()
 	if _, found := evt.Trigger.(*Button); !found {
-		tbl.Rows[rowIndex][evt.TriggerName] = evt.Value
+		row[evt.TriggerName] = evt.Value
 	}
 	tblEvt := ResponseEvent{
 		Trigger: tbl, TriggerName: tbl.Name,
 		Name: TableEventFormChange,
 		Value: ut.IM{
 			"name": evt.TriggerName, "event": evt.Name, "value": evt.Value,
-			"row": tbl.Rows[rowIndex], "index": rowIndex,
+			"row": row, "index": rowIndex,
 			"trigger": evt.Trigger, "data": tbl.Data,
 		},
 	}
@@ -720,6 +719,45 @@ func (tbl *Table) getComponent(name string, pageCount int64, data ut.IM) (html t
 			return &Icon{
 				Value: "SquareEmpty", Width: 16, Height: 16,
 			}
+		},
+		"data_row": func() ClientComponent {
+			rowID := ut.ToString(data["row_id"], "")
+			rowIndex := ut.ToInteger(data["index"], 0)
+			if (tbl.RowSelected && !tbl.Editable) || (tbl.Editable && (rowIndex != tbl.EditIndex-1)) {
+				lbl := &Label{
+					BaseComponent: BaseComponent{
+						Id:           rowID,
+						Name:         name,
+						EventURL:     tbl.EventURL,
+						Target:       tbl.Target,
+						Data:         data,
+						OnResponse:   tbl.response,
+						RequestValue: tbl.RequestValue,
+						RequestMap:   tbl.RequestMap,
+					},
+				}
+				if tbl.Editable {
+					lbl.Name = "edit_row"
+				}
+				return lbl
+			}
+			return &Label{}
+		},
+		"header_sort": func() ClientComponent {
+			colID := ut.ToString(data["col_id"], "")
+			if !tbl.Unsortable {
+				return &Label{BaseComponent: BaseComponent{
+					Id:           colID,
+					Name:         name,
+					EventURL:     tbl.EventURL,
+					Target:       tbl.Target,
+					Data:         data,
+					OnResponse:   tbl.response,
+					RequestValue: tbl.RequestValue,
+					RequestMap:   tbl.RequestMap,
+				}}
+			}
+			return &Label{}
 		},
 		"form_string": func() ClientComponent {
 			if options, found := data["options"].([]SelectOption); found && len(options) > 0 {
@@ -1241,51 +1279,12 @@ func (tbl *Table) filterRows() (rows []ut.IM) {
 	if tbl.FilterValue == "" {
 		return tbl.Rows
 	}
-	for _, row := range tbl.Rows {
+	for oidx, row := range tbl.Rows {
 		if getValidRow(row, caseValue(tbl.FilterValue)) {
-			rows = append(rows, row)
+			rows = append(rows, ut.MergeIM(row, ut.IM{"o_idx": oidx}))
 		}
 	}
 	return rows
-}
-
-func (tbl *Table) tableRowID(row ut.IM, index int) string {
-	rowID := ""
-	if id, found := row[tbl.RowKey]; found {
-		rowID = tbl.Id + "_row_" + ut.ToString(id, "")
-	} else {
-		rowID = tbl.Id + "_row_" + ut.ToString(index, "")
-	}
-	if (tbl.RowSelected && !tbl.Editable) || (tbl.Editable && (int64(index) != tbl.EditIndex-1)) {
-		lbl := &Label{BaseComponent: BaseComponent{
-			Id: rowID, Name: "data_row", Data: ut.IM{
-				"row": row, "index": index,
-			},
-			OnResponse:   tbl.response,
-			RequestValue: tbl.RequestValue,
-			RequestMap:   tbl.RequestMap,
-		}}
-		if tbl.Editable {
-			lbl.Name = "edit_row"
-		}
-		lbl.SetProperty("request_map", lbl)
-	}
-	return rowID
-}
-
-func (tbl *Table) tableColID(col TableColumn) string {
-	colID := tbl.Id + "_header_" + col.Id
-	if !tbl.Unsortable {
-		lbl := &Label{BaseComponent: BaseComponent{
-			Id: colID, Name: "header_sort",
-			Data:         ut.IM{"fieldname": col.Id, "fieldtype": col.Field.FieldType},
-			OnResponse:   tbl.response,
-			RequestValue: tbl.RequestValue,
-			RequestMap:   tbl.RequestMap,
-		}}
-		lbl.SetProperty("request_map", lbl)
-	}
-	return colID
 }
 
 func (tbl *Table) tableMap(key string, row ut.IM, index int) bool {
@@ -1350,7 +1349,9 @@ func (tbl *Table) Render() (html template.HTML, err error) {
 			return rows
 		},
 		"colID": func(col TableColumn) string {
-			return tbl.tableColID(col)
+			colID := tbl.Id + "_header_" + col.Id
+			_, _ = tbl.getComponent("header_sort", pageCount, ut.IM{"col_id": colID, "fieldname": col.Id, "fieldtype": col.Field.FieldType})
+			return colID
 		},
 		"rowTrigger": func(index int) bool {
 			return tbl.tableMap("rowTrigger", ut.IM{}, index)
@@ -1359,7 +1360,9 @@ func (tbl *Table) Render() (html template.HTML, err error) {
 			return tbl.tableMap("formBtn", row, index)
 		},
 		"rowID": func(row ut.IM, index int) string {
-			return tbl.tableRowID(row, index)
+			rowID := tbl.Id + "_row_" + ut.ToString(index, "")
+			_, _ = tbl.getComponent("data_row", pageCount, ut.IM{"row_id": rowID, "row": row, "index": index})
+			return rowID
 		},
 		"pointerClass": func(row ut.IM, index int) string {
 			if disabled, found := row["disabled"].(bool); found && disabled {
@@ -1492,6 +1495,26 @@ var testTableRows []ut.IM = []ut.IM{
 		"name_color": "green", "product": "Product2", "url": "https://www.google.com",
 		"deffield": "car", "deffield_meta": TableFieldTypeString,
 		"deffield_options": []SelectOption{{Value: "car", Text: "Car"}, {Value: "bike", Text: "Bike"}, {Value: "boat", Text: "Boat"}}},
+}
+
+var testTableRows2 []ut.IM = []ut.IM{
+	{"id": 1, "config_code": "setting", "config_key": "default_bank", "config_value": "PLA0000000000N2", "config_type": "text"},
+	{"id": 2, "config_code": "setting", "config_key": "default_chest", "config_value": "PLA0000000000N3", "config_type": "text"},
+	{"id": 3, "config_code": "setting", "config_key": "default_warehouse", "config_value": "PLA0000000000N1", "config_type": "text"},
+	{"id": 4, "config_code": "setting", "config_key": "default_country", "config_value": "EU", "config_type": "text"},
+	{"id": 5, "config_code": "setting", "config_key": "default_lang", "config_value": "en", "config_type": "text"},
+	{"id": 6, "config_code": "setting", "config_key": "default_currency", "config_value": "EUR", "config_type": "text"},
+	{"id": 7, "config_code": "setting", "config_key": "default_deadline", "config_value": "8", "config_type": "integer"},
+	{"id": 8, "config_code": "setting", "config_key": "default_paidtype", "config_value": "PAID_TRANSFER", "config_type": "text"},
+	{"id": 9, "config_code": "setting", "config_key": "default_unit", "config_value": "piece", "config_type": "text"},
+	{"id": 10, "config_code": "setting", "config_key": "default_taxcode", "config_value": "VAT20", "config_type": "text"},
+	{"id": 11, "config_code": "setting", "config_key": "orientation", "config_value": "Portrait", "config_type": "text"},
+	{"id": 12, "config_code": "setting", "config_key": "orientation", "config_value": "Landscape", "config_type": "text"},
+	{"id": 13, "config_code": "setting", "config_key": "paper_size", "config_value": "A3", "config_type": "text"},
+	{"id": 14, "config_code": "setting", "config_key": "paper_size", "config_value": "A4", "config_type": "text"},
+	{"id": 15, "config_code": "setting", "config_key": "paper_size", "config_value": "A5", "config_type": "text"},
+	{"id": 16, "config_code": "setting", "config_key": "paper_size", "config_value": "Letter", "config_type": "text"},
+	{"id": 17, "config_code": "setting", "config_key": "paper_size", "config_value": "Legal", "config_type": "text"},
 }
 
 var testTableResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt ResponseEvent) (re ResponseEvent) {
@@ -1662,6 +1685,28 @@ func TestTable(cc ClientComponent) []TestComponent {
 				SortCol:       "name",
 				SortAsc:       true,
 				Unsortable:    true,
+			}},
+		{
+			Label:         "Editable table 2",
+			ComponentType: ComponentTypeTable,
+			Component: &Table{
+				BaseComponent: BaseComponent{
+					Id:           id + "_table_editable2",
+					EventURL:     eventURL,
+					OnResponse:   testTableResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
+				},
+				Rows: testTableRows2,
+				//Fields:            testTableFields,
+				Pagination:        PaginationTypeBottom,
+				PageSize:          10,
+				TableFilter:       true,
+				FilterPlaceholder: "Placeholder text",
+				AddIcon:           IconCheck,
+				AddItem:           true,
+				Editable:          true,
+				//EditIndex:         1,
 			}},
 	}
 }

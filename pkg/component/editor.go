@@ -315,6 +315,12 @@ func testEditorViews() []EditorView {
 			Icon:  IconUser,
 			Badge: "3",
 		},
+		{
+			Key:   "setting",
+			Label: "Setting rows",
+			Icon:  IconCog,
+			Badge: "17",
+		},
 	}
 }
 
@@ -416,6 +422,30 @@ func testEditorTable(key string) []Table {
 				},
 				Rows:        testBrowserRows["customer"](),
 				RowSelected: true,
+			},
+		}
+	}
+	if key == "setting" {
+		return []Table{
+			{
+				BaseComponent: BaseComponent{
+					Name: "config_data",
+				},
+				Fields: []TableField{
+					{Name: "config_code", Label: "Code", ReadOnly: true},
+					{Name: "config_key", Label: "Fieldname", ReadOnly: true},
+					{Name: "config_value", Label: "Value", Required: true},
+				},
+				RowKey:             "id",
+				Rows:               testTableRows2,
+				Pagination:         PaginationTypeTop,
+				PageSize:           10,
+				HidePaginatonSize:  true,
+				RowSelected:        true,
+				TableFilter:        true,
+				Editable:           true,
+				EditDeleteDisabled: true,
+				Unsortable:         false,
 			},
 		}
 	}

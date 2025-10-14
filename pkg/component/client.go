@@ -1092,7 +1092,7 @@ var testClientResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt Res
 	switch evt.Name {
 	case ClientEventTheme, ClientEventSide, LoginEventLang,
 		BrowserEventChangeFilter, BrowserEventAddFilter, BrowserEventSetColumn,
-		EditorEventView, FormEventOK, FormEventCancel:
+		EditorEventView, FormEventOK, FormEventCancel, EditorEventField:
 		return evt
 	case LoginEventLogin:
 		values := ut.ToIM(evt.Value, ut.IM{})
@@ -1350,6 +1350,45 @@ func TestClient(cc ClientComponent) []TestComponent {
 						},
 						"modal": ut.IM{
 							"key": "info",
+						},
+					},
+				},
+				Ticket: Ticket{
+					SessionID:  "1234567890",
+					AuthMethod: "password",
+					Database:   "demo",
+					User:       ut.IM{"username": "admin"},
+					Expiry:     time.Now().Add(time.Hour * 24),
+				},
+				ClientLabels:    testClientLabels,
+				ClientLogin:     testClientLogin,
+				ClientMenu:      testClientMenu,
+				ClientSideBar:   testClientSideBar,
+				ClientSearch:    testClientSearch,
+				ClientBrowser:   testClientBrowser,
+				ClientEditor:    testClientEditor,
+				ClientForm:      testClientForm,
+				ClientModalForm: testClientModalForm,
+			},
+		},
+		{
+			Label:         "Settings",
+			ComponentType: ComponentTypeClient,
+			Component: &Client{
+				BaseComponent: BaseComponent{
+					Id:           id + "settings",
+					EventURL:     eventURL,
+					OnResponse:   testClientResponse,
+					RequestValue: requestValue,
+					RequestMap:   requestMap,
+					Data: ut.IM{
+						"search": ut.IM{
+							"view":   "customer_simple",
+							"simple": true,
+						},
+						"editor": ut.IM{
+							"key":  "setting",
+							"view": "setting",
 						},
 					},
 				},
