@@ -13,14 +13,14 @@ import (
 	"time"
 )
 
-// IM is a map[string]interface{} type short alias
-type IM = map[string]interface{}
+// IM is a map[string]any type short alias
+type IM = map[string]any
 
 // SM is a map[string]string type short alias
 type SM = map[string]string
 
 // ToString - safe string conversion
-func ToString(value interface{}, defValue string) string {
+func ToString(value any, defValue string) string {
 	if stringValue, valid := value.(string); valid {
 		if stringValue == "" {
 			return defValue
@@ -59,7 +59,7 @@ func StringLimit(value string, length int64) string {
 }
 
 // ToFloat - safe float64 conversion
-func ToFloat(value interface{}, defValue float64) float64 {
+func ToFloat(value any, defValue float64) float64 {
 	if floatValue, valid := value.(float64); valid {
 		if floatValue == 0 {
 			return defValue
@@ -93,7 +93,7 @@ func ToFloat(value interface{}, defValue float64) float64 {
 }
 
 // ToInteger - safe int64 conversion
-func ToInteger(value interface{}, defValue int64) int64 {
+func ToInteger(value any, defValue int64) int64 {
 	if intValue, valid := value.(int64); valid {
 		if intValue == 0 {
 			return defValue
@@ -127,7 +127,7 @@ func ToInteger(value interface{}, defValue int64) int64 {
 }
 
 // ToBoolean - safe bool conversion
-func ToBoolean(value interface{}, defValue bool) bool {
+func ToBoolean(value any, defValue bool) bool {
 	if boolValue, valid := value.(bool); valid {
 		return boolValue
 	}
@@ -165,7 +165,7 @@ func ToBoolean(value interface{}, defValue bool) bool {
 	return defValue
 }
 
-func ToIMA(value interface{}, defValue []IM) []IM {
+func ToIMA(value any, defValue []IM) []IM {
 	if imaValue, valid := value.([]IM); valid {
 		return imaValue
 	}
@@ -178,7 +178,7 @@ func ToIMA(value interface{}, defValue []IM) []IM {
 		}
 		return iRows
 	}
-	if ifaValue, valid := value.([]interface{}); valid {
+	if ifaValue, valid := value.([]any); valid {
 		for _, ifRow := range ifaValue {
 			if im, valid := ifRow.(IM); valid {
 				iRows = append(iRows, im)
@@ -222,22 +222,31 @@ func StringToDateTime(value string) (time.Time, error) {
 }
 
 // ConvertFromReader - convert io.Reader to interface
-func ConvertFromReader(data io.Reader, result interface{}) error {
+func ConvertFromReader(data io.Reader, result any) error {
 	return json.NewDecoder(data).Decode(&result)
 }
 
 // ConvertToByte - convert interface to []byte
-func ConvertToByte(data interface{}) ([]byte, error) {
+func ConvertToByte(data any) ([]byte, error) {
 	return json.Marshal(data)
 }
 
 // ConvertFromByte - convert []byte to interface
-func ConvertFromByte(data []byte, result interface{}) error {
+func ConvertFromByte(data []byte, result any) error {
 	return json.Unmarshal(data, result)
 }
 
-// ToIM - safe map[string]interface{} conversion
-func ToIM(im interface{}, defValue IM) (result IM) {
+// ConvertToType - convert interface to any type
+func ConvertToType(data any, result any) (err error) {
+	var dt []byte
+	if dt, err = ConvertToByte(data); err == nil {
+		err = ConvertFromByte(dt, result)
+	}
+	return err
+}
+
+// ToIM - safe map[string]any conversion
+func ToIM(im any, defValue IM) (result IM) {
 	if im == nil {
 		return defValue
 	}
@@ -248,7 +257,7 @@ func ToIM(im interface{}, defValue IM) (result IM) {
 }
 
 // ToSM - safe map[string]string conversion
-func ToSM(sm interface{}, defValue SM) (result SM) {
+func ToSM(sm any, defValue SM) (result SM) {
 	if sm == nil {
 		return defValue
 	}
@@ -258,13 +267,13 @@ func ToSM(sm interface{}, defValue SM) (result SM) {
 	return defValue
 }
 
-// ILtoSL - convert []interface{} to []string
-func ILtoSL(ivalue interface{}) []string {
+// ILtoSL - convert []any to []string
+func ILtoSL(ivalue any) []string {
 	result := []string{}
 	switch value := ivalue.(type) {
 	case []string:
 		result = append(result, value...)
-	case []interface{}:
+	case []any:
 		for _, v := range value {
 			result = append(result, ToString(v, ""))
 		}
@@ -288,9 +297,9 @@ func ILtoSL(ivalue interface{}) []string {
 	return result
 }
 
-// IMToSM - convert map[string]interface{} to map[string]string
+// IMToSM - convert map[string]any to map[string]string
 func IMToSM(im IM) SM {
-	checkBaseType := func(value interface{}) bool {
+	checkBaseType := func(value any) bool {
 		switch value.(type) {
 		case string, int, int32, int64, float32, float64, bool, time.Time:
 			return true
@@ -358,7 +367,7 @@ func MergeIM(baseMap, valueMap IM) IM {
 }
 
 // ToBoolMap - safe map[string]bool conversion
-func ToBoolMap(im interface{}, defValue map[string]bool) (result map[string]bool) {
+func ToBoolMap(im any, defValue map[string]bool) (result map[string]bool) {
 	result = map[string]bool{}
 	if im == nil {
 		return defValue

@@ -26,6 +26,46 @@ var ClientIcoMap map[string][]string = map[string][]string{
 }
 
 /*
+ClientInterface is an interface that defines the methods for a Client UI components.
+*/
+type ClientInterface interface {
+	/* Custom login form. The function is called before each display of the Client component if it also affects the
+	display of the [Login] component.
+	*/
+	Login(labels ut.SM, config ut.IM) Login
+	/* Custom main menu. The function is called before each display of the Client component if it also affects the
+	display of the [MenuBar] component.
+	*/
+	Menu(labels ut.SM, config ut.IM) MenuBar
+	/* Custom side bar. The function is called before each display of the Client component if it also affects the
+	display of the [SideBar] component.
+	*/
+	SideBar(moduleKey string, labels ut.SM, data ut.IM) SideBar
+	/* Custom search form. The function is called before each display of the Client component if it also affects the
+	display of the [Search] component.
+	*/
+	Search(view string, labels ut.SM, searchData ut.IM) Search
+	/* Custom advanced search component. The function is called before each display of the Client component if it also affects the
+	display of the [Browser] component.
+	*/
+	Browser(view string, labels ut.SM, searchData ut.IM) Browser
+	/* Custom editor component. The function is called before each display of the Client component if it also affects the
+	display of the [Editor] component.
+	*/
+	Editor(editorKey, viewName string, labels ut.SM, editorData ut.IM) Editor
+	/* Custom simple form. The function is called before each display of the Client component if it also affects the
+	display of the [Form] component.
+	*/
+	Form(editorKey, formKey string, labels ut.SM, data ut.IM) (form Form)
+	/* Custom modal form. The function is called before each display of the Client component if it also affects the
+	display of the modal [Form] component.
+	*/
+	Modal(formKey string, labels ut.SM, data ut.IM) (form Form)
+	// Custom UI and any message text.
+	Labels(lang string) ut.SM
+}
+
+/*
 The [Client] Login Ticket struct represents a user authentication ticket with various properties.
 */
 type Ticket struct {
@@ -101,41 +141,8 @@ type Client struct {
 	SideBarVisibility string `json:"sidebar_visibility"`
 	// Specifies whether the main menu is hidden. Default value: false
 	HideMenu bool `json:"hide_menu"`
-	// Custom UI and any message text.
-	ClientLabels func(lang string) ut.SM `json:"-"`
-	/* Custom main menu. The function is called before each display of the Client component if it also affects the
-	display of the [MenuBar] component.
-	*/
-	ClientMenu func(labels ut.SM, config ut.IM) MenuBar `json:"-"`
-	/* Custom side bar. The function is called before each display of the Client component if it also affects the
-	display of the [SideBar] component.
-	*/
-	ClientSideBar func(
-		moduleKey string, labels ut.SM, data ut.IM) SideBar `json:"-"`
-	/* Custom login form. The function is called before each display of the Client component if it also affects the
-	display of the [Login] component.
-	*/
-	ClientLogin func(labels ut.SM, config ut.IM) Login `json:"-"`
-	/* Custom search form. The function is called before each display of the Client component if it also affects the
-	display of the [Search] component.
-	*/
-	ClientSearch func(viewName string, labels ut.SM, searchData ut.IM) Search `json:"-"`
-	/* Custom advanced search component. The function is called before each display of the Client component if it also affects the
-	display of the [Browser] component.
-	*/
-	ClientBrowser func(viewName string, labels ut.SM, searchData ut.IM) Browser `json:"-"`
-	/* Custom editor component. The function is called before each display of the Client component if it also affects the
-	display of the [Editor] component.
-	*/
-	ClientEditor func(editorKey, viewName string, labels ut.SM, editorData ut.IM) Editor `json:"-"`
-	/* Custom modal form. The function is called before each display of the Client component if it also affects the
-	display of the modal [Form] component.
-	*/
-	ClientModalForm func(formKey string, labels ut.SM, data ut.IM) Form `json:"-"`
-	/* Custom simple form. The function is called before each display of the Client component if it also affects the
-	display of the [Form] component.
-	*/
-	ClientForm func(editorKey, formKey string, labels ut.SM, data ut.IM) Form `json:"-"`
+	// Custom UI and any message text functions for the Client component.
+	CustomFunctions ClientInterface `json:"-"`
 }
 
 /*
@@ -155,15 +162,7 @@ func (cli *Client) Properties() ut.IM {
 			"login_buttons":      cli.LoginButtons,
 			"hide_side_bar":      cli.HideSideBar,
 			"hide_menu":          cli.HideMenu,
-			"client_labels":      cli.ClientLabels,
-			"client_menu":        cli.ClientMenu,
-			"client_side_bar":    cli.ClientSideBar,
-			"client_login":       cli.ClientLogin,
-			"client_search":      cli.ClientSearch,
-			"client_browser":     cli.ClientBrowser,
-			"client_editor":      cli.ClientEditor,
-			"client_modal_form":  cli.ClientModalForm,
-			"client_form":        cli.ClientForm,
+			"custom_functions":   cli.CustomFunctions,
 		})
 }
 
@@ -505,8 +504,8 @@ func (cli *Client) GetSearchVisibleColumns(icols map[string]bool) (cols map[stri
 The Labels function retrieves the labels that are used in the client.
 */
 func (cli *Client) Labels() ut.SM {
-	if cli.ClientLabels != nil {
-		return cli.ClientLabels(cli.Lang)
+	if cli.CustomFunctions != nil {
+		return cli.CustomFunctions.Labels(cli.Lang)
 	}
 	return ut.SM{}
 }
@@ -571,8 +570,8 @@ func (cli *Client) getComponent(name string) (html template.HTML, err error) {
 	ccMap := map[string]func() ClientComponent{
 		"main_menu": func() ClientComponent {
 			mnu := MenuBar{}
-			if cli.ClientMenu != nil {
-				mnu = cli.ClientMenu(labels, config)
+			if cli.CustomFunctions != nil {
+				mnu = cli.CustomFunctions.Menu(labels, config)
 			}
 			mnu.BaseComponent = ccBase(mnu.Data)
 			mnu.SetProperty("side_bar", !cli.HideSideBar)
@@ -593,8 +592,8 @@ func (cli *Client) getComponent(name string) (html template.HTML, err error) {
 				moduleKey = ut.ToString(stateData["key"], "")
 			}
 			sb := SideBar{}
-			if cli.ClientSideBar != nil {
-				sb = cli.ClientSideBar(moduleKey, labels,
+			if cli.CustomFunctions != nil {
+				sb = cli.CustomFunctions.SideBar(moduleKey, labels,
 					ut.MergeIM(stateData, ut.IM{"config": config}))
 			}
 			sb.BaseComponent = ccBase(sb.Data)
@@ -603,8 +602,8 @@ func (cli *Client) getComponent(name string) (html template.HTML, err error) {
 		},
 		"login": func() ClientComponent {
 			lgn := Login{}
-			if cli.ClientLogin != nil {
-				lgn = cli.ClientLogin(labels, config)
+			if cli.CustomFunctions != nil {
+				lgn = cli.CustomFunctions.Login(labels, config)
 			}
 			lgn.BaseComponent = ccBase(lgn.Data)
 			lgn.SetProperty("auth_buttons", cli.LoginButtons)
@@ -619,8 +618,8 @@ func (cli *Client) getComponent(name string) (html template.HTML, err error) {
 		},
 		"search": func() ClientComponent {
 			sea := Search{}
-			if cli.ClientSearch != nil {
-				sea = cli.ClientSearch(stateKey, labels,
+			if cli.CustomFunctions != nil {
+				sea = cli.CustomFunctions.Search(stateKey, labels,
 					ut.MergeIM(stateData, ut.IM{"config": config}))
 			}
 			sea.BaseComponent = ccBase(sea.Data)
@@ -629,8 +628,8 @@ func (cli *Client) getComponent(name string) (html template.HTML, err error) {
 		},
 		"browser": func() ClientComponent {
 			bro := Browser{}
-			if cli.ClientBrowser != nil {
-				bro = cli.ClientBrowser(ut.ToString(stateData["view"], ""), labels,
+			if cli.CustomFunctions != nil {
+				bro = cli.CustomFunctions.Browser(ut.ToString(stateData["view"], ""), labels,
 					ut.MergeIM(stateData, ut.IM{"config": config}))
 			}
 			bro.BaseComponent = ccBase(bro.Data)
@@ -639,9 +638,13 @@ func (cli *Client) getComponent(name string) (html template.HTML, err error) {
 			return &bro
 		},
 		"editor": func() ClientComponent {
-			edi := Editor{}
-			if cli.ClientEditor != nil {
-				edi = cli.ClientEditor(stateKey, ut.ToString(stateData["view"], ""), labels,
+			edi := Editor{
+				Views:  []EditorView{},
+				Rows:   []Row{},
+				Tables: []Table{},
+			}
+			if cli.CustomFunctions != nil {
+				edi = cli.CustomFunctions.Editor(stateKey, ut.ToString(stateData["view"], ""), labels,
 					ut.MergeIM(stateData, ut.IM{"config": config}))
 			}
 			edi.BaseComponent = ccBase(edi.Data)
@@ -650,8 +653,8 @@ func (cli *Client) getComponent(name string) (html template.HTML, err error) {
 		"modal": func() ClientComponent {
 			frm := Form{}
 			modalData := ut.ToIM(cli.Data["modal"], ut.IM{})
-			if cli.ClientModalForm != nil {
-				frm = cli.ClientModalForm(ut.ToString(modalData["key"], ""), labels,
+			if cli.CustomFunctions != nil {
+				frm = cli.CustomFunctions.Modal(ut.ToString(modalData["key"], ""), labels,
 					ut.MergeIM(ut.ToIM(modalData["data"], ut.IM{}), ut.IM{"config": config}))
 			}
 			frm.BaseComponent = ccBase(frm.Data)
@@ -662,8 +665,8 @@ func (cli *Client) getComponent(name string) (html template.HTML, err error) {
 		"form": func() ClientComponent {
 			formData := ut.ToIM(stateData["form"], ut.IM{})
 			frm := Form{}
-			if cli.ClientForm != nil {
-				frm = cli.ClientForm(
+			if cli.CustomFunctions != nil {
+				frm = cli.CustomFunctions.Form(
 					ut.ToString(stateData["key"], ""), stateKey,
 					labels, ut.MergeIM(ut.ToIM(formData["data"], ut.IM{}), ut.IM{"config": config}))
 			}
@@ -729,7 +732,9 @@ func (cli *Client) SetConfigValue(key string, value any) {
 The SetEditor function sets the editor data and view state.
 */
 func (cli *Client) SetEditor(editorKey, viewName string, data ut.IM) {
-	editorData := ut.MergeIM(data, ut.IM{"key": editorKey, "view": viewName})
+	var values ut.IM
+	ut.ConvertToType(data, &values)
+	editorData := ut.MergeIM(values, ut.IM{"key": editorKey, "view": viewName})
 	cli.Data["editor"] = editorData
 	cli.SetProperty("data", ut.MergeIM(cli.Data, ut.IM{"editor": editorData}))
 	cli.CleanComponent("login")
@@ -750,7 +755,9 @@ func (cli *Client) ResetEditor() {
 The SetSearch function sets the search data and view state.
 */
 func (cli *Client) SetSearch(viewName string, data ut.IM, simple bool) {
-	cli.Data["search"] = ut.MergeIM(data, ut.IM{"view": viewName, "simple": simple})
+	var values ut.IM
+	ut.ConvertToType(data, &values)
+	cli.Data["search"] = ut.MergeIM(values, ut.IM{"view": viewName, "simple": simple})
 	delete(cli.Data, "editor")
 	cli.SetProperty("data", cli.Data)
 	cli.SetProperty("sidebar_visibility", SideBarVisibilityAuto)
@@ -762,12 +769,14 @@ func (cli *Client) SetSearch(viewName string, data ut.IM, simple bool) {
 The SetForm function sets the form or modal data and view state.
 */
 func (cli *Client) SetForm(formKey string, data ut.IM, index int64, modal bool) {
+	var values ut.IM
+	ut.ConvertToType(data, &values)
 	if modal {
-		cli.Data["modal"] = ut.IM{"key": formKey, "data": data}
+		cli.Data["modal"] = ut.IM{"key": formKey, "data": values}
 	} else {
 		editorData := ut.ToIM(cli.Data["editor"], ut.IM{})
 		delete(editorData, "form")
-		cli.Data["editor"] = ut.MergeIM(editorData, ut.IM{"form": ut.IM{"key": formKey, "data": data, "index": index}})
+		cli.Data["editor"] = ut.MergeIM(editorData, ut.IM{"form": ut.IM{"key": formKey, "data": values, "index": index}})
 	}
 	cli.SetProperty("data", cli.Data)
 }
@@ -1005,7 +1014,7 @@ func testClientSideBar(moduleKey string, labels ut.SM, data ut.IM) SideBar {
 	return sb
 }
 
-func testClientSearch(viewName string, labels ut.SM, searchData ut.IM) Search {
+func testClientSearch(_ string, labels ut.SM, _ ut.IM) Search {
 	search := Search{
 		Fields:            testSearchFields,
 		Title:             labels["mnu_search_simple"],
@@ -1017,7 +1026,7 @@ func testClientSearch(viewName string, labels ut.SM, searchData ut.IM) Search {
 	return search
 }
 
-func testClientBrowser(viewName string, labels ut.SM, searchData ut.IM) Browser {
+func testClientBrowser(viewName string, labels ut.SM, _ ut.IM) Browser {
 	bro := Browser{
 		Table: Table{
 			TableFilter:       true,
@@ -1042,7 +1051,7 @@ func testClientBrowser(viewName string, labels ut.SM, searchData ut.IM) Browser 
 	return bro
 }
 
-func testClientEditor(editorKey, viewName string, labels ut.SM, editorData ut.IM) Editor {
+func testClientEditor(_, viewName string, labels ut.SM, _ ut.IM) Editor {
 	edi := Editor{
 		Title:  labels["editor_title"],
 		Icon:   IconEdit,
@@ -1054,7 +1063,7 @@ func testClientEditor(editorKey, viewName string, labels ut.SM, editorData ut.IM
 	return edi
 }
 
-func testClientForm(editorKey, formKey string, labels ut.SM, data ut.IM) (form Form) {
+func testClientForm(_, _ string, labels ut.SM, _ ut.IM) (form Form) {
 	return Form{
 		Title:      labels["settings_title"],
 		BodyRows:   testFormBodyRows("multiple_input"),
@@ -1063,7 +1072,7 @@ func testClientForm(editorKey, formKey string, labels ut.SM, data ut.IM) (form F
 	}
 }
 
-func testClientModalForm(formKey string, labels ut.SM, data ut.IM) (form Form) {
+func testClientModalForm(_ string, labels ut.SM, _ ut.IM) (form Form) {
 	return Form{
 		Title:      labels["info_title"],
 		BodyRows:   testFormBodyRows("info"),
@@ -1144,6 +1153,44 @@ var testClientResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt Res
 	return toast(evt.Name)
 }
 
+type testCustomFunctions struct{}
+
+func (c *testCustomFunctions) Login(labels ut.SM, config ut.IM) Login {
+	return testClientLogin(labels, config)
+}
+
+func (c *testCustomFunctions) Menu(labels ut.SM, config ut.IM) MenuBar {
+	return testClientMenu(labels, config)
+}
+
+func (c *testCustomFunctions) SideBar(moduleKey string, labels ut.SM, data ut.IM) SideBar {
+	return testClientSideBar(moduleKey, labels, data)
+}
+
+func (c *testCustomFunctions) Search(viewName string, labels ut.SM, searchData ut.IM) Search {
+	return testClientSearch(viewName, labels, searchData)
+}
+
+func (c *testCustomFunctions) Browser(viewName string, labels ut.SM, searchData ut.IM) Browser {
+	return testClientBrowser(viewName, labels, searchData)
+}
+
+func (c *testCustomFunctions) Editor(editorKey, viewName string, labels ut.SM, editorData ut.IM) Editor {
+	return testClientEditor(editorKey, viewName, labels, editorData)
+}
+
+func (c *testCustomFunctions) Form(editorKey, formKey string, labels ut.SM, data ut.IM) (form Form) {
+	return testClientForm(editorKey, formKey, labels, data)
+}
+
+func (c *testCustomFunctions) Modal(formKey string, labels ut.SM, data ut.IM) (form Form) {
+	return testClientModalForm(formKey, labels, data)
+}
+
+func (c *testCustomFunctions) Labels(lang string) ut.SM {
+	return testClientLabels(lang)
+}
+
 // [Client] test and demo data
 func TestClient(cc ClientComponent) []TestComponent {
 	id := ut.ToString(cc.GetProperty("id"), "")
@@ -1171,15 +1218,7 @@ func TestClient(cc ClientComponent) []TestComponent {
 					SessionID: "SES012345",
 					Database:  "demo",
 				},
-				ClientLabels:    testClientLabels,
-				ClientLogin:     testClientLogin,
-				ClientMenu:      testClientMenu,
-				ClientSideBar:   testClientSideBar,
-				ClientSearch:    testClientSearch,
-				ClientBrowser:   testClientBrowser,
-				ClientEditor:    testClientEditor,
-				ClientForm:      testClientForm,
-				ClientModalForm: testClientModalForm,
+				CustomFunctions: &testCustomFunctions{},
 			},
 		},
 		{
@@ -1206,15 +1245,7 @@ func TestClient(cc ClientComponent) []TestComponent {
 					User:       ut.IM{"username": "admin"},
 					Expiry:     ztm,
 				},
-				ClientLabels:    testClientLabels,
-				ClientLogin:     testClientLogin,
-				ClientMenu:      testClientMenu,
-				ClientSideBar:   testClientSideBar,
-				ClientSearch:    testClientSearch,
-				ClientBrowser:   testClientBrowser,
-				ClientEditor:    testClientEditor,
-				ClientForm:      testClientForm,
-				ClientModalForm: testClientModalForm,
+				CustomFunctions: &testCustomFunctions{},
 			},
 		},
 		{
@@ -1235,15 +1266,7 @@ func TestClient(cc ClientComponent) []TestComponent {
 					},
 				},
 				LoginDisabled:   true,
-				ClientLabels:    testClientLabels,
-				ClientLogin:     testClientLogin,
-				ClientMenu:      testClientMenu,
-				ClientSideBar:   testClientSideBar,
-				ClientSearch:    testClientSearch,
-				ClientBrowser:   testClientBrowser,
-				ClientEditor:    testClientEditor,
-				ClientForm:      testClientForm,
-				ClientModalForm: testClientModalForm,
+				CustomFunctions: &testCustomFunctions{},
 			},
 		},
 		{
@@ -1274,15 +1297,7 @@ func TestClient(cc ClientComponent) []TestComponent {
 					User:       ut.IM{"username": "admin"},
 					Expiry:     time.Now().Add(time.Hour * 24),
 				},
-				ClientLabels:    testClientLabels,
-				ClientLogin:     testClientLogin,
-				ClientMenu:      testClientMenu,
-				ClientSideBar:   testClientSideBar,
-				ClientSearch:    testClientSearch,
-				ClientBrowser:   testClientBrowser,
-				ClientEditor:    testClientEditor,
-				ClientForm:      testClientForm,
-				ClientModalForm: testClientModalForm,
+				CustomFunctions: &testCustomFunctions{},
 			},
 		},
 		{
@@ -1316,15 +1331,7 @@ func TestClient(cc ClientComponent) []TestComponent {
 					Expiry:     time.Now().Add(time.Hour * 24),
 				},
 				HideSideBar:     true,
-				ClientLabels:    testClientLabels,
-				ClientLogin:     testClientLogin,
-				ClientMenu:      testClientMenu,
-				ClientSideBar:   testClientSideBar,
-				ClientSearch:    testClientSearch,
-				ClientBrowser:   testClientBrowser,
-				ClientEditor:    testClientEditor,
-				ClientForm:      testClientForm,
-				ClientModalForm: testClientModalForm,
+				CustomFunctions: &testCustomFunctions{},
 			},
 		},
 		{
@@ -1360,15 +1367,7 @@ func TestClient(cc ClientComponent) []TestComponent {
 					User:       ut.IM{"username": "admin"},
 					Expiry:     time.Now().Add(time.Hour * 24),
 				},
-				ClientLabels:    testClientLabels,
-				ClientLogin:     testClientLogin,
-				ClientMenu:      testClientMenu,
-				ClientSideBar:   testClientSideBar,
-				ClientSearch:    testClientSearch,
-				ClientBrowser:   testClientBrowser,
-				ClientEditor:    testClientEditor,
-				ClientForm:      testClientForm,
-				ClientModalForm: testClientModalForm,
+				CustomFunctions: &testCustomFunctions{},
 			},
 		},
 		{
@@ -1399,15 +1398,7 @@ func TestClient(cc ClientComponent) []TestComponent {
 					User:       ut.IM{"username": "admin"},
 					Expiry:     time.Now().Add(time.Hour * 24),
 				},
-				ClientLabels:    testClientLabels,
-				ClientLogin:     testClientLogin,
-				ClientMenu:      testClientMenu,
-				ClientSideBar:   testClientSideBar,
-				ClientSearch:    testClientSearch,
-				ClientBrowser:   testClientBrowser,
-				ClientEditor:    testClientEditor,
-				ClientForm:      testClientForm,
-				ClientModalForm: testClientModalForm,
+				CustomFunctions: &testCustomFunctions{},
 			},
 		},
 	}

@@ -1,3 +1,6 @@
+## 1.7.48
+- Client component: move custom ui functions to CustomFunctions interface
+
 ## 1.7.47
 - Table component: table editing row index bug fixes
 

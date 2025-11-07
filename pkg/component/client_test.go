@@ -79,15 +79,7 @@ func TestClient_Validation(t *testing.T) {
 		LoginButtons      []LoginAuthButton
 		HideSideBar       bool
 		HideMenu          bool
-		ClientLabels      func(lang string) ut.SM
-		ClientMenu        func(labels ut.SM, config ut.IM) MenuBar
-		ClientSideBar     func(moduleKey string, labels ut.SM, data ut.IM) SideBar
-		ClientLogin       func(labels ut.SM, config ut.IM) Login
-		ClientSearch      func(viewName string, labels ut.SM, searchData ut.IM) Search
-		ClientBrowser     func(viewName string, labels ut.SM, searchData ut.IM) Browser
-		ClientEditor      func(editorKey, viewName string, labels ut.SM, editorData ut.IM) Editor
-		ClientModalForm   func(formKey string, labels ut.SM, data ut.IM) Form
-		ClientForm        func(editorKey, formKey string, labels ut.SM, data ut.IM) Form
+		CustomFunctions   ClientInterface
 	}
 	type args struct {
 		propName  string
@@ -130,15 +122,7 @@ func TestClient_Validation(t *testing.T) {
 				LoginButtons:      tt.fields.LoginButtons,
 				HideSideBar:       tt.fields.HideSideBar,
 				HideMenu:          tt.fields.HideMenu,
-				ClientLabels:      tt.fields.ClientLabels,
-				ClientMenu:        tt.fields.ClientMenu,
-				ClientSideBar:     tt.fields.ClientSideBar,
-				ClientLogin:       tt.fields.ClientLogin,
-				ClientSearch:      tt.fields.ClientSearch,
-				ClientBrowser:     tt.fields.ClientBrowser,
-				ClientEditor:      tt.fields.ClientEditor,
-				ClientModalForm:   tt.fields.ClientModalForm,
-				ClientForm:        tt.fields.ClientForm,
+				CustomFunctions:   tt.fields.CustomFunctions,
 			}
 			if got := cli.Validation(tt.args.propName, tt.args.propValue); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Client.Validation() = %v, want %v", got, tt.want)
@@ -160,15 +144,7 @@ func TestClient_OnRequest(t *testing.T) {
 		LoginButtons      []LoginAuthButton
 		HideSideBar       bool
 		HideMenu          bool
-		ClientLabels      func(lang string) ut.SM
-		ClientMenu        func(labels ut.SM, config ut.IM) MenuBar
-		ClientSideBar     func(moduleKey string, labels ut.SM, data ut.IM) SideBar
-		ClientLogin       func(labels ut.SM, config ut.IM) Login
-		ClientSearch      func(viewName string, labels ut.SM, searchData ut.IM) Search
-		ClientBrowser     func(viewName string, labels ut.SM, searchData ut.IM) Browser
-		ClientEditor      func(editorKey, viewName string, labels ut.SM, editorData ut.IM) Editor
-		ClientModalForm   func(formKey string, labels ut.SM, data ut.IM) Form
-		ClientForm        func(editorKey, formKey string, labels ut.SM, data ut.IM) Form
+		CustomFunctions   ClientInterface
 	}
 	type args struct {
 		te TriggerEvent
@@ -214,15 +190,7 @@ func TestClient_OnRequest(t *testing.T) {
 				LoginButtons:      tt.fields.LoginButtons,
 				HideSideBar:       tt.fields.HideSideBar,
 				HideMenu:          tt.fields.HideMenu,
-				ClientLabels:      tt.fields.ClientLabels,
-				ClientMenu:        tt.fields.ClientMenu,
-				ClientSideBar:     tt.fields.ClientSideBar,
-				ClientLogin:       tt.fields.ClientLogin,
-				ClientSearch:      tt.fields.ClientSearch,
-				ClientBrowser:     tt.fields.ClientBrowser,
-				ClientEditor:      tt.fields.ClientEditor,
-				ClientModalForm:   tt.fields.ClientModalForm,
-				ClientForm:        tt.fields.ClientForm,
+				CustomFunctions:   tt.fields.CustomFunctions,
 			}
 			cli.OnRequest(tt.args.te)
 		})
@@ -242,15 +210,7 @@ func TestClient_response(t *testing.T) {
 		LoginButtons      []LoginAuthButton
 		HideSideBar       bool
 		HideMenu          bool
-		ClientLabels      func(lang string) ut.SM
-		ClientMenu        func(labels ut.SM, config ut.IM) MenuBar
-		ClientSideBar     func(moduleKey string, labels ut.SM, data ut.IM) SideBar
-		ClientLogin       func(labels ut.SM, config ut.IM) Login
-		ClientSearch      func(viewName string, labels ut.SM, searchData ut.IM) Search
-		ClientBrowser     func(viewName string, labels ut.SM, searchData ut.IM) Browser
-		ClientEditor      func(editorKey, viewName string, labels ut.SM, editorData ut.IM) Editor
-		ClientModalForm   func(formKey string, labels ut.SM, data ut.IM) Form
-		ClientForm        func(editorKey, formKey string, labels ut.SM, data ut.IM) Form
+		CustomFunctions   ClientInterface
 	}
 	type args struct {
 		evt ResponseEvent
@@ -564,15 +524,7 @@ func TestClient_response(t *testing.T) {
 				LoginButtons:      tt.fields.LoginButtons,
 				HideSideBar:       tt.fields.HideSideBar,
 				HideMenu:          tt.fields.HideMenu,
-				ClientLabels:      tt.fields.ClientLabels,
-				ClientMenu:        tt.fields.ClientMenu,
-				ClientSideBar:     tt.fields.ClientSideBar,
-				ClientLogin:       tt.fields.ClientLogin,
-				ClientSearch:      tt.fields.ClientSearch,
-				ClientBrowser:     tt.fields.ClientBrowser,
-				ClientEditor:      tt.fields.ClientEditor,
-				ClientModalForm:   tt.fields.ClientModalForm,
-				ClientForm:        tt.fields.ClientForm,
+				CustomFunctions:   tt.fields.CustomFunctions,
 			}
 			cli.response(tt.args.evt)
 		})
@@ -592,15 +544,7 @@ func TestClient_GetSearchVisibleColumns(t *testing.T) {
 		LoginButtons      []LoginAuthButton
 		HideSideBar       bool
 		HideMenu          bool
-		ClientLabels      func(lang string) ut.SM
-		ClientMenu        func(labels ut.SM, config ut.IM) MenuBar
-		ClientSideBar     func(moduleKey string, labels ut.SM, data ut.IM) SideBar
-		ClientLogin       func(labels ut.SM, config ut.IM) Login
-		ClientSearch      func(viewName string, labels ut.SM, searchData ut.IM) Search
-		ClientBrowser     func(viewName string, labels ut.SM, searchData ut.IM) Browser
-		ClientEditor      func(editorKey, viewName string, labels ut.SM, editorData ut.IM) Editor
-		ClientModalForm   func(formKey string, labels ut.SM, data ut.IM) Form
-		ClientForm        func(editorKey, formKey string, labels ut.SM, data ut.IM) Form
+		CustomFunctions   ClientInterface
 	}
 	type args struct {
 		icols map[string]bool
@@ -700,15 +644,7 @@ func TestClient_GetSearchVisibleColumns(t *testing.T) {
 				LoginButtons:      tt.fields.LoginButtons,
 				HideSideBar:       tt.fields.HideSideBar,
 				HideMenu:          tt.fields.HideMenu,
-				ClientLabels:      tt.fields.ClientLabels,
-				ClientMenu:        tt.fields.ClientMenu,
-				ClientSideBar:     tt.fields.ClientSideBar,
-				ClientLogin:       tt.fields.ClientLogin,
-				ClientSearch:      tt.fields.ClientSearch,
-				ClientBrowser:     tt.fields.ClientBrowser,
-				ClientEditor:      tt.fields.ClientEditor,
-				ClientModalForm:   tt.fields.ClientModalForm,
-				ClientForm:        tt.fields.ClientForm,
+				CustomFunctions:   tt.fields.CustomFunctions,
 			}
 			if gotCols := cli.GetSearchVisibleColumns(tt.args.icols); !reflect.DeepEqual(gotCols, tt.wantCols) {
 				t.Errorf("Client.GetSearchVisibleColumns() = %v, want %v", gotCols, tt.wantCols)
@@ -730,15 +666,7 @@ func TestClient_Labels(t *testing.T) {
 		LoginButtons      []LoginAuthButton
 		HideSideBar       bool
 		HideMenu          bool
-		ClientLabels      func(lang string) ut.SM
-		ClientMenu        func(labels ut.SM, config ut.IM) MenuBar
-		ClientSideBar     func(moduleKey string, labels ut.SM, data ut.IM) SideBar
-		ClientLogin       func(labels ut.SM, config ut.IM) Login
-		ClientSearch      func(viewName string, labels ut.SM, searchData ut.IM) Search
-		ClientBrowser     func(viewName string, labels ut.SM, searchData ut.IM) Browser
-		ClientEditor      func(editorKey, viewName string, labels ut.SM, editorData ut.IM) Editor
-		ClientModalForm   func(formKey string, labels ut.SM, data ut.IM) Form
-		ClientForm        func(editorKey, formKey string, labels ut.SM, data ut.IM) Form
+		CustomFunctions   ClientInterface
 	}
 	tests := []struct {
 		name   string
@@ -769,15 +697,7 @@ func TestClient_Labels(t *testing.T) {
 				LoginButtons:      tt.fields.LoginButtons,
 				HideSideBar:       tt.fields.HideSideBar,
 				HideMenu:          tt.fields.HideMenu,
-				ClientLabels:      tt.fields.ClientLabels,
-				ClientMenu:        tt.fields.ClientMenu,
-				ClientSideBar:     tt.fields.ClientSideBar,
-				ClientLogin:       tt.fields.ClientLogin,
-				ClientSearch:      tt.fields.ClientSearch,
-				ClientBrowser:     tt.fields.ClientBrowser,
-				ClientEditor:      tt.fields.ClientEditor,
-				ClientModalForm:   tt.fields.ClientModalForm,
-				ClientForm:        tt.fields.ClientForm,
+				CustomFunctions:   tt.fields.CustomFunctions,
 			}
 			if got := cli.Labels(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Client.Labels() = %v, want %v", got, tt.want)
@@ -799,15 +719,7 @@ func TestClient_GetSearchFilters(t *testing.T) {
 		LoginButtons      []LoginAuthButton
 		HideSideBar       bool
 		HideMenu          bool
-		ClientLabels      func(lang string) ut.SM
-		ClientMenu        func(labels ut.SM, config ut.IM) MenuBar
-		ClientSideBar     func(moduleKey string, labels ut.SM, data ut.IM) SideBar
-		ClientLogin       func(labels ut.SM, config ut.IM) Login
-		ClientSearch      func(viewName string, labels ut.SM, searchData ut.IM) Search
-		ClientBrowser     func(viewName string, labels ut.SM, searchData ut.IM) Browser
-		ClientEditor      func(editorKey, viewName string, labels ut.SM, editorData ut.IM) Editor
-		ClientModalForm   func(formKey string, labels ut.SM, data ut.IM) Form
-		ClientForm        func(editorKey, formKey string, labels ut.SM, data ut.IM) Form
+		CustomFunctions   ClientInterface
 	}
 	type args struct {
 		value     string
@@ -943,15 +855,7 @@ func TestClient_GetSearchFilters(t *testing.T) {
 				LoginButtons:      tt.fields.LoginButtons,
 				HideSideBar:       tt.fields.HideSideBar,
 				HideMenu:          tt.fields.HideMenu,
-				ClientLabels:      tt.fields.ClientLabels,
-				ClientMenu:        tt.fields.ClientMenu,
-				ClientSideBar:     tt.fields.ClientSideBar,
-				ClientLogin:       tt.fields.ClientLogin,
-				ClientSearch:      tt.fields.ClientSearch,
-				ClientBrowser:     tt.fields.ClientBrowser,
-				ClientEditor:      tt.fields.ClientEditor,
-				ClientModalForm:   tt.fields.ClientModalForm,
-				ClientForm:        tt.fields.ClientForm,
+				CustomFunctions:   tt.fields.CustomFunctions,
 			}
 			if gotFilters := cli.GetSearchFilters(tt.args.value, tt.args.cfFilters); !reflect.DeepEqual(gotFilters, tt.wantFilters) {
 				t.Errorf("Client.GetSearchFilters() = %v, want %v", gotFilters, tt.wantFilters)
@@ -973,15 +877,7 @@ func TestClient_CleanComponent(t *testing.T) {
 		LoginButtons      []LoginAuthButton
 		HideSideBar       bool
 		HideMenu          bool
-		ClientLabels      func(lang string) ut.SM
-		ClientMenu        func(labels ut.SM, config ut.IM) MenuBar
-		ClientSideBar     func(moduleKey string, labels ut.SM, data ut.IM) SideBar
-		ClientLogin       func(labels ut.SM, config ut.IM) Login
-		ClientSearch      func(viewName string, labels ut.SM, searchData ut.IM) Search
-		ClientBrowser     func(viewName string, labels ut.SM, searchData ut.IM) Browser
-		ClientEditor      func(editorKey, viewName string, labels ut.SM, editorData ut.IM) Editor
-		ClientModalForm   func(formKey string, labels ut.SM, data ut.IM) Form
-		ClientForm        func(editorKey, formKey string, labels ut.SM, data ut.IM) Form
+		CustomFunctions   ClientInterface
 	}
 	type args struct {
 		name string
@@ -1020,15 +916,7 @@ func TestClient_CleanComponent(t *testing.T) {
 				LoginButtons:      tt.fields.LoginButtons,
 				HideSideBar:       tt.fields.HideSideBar,
 				HideMenu:          tt.fields.HideMenu,
-				ClientLabels:      tt.fields.ClientLabels,
-				ClientMenu:        tt.fields.ClientMenu,
-				ClientSideBar:     tt.fields.ClientSideBar,
-				ClientLogin:       tt.fields.ClientLogin,
-				ClientSearch:      tt.fields.ClientSearch,
-				ClientBrowser:     tt.fields.ClientBrowser,
-				ClientEditor:      tt.fields.ClientEditor,
-				ClientModalForm:   tt.fields.ClientModalForm,
-				ClientForm:        tt.fields.ClientForm,
+				CustomFunctions:   tt.fields.CustomFunctions,
 			}
 			cli.CleanComponent(tt.args.name)
 		})
@@ -1048,15 +936,7 @@ func TestClient_Msg(t *testing.T) {
 		LoginButtons      []LoginAuthButton
 		HideSideBar       bool
 		HideMenu          bool
-		ClientLabels      func(lang string) ut.SM
-		ClientMenu        func(labels ut.SM, config ut.IM) MenuBar
-		ClientSideBar     func(moduleKey string, labels ut.SM, data ut.IM) SideBar
-		ClientLogin       func(labels ut.SM, config ut.IM) Login
-		ClientSearch      func(viewName string, labels ut.SM, searchData ut.IM) Search
-		ClientBrowser     func(viewName string, labels ut.SM, searchData ut.IM) Browser
-		ClientEditor      func(editorKey, viewName string, labels ut.SM, editorData ut.IM) Editor
-		ClientModalForm   func(formKey string, labels ut.SM, data ut.IM) Form
-		ClientForm        func(editorKey, formKey string, labels ut.SM, data ut.IM) Form
+		CustomFunctions   ClientInterface
 	}
 	type args struct {
 		labelID string
@@ -1085,16 +965,13 @@ func TestClient_Msg(t *testing.T) {
 				BaseComponent: BaseComponent{
 					Data: ut.IM{},
 				},
-				ClientLabels: func(lang string) ut.SM {
-					return ut.SM{
-						"login": "login",
-					}
-				},
+				CustomFunctions: &testCustomFunctions{},
+				Lang:            "en",
 			},
 			args: args{
-				labelID: "login",
+				labelID: "title_login",
 			},
-			want: "login",
+			want: "Demo Client",
 		},
 	}
 	for _, tt := range tests {
@@ -1111,15 +988,7 @@ func TestClient_Msg(t *testing.T) {
 				LoginButtons:      tt.fields.LoginButtons,
 				HideSideBar:       tt.fields.HideSideBar,
 				HideMenu:          tt.fields.HideMenu,
-				ClientLabels:      tt.fields.ClientLabels,
-				ClientMenu:        tt.fields.ClientMenu,
-				ClientSideBar:     tt.fields.ClientSideBar,
-				ClientLogin:       tt.fields.ClientLogin,
-				ClientSearch:      tt.fields.ClientSearch,
-				ClientBrowser:     tt.fields.ClientBrowser,
-				ClientEditor:      tt.fields.ClientEditor,
-				ClientModalForm:   tt.fields.ClientModalForm,
-				ClientForm:        tt.fields.ClientForm,
+				CustomFunctions:   tt.fields.CustomFunctions,
 			}
 			if got := cli.Msg(tt.args.labelID); got != tt.want {
 				t.Errorf("Client.Msg() = %v, want %v", got, tt.want)
@@ -1141,15 +1010,7 @@ func TestClient_SetConfigValue(t *testing.T) {
 		LoginButtons      []LoginAuthButton
 		HideSideBar       bool
 		HideMenu          bool
-		ClientLabels      func(lang string) ut.SM
-		ClientMenu        func(labels ut.SM, config ut.IM) MenuBar
-		ClientSideBar     func(moduleKey string, labels ut.SM, data ut.IM) SideBar
-		ClientLogin       func(labels ut.SM, config ut.IM) Login
-		ClientSearch      func(viewName string, labels ut.SM, searchData ut.IM) Search
-		ClientBrowser     func(viewName string, labels ut.SM, searchData ut.IM) Browser
-		ClientEditor      func(editorKey, viewName string, labels ut.SM, editorData ut.IM) Editor
-		ClientModalForm   func(formKey string, labels ut.SM, data ut.IM) Form
-		ClientForm        func(editorKey, formKey string, labels ut.SM, data ut.IM) Form
+		CustomFunctions   ClientInterface
 	}
 	type args struct {
 		key   string
@@ -1187,15 +1048,7 @@ func TestClient_SetConfigValue(t *testing.T) {
 				LoginButtons:      tt.fields.LoginButtons,
 				HideSideBar:       tt.fields.HideSideBar,
 				HideMenu:          tt.fields.HideMenu,
-				ClientLabels:      tt.fields.ClientLabels,
-				ClientMenu:        tt.fields.ClientMenu,
-				ClientSideBar:     tt.fields.ClientSideBar,
-				ClientLogin:       tt.fields.ClientLogin,
-				ClientSearch:      tt.fields.ClientSearch,
-				ClientBrowser:     tt.fields.ClientBrowser,
-				ClientEditor:      tt.fields.ClientEditor,
-				ClientModalForm:   tt.fields.ClientModalForm,
-				ClientForm:        tt.fields.ClientForm,
+				CustomFunctions:   tt.fields.CustomFunctions,
 			}
 			cli.SetConfigValue(tt.args.key, tt.args.value)
 		})
@@ -1215,15 +1068,7 @@ func TestClient_CloseModal(t *testing.T) {
 		HideSideBar       bool
 		SideBarVisibility string
 		HideMenu          bool
-		ClientLabels      func(lang string) ut.SM
-		ClientMenu        func(labels ut.SM, config ut.IM) MenuBar
-		ClientSideBar     func(moduleKey string, labels ut.SM, data ut.IM) SideBar
-		ClientLogin       func(labels ut.SM, config ut.IM) Login
-		ClientSearch      func(viewName string, labels ut.SM, searchData ut.IM) Search
-		ClientBrowser     func(viewName string, labels ut.SM, searchData ut.IM) Browser
-		ClientEditor      func(editorKey, viewName string, labels ut.SM, editorData ut.IM) Editor
-		ClientModalForm   func(formKey string, labels ut.SM, data ut.IM) Form
-		ClientForm        func(editorKey, formKey string, labels ut.SM, data ut.IM) Form
+		CustomFunctions   ClientInterface
 	}
 	tests := []struct {
 		name   string
@@ -1259,15 +1104,7 @@ func TestClient_CloseModal(t *testing.T) {
 				HideSideBar:       tt.fields.HideSideBar,
 				SideBarVisibility: tt.fields.SideBarVisibility,
 				HideMenu:          tt.fields.HideMenu,
-				ClientLabels:      tt.fields.ClientLabels,
-				ClientMenu:        tt.fields.ClientMenu,
-				ClientSideBar:     tt.fields.ClientSideBar,
-				ClientLogin:       tt.fields.ClientLogin,
-				ClientSearch:      tt.fields.ClientSearch,
-				ClientBrowser:     tt.fields.ClientBrowser,
-				ClientEditor:      tt.fields.ClientEditor,
-				ClientModalForm:   tt.fields.ClientModalForm,
-				ClientForm:        tt.fields.ClientForm,
+				CustomFunctions:   tt.fields.CustomFunctions,
 			}
 			cli.CloseModal()
 		})
