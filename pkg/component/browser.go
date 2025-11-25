@@ -145,6 +145,10 @@ type Browser struct {
 	totalFields []BrowserTotalField
 }
 
+func (bro *Browser) SetBrowserFilterComp(comp []SelectOption) {
+	browserFilterComp = comp
+}
+
 /*
 Returns all properties of the [Browser]
 */
