@@ -141,7 +141,9 @@ type Browser struct {
 	// Multiple type column filter definitions
 	MetaFields map[string]BrowserMetaField `json:"meta_fields"`
 	// The texts of the labels of the controls
-	Labels      ut.SM `json:"labels"`
+	Labels ut.SM `json:"labels"`
+	// List of filter criteria options
+	FilterComp  []SelectOption `json:"filter_comp"`
 	totalFields []BrowserTotalField
 }
 
@@ -173,6 +175,7 @@ func (bro *Browser) Properties() ut.IM {
 			"hide_filters":    bro.HideFilters,
 			"meta_fields":     bro.MetaFields,
 			"labels":          bro.Labels,
+			"filter_comp":     bro.FilterComp,
 		})
 }
 
@@ -274,6 +277,9 @@ func (bro *Browser) Validation(propName string, propValue interface{}) interface
 				value = browserDefaultLabel
 			}
 			return value
+		},
+		"filter_comp": func() interface{} {
+			return SelectOptionRangeValidation(propValue, browserFilterComp)
 		},
 		"views": func() interface{} {
 			return SelectOptionRangeValidation(propValue, bro.Views)
@@ -411,6 +417,10 @@ func (bro *Browser) SetProperty(propName string, propValue interface{}) interfac
 			bro.Labels = bro.Validation(propName, propValue).(ut.SM)
 			return bro.Labels
 		},
+		"filter_comp": func() interface{} {
+			bro.FilterComp = bro.Validation(propName, propValue).([]SelectOption)
+			return bro.FilterComp
+		},
 		"target": func() interface{} {
 			bro.Target = bro.Validation(propName, propValue).(string)
 			return bro.Target
@@ -523,7 +533,7 @@ func (bro *Browser) filterEvent(evt ResponseEvent) (re ResponseEvent) {
 		if ut.ToString(evtData["name"], "") == "field" {
 			rows := ut.ToIMA(evt.Trigger.GetProperty("rows"), []ut.IM{})
 			field := ut.ToString(evtData["value"], "")
-			rows[filterIndex]["comp"] = browserFilterComp[0].Value
+			rows[filterIndex]["comp"] = bro.filterCompOptions(TableFieldTypeString)[0].Value
 			rows[filterIndex]["comp_options"] = bro.filterCompOptions(bro.getFilterType(field))
 			rows[filterIndex]["value"] = bro.defaultFilterValue(bro.getFilterType(field))
 			rows[filterIndex]["value_meta"] = bro.getFilterType(field)
@@ -591,7 +601,8 @@ func (bro *Browser) response(evt ResponseEvent) (re ResponseEvent) {
 				if len(bro.Fields) > 0 {
 					filters := bro.GetProperty("filters").([]BrowserFilter)
 					filters = append(filters, BrowserFilter{
-						Field: bro.Fields[0].Name, Comp: browserFilterComp[0].Value,
+						Field: bro.Fields[0].Name,
+						Comp:  bro.filterCompOptions(bro.Fields[0].FieldType)[0].Value,
 						Value: bro.defaultFilterValue(bro.Fields[0].FieldType),
 					})
 					bro.SetProperty("filters", filters)
@@ -737,12 +748,16 @@ func (bro *Browser) getComponentTable() *Table {
 }
 
 func (bro *Browser) filterCompOptions(ftype string) []SelectOption {
+	filterComp := browserFilterComp
+	if len(bro.FilterComp) > 1 {
+		filterComp = bro.FilterComp
+	}
 	if !slices.Contains([]string{
 		TableFieldTypeDate, TableFieldTypeDateTime, TableFieldTypeTime, TableFieldTypeInteger,
 		TableFieldTypeNumber}, ftype) {
-		return browserFilterComp[0:2]
+		return filterComp[0:2]
 	}
-	return browserFilterComp
+	return filterComp
 }
 
 func (bro *Browser) filterTable() *Table {
@@ -1333,6 +1348,14 @@ func TestBrowser(cc ClientComponent) []TestComponent {
 				Filters:        testBrowserFilters["customer"](),
 				MetaFields:     testBrowserMetaFields["customer"](),
 				HideFilters:    map[string]bool{"status": true},
+				FilterComp: []SelectOption{
+					{Value: "==", Text: "Equal"},
+					{Value: "!=", Text: "Not equal"},
+					{Value: "<", Text: "Less than"},
+					{Value: "<=", Text: "Less than or equal"},
+					{Value: ">", Text: "Greater than"},
+					{Value: ">=", Text: "Greater than or equal"},
+				},
 			}},
 		{
 			Label:         "Meta data",

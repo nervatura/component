@@ -67,4 +67,4 @@ session files or session database:
 - open the http://localhost:5000/ (memory session) 
 - or http://localhost:5000/session (file or database session)
 
-The [Nervatura Admin](https://github.com/nervatura/nervatura) interface of the application is another example of the use of server-side components (session and JWT token, database session and more).
+The [Nervatura Client](https://github.com/nervatura/nervatura) interface of the application is another example of the use of server-side components (session and JWT token, database session and more).

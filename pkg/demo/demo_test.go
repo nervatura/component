@@ -326,7 +326,7 @@ func TestDemo_response(t *testing.T) {
 			},
 			args: args{
 				evt: ct.ResponseEvent{
-					TriggerName: DemoEventTheme,
+					TriggerName: "theme",
 				},
 			},
 		},
@@ -337,7 +337,7 @@ func TestDemo_response(t *testing.T) {
 			},
 			args: args{
 				evt: ct.ResponseEvent{
-					TriggerName: DemoEventViewSize,
+					TriggerName: "view_size",
 				},
 			},
 		},

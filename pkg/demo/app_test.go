@@ -16,7 +16,7 @@ import (
 	"strings"
 	"testing"
 
-	_ "github.com/nervatura/component/pkg/demo/sqltest"
+	_ "github.com/nervatura/component/test/sqltest"
 )
 
 func TestApp_HomeRoute(t *testing.T) {
