@@ -537,6 +537,7 @@ func (bro *Browser) filterEvent(evt ResponseEvent) (re ResponseEvent) {
 			rows[filterIndex]["comp_options"] = bro.filterCompOptions(bro.getFilterType(field))
 			rows[filterIndex]["value"] = bro.defaultFilterValue(bro.getFilterType(field))
 			rows[filterIndex]["value_meta"] = bro.getFilterType(field)
+			rows[filterIndex]["value_options"] = bro.getFilterOptions(field)
 			evt.Trigger.SetProperty("rows", rows)
 		}
 		broEvt = evt
@@ -672,6 +673,16 @@ func (bro *Browser) getFilterType(fieldName string) string {
 	return fieldType
 }
 
+func (bro *Browser) getFilterOptions(fieldName string) (opt []SelectOption) {
+	opt = []SelectOption{}
+	for _, field := range bro.Fields {
+		if field.Name == fieldName && field.Options != nil && len(field.Options) > 0 {
+			opt = field.Options
+		}
+	}
+	return opt
+}
+
 func (bro *Browser) setTotalFields() []BrowserTotalField {
 	total := []BrowserTotalField{}
 	for _, field := range bro.Fields {
@@ -792,6 +803,7 @@ func (bro *Browser) filterTable() *Table {
 			"field": filter.Field,
 			"comp":  filter.Comp, "comp_meta": TableFieldTypeString, "comp_options": bro.filterCompOptions(bro.getFilterType(filter.Field)),
 			"value": filter.Value, "value_meta": bro.getFilterType(filter.Field),
+			"value_options": bro.getFilterOptions(filter.Field),
 		})
 	}
 	tbl := &Table{
@@ -1118,7 +1130,11 @@ var testBrowserFields map[string]func() []TableField = map[string]func() []Table
 			{Name: "custnumber", Label: "Customer No."},
 			{Name: "custname", Label: "Customer Name", FieldType: TableFieldTypeLink},
 			{Name: "taxnumber", Label: "Taxnumber"},
-			{Name: "custtype", Label: "Customer Type"},
+			{Name: "custtype", Label: "Customer Type", Options: []SelectOption{
+				{Value: "company", Text: "Company"},
+				{Value: "private", Text: "Private"},
+				{Value: "other", Text: "Other"},
+			}},
 			{Name: "account", Label: "Account No."},
 			{Name: "notax", Label: "Tax-free", FieldType: TableFieldTypeBool},
 			{Name: "terms", Label: "Payment per.", FieldType: TableFieldTypeNumber},
@@ -1250,6 +1266,7 @@ var testBrowserFilters map[string]func() []BrowserFilter = map[string]func() []B
 			{Field: "custname", Comp: "==", Value: "%Customer%"},
 			{Field: "creditlimit", Comp: ">=", Value: 5},
 			{Field: "inactive", Comp: "==", Value: 0},
+			{Field: "custtype", Comp: "==", Value: "company"},
 		}
 	},
 	"meta": func() []BrowserFilter {
