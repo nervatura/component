@@ -717,7 +717,7 @@ func (bro *Browser) getComponentTable() *Table {
 			Id:        "edit_row",
 			Header:    "",
 			CellStyle: ut.SM{"width": "25px", "padding": "7px 3px 3px 8px"},
-			Cell: func(row ut.IM, col TableColumn, value interface{}, rowIndex int64) template.HTML {
+			Cell: func(row ut.IM, col TableColumn, value interface{}, rowIndex int64, parent *Table) template.HTML {
 				var ico template.HTML
 				ico, _ = bro.getComponent("edit_row", row)
 				return ico

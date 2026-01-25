@@ -247,7 +247,7 @@ func TestButton_OnRequest(t *testing.T) {
 			wantRe: ResponseEvent{
 				Trigger: &Button{},
 				Name:    ButtonEventClick,
-				Value:   "",
+				Value:   "id",
 			},
 		},
 		{
@@ -268,7 +268,7 @@ func TestButton_OnRequest(t *testing.T) {
 			wantRe: ResponseEvent{
 				Trigger: &Button{},
 				Name:    ButtonEventClick,
-				Value:   "",
+				Value:   "id",
 			},
 		},
 	}

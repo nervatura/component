@@ -1,3 +1,6 @@
+## 1.7.51
+- Table component: TableColumn, custom Cell function - add parent Table parameter
+
 ## 1.7.50
 - Browser component: add filter value select options support
 

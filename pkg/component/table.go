@@ -172,7 +172,7 @@ type TableColumn struct {
 	// Original field definition
 	Field TableField `json:"field"`
 	// The cell generator function of the table
-	Cell func(row ut.IM, col TableColumn, value interface{}, rowIndex int64) template.HTML `json:"-"`
+	Cell func(row ut.IM, col TableColumn, value interface{}, rowIndex int64, parent *Table) template.HTML `json:"-"`
 }
 
 /*
@@ -558,7 +558,8 @@ func (tbl *Table) formEvent(evt ResponseEvent) (re ResponseEvent) {
 
 func (tbl *Table) response(evt ResponseEvent) (re ResponseEvent) {
 	tblEvt := ResponseEvent{
-		Trigger: tbl, TriggerName: tbl.Name, Value: evt.Value,
+		Trigger: tbl, TriggerName: tbl.Name,
+		Value: evt.Value, Name: evt.TriggerName,
 		Header: ut.SM{HeaderRetarget: "#" + tbl.Id},
 	}
 	tbl.SetProperty("edit_index", 0)
@@ -610,6 +611,10 @@ func (tbl *Table) response(evt ResponseEvent) (re ResponseEvent) {
 		evtMap[evt.TriggerName]()
 
 	default:
+		data := ut.ToIM(evt.Trigger.GetProperty("data"), ut.IM{})
+		if len(data) > 0 {
+			tblEvt.Value = data
+		}
 	}
 	if tbl.OnResponse != nil {
 		return tbl.OnResponse(tblEvt)
@@ -1053,7 +1058,7 @@ func (tbl *Table) columns() (cols []TableColumn) {
 			setFieldType := map[string]func(){
 				TableFieldTypeNumber: func() {
 					coldef.HeaderStyle["text-align"] = TextAlignRight
-					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}, rowIndex int64) template.HTML {
+					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}, rowIndex int64, parent *Table) template.HTML {
 						style := ut.SM{}
 						if col.Field.Format {
 							style["font-weight"] = "bold"
@@ -1076,7 +1081,7 @@ func (tbl *Table) columns() (cols []TableColumn) {
 					}
 				},
 				TableFieldTypeDateTime: func() {
-					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}, rowIndex int64) template.HTML {
+					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}, rowIndex int64, parent *Table) template.HTML {
 						return tbl.cellFormat("date", cellFormatOptions{
 							Value:        value,
 							Label:        col.Field.Label,
@@ -1089,7 +1094,7 @@ func (tbl *Table) columns() (cols []TableColumn) {
 					}
 				},
 				TableFieldTypeBool: func() {
-					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}, rowIndex int64) template.HTML {
+					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}, rowIndex int64, parent *Table) template.HTML {
 						return tbl.cellFormat("bool", cellFormatOptions{
 							Value:        value,
 							Label:        col.Field.Label,
@@ -1100,7 +1105,7 @@ func (tbl *Table) columns() (cols []TableColumn) {
 					}
 				},
 				TableFieldTypeLink: func() {
-					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}, rowIndex int64) template.HTML {
+					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}, rowIndex int64, parent *Table) template.HTML {
 						return tbl.cellFormat("link", cellFormatOptions{
 							Value:        value,
 							Label:        col.Field.Label,
@@ -1113,7 +1118,7 @@ func (tbl *Table) columns() (cols []TableColumn) {
 					}
 				},
 				TableFieldTypeMeta: func() {
-					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}, rowIndex int64) template.HTML {
+					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}, rowIndex int64, parent *Table) template.HTML {
 						fieldType := tbl.CheckEnumValue(ut.ToString(row[field.Name+"_meta"], ""), TableFieldTypeString, TableMetaType)
 						mResult := map[string]func() template.HTML{
 							TableFieldTypeBool: func() template.HTML {
@@ -1211,7 +1216,7 @@ func (tbl *Table) columns() (cols []TableColumn) {
 					}
 				},
 				TableFieldTypeString: func() {
-					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}, rowIndex int64) template.HTML {
+					coldef.Cell = func(row ut.IM, col TableColumn, value interface{}, rowIndex int64, parent *Table) template.HTML {
 						style := ut.SM{}
 						if color, found := row[col.Field.Name+"_color"].(string); found {
 							style["color"] = color
@@ -1390,7 +1395,7 @@ func (tbl *Table) Render() (html template.HTML, err error) {
 		},
 		"cellValue": func(row ut.IM, col TableColumn, rowIndex int) template.HTML {
 			if col.Cell != nil {
-				return col.Cell(row, col, row[col.Id], int64(rowIndex))
+				return col.Cell(row, col, row[col.Id], int64(rowIndex), tbl)
 			}
 			return template.HTML(ut.ToString(row[col.Id], ""))
 		},
@@ -1449,8 +1454,18 @@ var testTableFields []TableField = []TableField{
 	{Name: "url", FieldType: TableFieldTypeLink, Label: "Homepage", TriggerEvent: true},
 	{Name: "deffield", FieldType: TableFieldTypeMeta, Label: "Multiple type"},
 	{Column: &TableColumn{Id: "editor", Header: "Custom",
-		Cell: func(row ut.IM, col TableColumn, value interface{}, rowIndex int64) template.HTML {
+		Cell: func(row ut.IM, col TableColumn, value interface{}, rowIndex int64, parent *Table) template.HTML {
 			btn := Button{
+				BaseComponent: BaseComponent{
+					Id:           parent.Id + "_editor_" + ut.ToString(rowIndex, ""),
+					Name:         "editor",
+					EventURL:     parent.EventURL,
+					Target:       parent.Id,
+					OnResponse:   parent.response,
+					RequestValue: parent.RequestValue,
+					RequestMap:   parent.RequestMap,
+					Data:         ut.IM{"row": row, "value": value},
+				},
 				ButtonStyle: ButtonStylePrimary, Label: "Hello", Disabled: ut.ToBoolean(row["disabled"], false), Small: true}
 			res, _ := btn.Render()
 			return res

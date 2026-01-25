@@ -230,7 +230,7 @@ If the OnResponse function of the [Button] is implemented, the function calls it
 is processed, otherwise the function's return [ResponseEvent] is the processed [TriggerEvent].
 */
 func (btn *Button) OnRequest(te TriggerEvent) (re ResponseEvent) {
-	value := btn.SetProperty("value", te.Values.Get(te.Id+"_value"))
+	value := btn.SetProperty("value", te.Id)
 	evt := ResponseEvent{
 		Trigger: btn, TriggerName: btn.Name,
 		Name:  ButtonEventClick,

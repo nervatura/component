@@ -560,15 +560,15 @@ func TestTable_response(t *testing.T) {
 			},
 		},
 		{
-			name: "invalid",
+			name: "custom",
 			args: args{
 				evt: ResponseEvent{
 					Trigger: &Table{
 						BaseComponent: BaseComponent{
-							Data: ut.IM{},
+							Data: ut.IM{"row": ut.IM{"string": "a"}, "value": "value"},
 						},
 					},
-					TriggerName: "invalid",
+					TriggerName: "custom",
 				},
 			},
 		},
