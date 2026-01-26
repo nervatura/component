@@ -1460,7 +1460,7 @@ var testTableFields []TableField = []TableField{
 					Id:           parent.Id + "_editor_" + ut.ToString(rowIndex, ""),
 					Name:         "editor",
 					EventURL:     parent.EventURL,
-					Target:       parent.Id,
+					Target:       parent.Target,
 					OnResponse:   parent.response,
 					RequestValue: parent.RequestValue,
 					RequestMap:   parent.RequestMap,
@@ -1534,7 +1534,7 @@ var testTableRows2 []ut.IM = []ut.IM{
 
 var testTableResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt ResponseEvent) (re ResponseEvent) {
 	switch evt.Name {
-	case TableEventAddItem, TableEventEditCell, TableEventRowSelected, TableEventFormChange:
+	case TableEventAddItem, TableEventEditCell, TableEventRowSelected, TableEventFormChange, "editor":
 		re = ResponseEvent{
 			Trigger: &Toast{
 				Type:    ToastTypeInfo,
