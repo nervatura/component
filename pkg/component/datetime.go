@@ -223,6 +223,7 @@ func (dti *DateTime) Render() (html template.HTML, err error) {
 		},
 	}
 	tpl := `<input id="{{ .Id }}" name="{{ .Name }}" type="{{ .Type }}" value="{{ .Value }}"
+	max={{ if eq .Type "date" }}"9999-12-31"{{ else }}"9999-12-31 23:59"{{ end }}
 	{{ if ne .EventURL "" }} hx-post="{{ .EventURL }}" hx-trigger="blur, keyup[keyCode==13]" hx-target="{{ .Target }}" {{ if ne .Sync "none" }} hx-sync="{{ .Sync }}"{{ end }} hx-swap="{{ .Swap }}"{{ end }}
 	{{ if ne .Indicator "none" }} hx-indicator="#{{ .Indicator }}"{{ end }}
 	{{ if .Picker }} onfocus="this.showPicker()"{{ end }}
