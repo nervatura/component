@@ -1,3 +1,7 @@
+## 1.7.52
+- Table component: custom cell event bug fixes
+- Datetime component: fix chrome/edge issue that allows input of 6-digit year
+
 ## 1.7.51
 - Table component: TableColumn, custom Cell function - add parent Table parameter
 

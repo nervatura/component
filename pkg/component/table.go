@@ -556,10 +556,10 @@ func (tbl *Table) formEvent(evt ResponseEvent) (re ResponseEvent) {
 	return tblEvt
 }
 
-func (tbl *Table) response(evt ResponseEvent) (re ResponseEvent) {
+func (tbl *Table) Response(evt ResponseEvent) (re ResponseEvent) {
 	tblEvt := ResponseEvent{
 		Trigger: tbl, TriggerName: tbl.Name,
-		Value: evt.Value, Name: evt.TriggerName,
+		Value: evt.Value, Name: TableEventEditCell,
 		Header: ut.SM{HeaderRetarget: "#" + tbl.Id},
 	}
 	tbl.SetProperty("edit_index", 0)
@@ -613,7 +613,7 @@ func (tbl *Table) response(evt ResponseEvent) (re ResponseEvent) {
 	default:
 		data := ut.ToIM(evt.Trigger.GetProperty("data"), ut.IM{})
 		if len(data) > 0 {
-			tblEvt.Value = data
+			tblEvt.Value = ut.MergeIM(data, ut.IM{"event": evt.Name})
 		}
 	}
 	if tbl.OnResponse != nil {
@@ -629,7 +629,7 @@ func (tbl *Table) getComponent(name string, pageCount int64, data ut.IM) (html t
 				Id: tbl.Id + "_" + name, Name: name,
 				EventURL:     tbl.EventURL,
 				Target:       tbl.Target,
-				OnResponse:   tbl.response,
+				OnResponse:   tbl.Response,
 				RequestValue: tbl.RequestValue,
 				RequestMap:   tbl.RequestMap,
 			},
@@ -645,7 +645,7 @@ func (tbl *Table) getComponent(name string, pageCount int64, data ut.IM) (html t
 				Style:        ut.SM{"border-radius": "0", "margin": "1px 0 2px"},
 				EventURL:     tbl.EventURL,
 				Target:       tbl.Target,
-				OnResponse:   tbl.response,
+				OnResponse:   tbl.Response,
 				RequestValue: tbl.RequestValue,
 				RequestMap:   tbl.RequestMap,
 			},
@@ -692,7 +692,7 @@ func (tbl *Table) getComponent(name string, pageCount int64, data ut.IM) (html t
 					Style:        ut.SM{"padding": "8px 16px", "border-radius": "0", "margin": "1px 0 2px 1px"},
 					EventURL:     tbl.EventURL,
 					Target:       tbl.Target,
-					OnResponse:   tbl.response,
+					OnResponse:   tbl.Response,
 					RequestValue: tbl.RequestValue,
 					RequestMap:   tbl.RequestMap,
 				},
@@ -708,7 +708,7 @@ func (tbl *Table) getComponent(name string, pageCount int64, data ut.IM) (html t
 					EventURL:     tbl.EventURL,
 					Target:       tbl.Target,
 					Data:         data,
-					OnResponse:   tbl.response,
+					OnResponse:   tbl.Response,
 					RequestValue: tbl.RequestValue,
 					RequestMap:   tbl.RequestMap,
 				},
@@ -736,7 +736,7 @@ func (tbl *Table) getComponent(name string, pageCount int64, data ut.IM) (html t
 						EventURL:     tbl.EventURL,
 						Target:       tbl.Target,
 						Data:         data,
-						OnResponse:   tbl.response,
+						OnResponse:   tbl.Response,
 						RequestValue: tbl.RequestValue,
 						RequestMap:   tbl.RequestMap,
 					},
@@ -757,7 +757,7 @@ func (tbl *Table) getComponent(name string, pageCount int64, data ut.IM) (html t
 					EventURL:     tbl.EventURL,
 					Target:       tbl.Target,
 					Data:         data,
-					OnResponse:   tbl.response,
+					OnResponse:   tbl.Response,
 					RequestValue: tbl.RequestValue,
 					RequestMap:   tbl.RequestMap,
 				}}
@@ -1461,7 +1461,7 @@ var testTableFields []TableField = []TableField{
 					Name:         "editor",
 					EventURL:     parent.EventURL,
 					Target:       parent.Target,
-					OnResponse:   parent.response,
+					OnResponse:   parent.Response,
 					RequestValue: parent.RequestValue,
 					RequestMap:   parent.RequestMap,
 					Data:         ut.IM{"row": row, "value": value},
@@ -1534,7 +1534,7 @@ var testTableRows2 []ut.IM = []ut.IM{
 
 var testTableResponse func(evt ResponseEvent) (re ResponseEvent) = func(evt ResponseEvent) (re ResponseEvent) {
 	switch evt.Name {
-	case TableEventAddItem, TableEventEditCell, TableEventRowSelected, TableEventFormChange, "editor":
+	case TableEventAddItem, TableEventEditCell, TableEventRowSelected, TableEventFormChange:
 		re = ResponseEvent{
 			Trigger: &Toast{
 				Type:    ToastTypeInfo,

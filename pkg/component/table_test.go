@@ -595,7 +595,7 @@ func TestTable_response(t *testing.T) {
 				SortAsc:           tt.fields.SortAsc,
 				RowSelected:       tt.fields.RowSelected,
 			}
-			tbl.response(tt.args.evt)
+			tbl.Response(tt.args.evt)
 		})
 	}
 }
