@@ -504,7 +504,7 @@ func (tbl *Table) OnRequest(te TriggerEvent) (re ResponseEvent) {
 					((fieldType != TableFieldTypeLink) || (fieldType == TableFieldTypeLink)) && !field.ReadOnly && te.Values.Has(field.Name) {
 					value := te.Values.Get(field.Name)
 					if fieldType == TableFieldTypeBool {
-						value = ut.ToString(te.Values.Has(field.Name), "false")
+						value = ut.ToString(ut.ToBoolean(value, false), "false")
 					}
 					row[field.Name] = value
 				}
