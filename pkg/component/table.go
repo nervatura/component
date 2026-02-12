@@ -505,7 +505,7 @@ func (tbl *Table) OnRequest(te TriggerEvent) (re ResponseEvent) {
 					(te.Values.Has(field.Name) || fieldType == TableFieldTypeBool) {
 					value := te.Values.Get(field.Name)
 					if fieldType == TableFieldTypeBool {
-						value = ut.ToString(te.Values.Has(field.Name), "false")
+						value = ut.ToString(ut.ToBoolean(value, false), "false")
 					}
 					row[field.Name] = value
 				}

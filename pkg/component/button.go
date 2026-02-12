@@ -84,6 +84,8 @@ type Button struct {
 	Badge string `json:"badge"`
 	// The attribute specifies the form the button belongs to. Only when [Type] is [ButtonTypeSubmit].
 	FormId string `json:"form_id"`
+	// Data
+	DataAttributes ut.SM `json:"data_attributes"`
 }
 
 /*
@@ -107,6 +109,7 @@ func (btn *Button) Properties() ut.IM {
 			"hide_label":      btn.HideLabel,
 			"badge":           btn.Badge,
 			"form_id":         btn.FormId,
+			"data_attributes": btn.DataAttributes,
 		})
 }
 
@@ -215,6 +218,10 @@ func (btn *Button) SetProperty(propName string, propValue interface{}) interface
 			btn.Indicator = btn.Validation(propName, propValue).(string)
 			return btn.Indicator
 		},
+		"data_attributes": func() interface{} {
+			btn.DataAttributes = ut.ToSM(propValue, ut.SM{})
+			return btn.DataAttributes
+		},
 	}
 	if _, found := pm[propName]; found {
 		return btn.SetRequestValue(propName, pm[propName](), []string{})
@@ -281,6 +288,7 @@ func (btn *Button) Render() (html template.HTML, err error) {
 	{{ if ne .Label "" }} aria-label="{{ .Label }}" title="{{ .Label }}"{{ end }}
 	 class="{{ .Align }}{{ if .Small }} small-button{{ end }}{{ if .Full }} full{{ end }}{{ if .Selected }} selected{{ end }}{{ if .HideLabel }} hidelabel{{ end }} {{ customClass }}"
 	{{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}
+	{{ range $key, $value := .DataAttributes }} data-{{ $key }}="{{ $value }}"{{ end }}
 	>{{ if and (ne .Icon "") (ne .Align "right") }}{{ buttonComponent "icon" }}{{ end }}
 	{{ if .LabelComponent }}{{ buttonComponent "label" }}{{ else }}<span>{{ .Label }}</span>{{ end }}
 	{{ if and (ne .Icon "") (eq .Align "right") }}{{ buttonComponent "icon" }}{{ end }}

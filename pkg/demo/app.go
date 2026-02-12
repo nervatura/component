@@ -163,6 +163,7 @@ func (app *App) HomeRoute(w http.ResponseWriter, r *http.Request) {
 		Script: []string{
 			"static/js/htmx.min.js",
 			"static/js/remove-me.js",
+			"static/js/clipboard.js",
 		},
 		HeadLink: []ct.HeadLink{
 			{Rel: "icon", Href: "/static/favicon.svg", Type: "image/svg+xml"},
