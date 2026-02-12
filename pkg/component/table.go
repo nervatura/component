@@ -501,7 +501,8 @@ func (tbl *Table) OnRequest(te TriggerEvent) (re ResponseEvent) {
 			for _, field := range tbl.Fields {
 				fieldType := tbl.CheckEnumValue(ut.ToString(row[field.Name+"_meta"], ""), field.FieldType, TableMetaType)
 				if _, found := row[field.Name]; found &&
-					((fieldType != TableFieldTypeLink) || (fieldType == TableFieldTypeLink)) && !field.ReadOnly && te.Values.Has(field.Name) {
+					((fieldType != TableFieldTypeLink) || (fieldType == TableFieldTypeLink)) && !field.ReadOnly &&
+					(te.Values.Has(field.Name) || fieldType == TableFieldTypeBool) {
 					value := te.Values.Get(field.Name)
 					if fieldType == TableFieldTypeBool {
 						value = ut.ToString(te.Values.Has(field.Name), "false")

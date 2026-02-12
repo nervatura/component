@@ -1,3 +1,6 @@
+## 1.7.53
+- Table component: TableEventFormUpdate boolen type bug fixes
+
 ## 1.7.52
 - Table component: custom cell event bug fixes
 - Datetime component: fix chrome/edge issue that allows input of 6-digit year
