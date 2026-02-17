@@ -84,6 +84,8 @@ type Button struct {
 	Badge string `json:"badge"`
 	// The attribute specifies the form the button belongs to. Only when [Type] is [ButtonTypeSubmit].
 	FormId string `json:"form_id"`
+	// Allow you to embed scripts inline to respond to events directly on an element. Example: "alert('Hello');"
+	OnClick string `json:"on_click"`
 }
 
 /*
@@ -107,6 +109,7 @@ func (btn *Button) Properties() ut.IM {
 			"hide_label":      btn.HideLabel,
 			"badge":           btn.Badge,
 			"form_id":         btn.FormId,
+			"on_click":        btn.OnClick,
 		})
 }
 
@@ -211,6 +214,10 @@ func (btn *Button) SetProperty(propName string, propValue interface{}) interface
 			btn.FormId = ut.ToString(propValue, "")
 			return btn.FormId
 		},
+		"on_click": func() interface{} {
+			btn.OnClick = ut.ToString(propValue, "")
+			return btn.OnClick
+		},
 		"indicator": func() interface{} {
 			btn.Indicator = btn.Validation(propName, propValue).(string)
 			return btn.Indicator
@@ -279,6 +286,7 @@ func (btn *Button) Render() (html template.HTML, err error) {
 	{{ if .Disabled }} disabled{{ end }}
 	{{ if .AutoFocus }} autofocus{{ end }}
 	{{ if ne .Label "" }} aria-label="{{ .Label }}" title="{{ .Label }}"{{ end }}
+	{{ if ne .OnClick "" }} hx-on:click="{{ .OnClick }}"{{ end }}
 	 class="{{ .Align }}{{ if .Small }} small-button{{ end }}{{ if .Full }} full{{ end }}{{ if .Selected }} selected{{ end }}{{ if .HideLabel }} hidelabel{{ end }} {{ customClass }}"
 	{{ if styleMap }} style="{{ range $key, $value := .Style }}{{ $key }}:{{ $value }};{{ end }}"{{ end }}
 	>{{ if and (ne .Icon "") (ne .Align "right") }}{{ buttonComponent "icon" }}{{ end }}
@@ -431,6 +439,19 @@ func TestButton(cc ClientComponent) []TestComponent {
 				ButtonStyle: ButtonStyleBorder,
 				Align:       TextAlignCenter,
 				Label:       "Button style",
+			}},
+		{
+			Label:         "Copy to clipboard",
+			ComponentType: ComponentTypeButton,
+			Component: &Button{
+				BaseComponent: BaseComponent{
+					Id: id + "_button_copy",
+				},
+				ButtonStyle: ButtonStyleDefault,
+				Align:       TextAlignCenter,
+				Label:       "Copy to clipboard",
+				Icon:        IconCopy,
+				OnClick:     "navigator.clipboard.writeText('Copy to clipboard');alert('Copied to clipboard');",
 			}},
 	}
 }

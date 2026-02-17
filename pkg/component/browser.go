@@ -65,10 +65,12 @@ var browserFilterComp []SelectOption = []SelectOption{
 
 // [Browser] filter query filter type
 type BrowserFilter struct {
-	Or    bool        `json:"or"`    // and (False) or (True)
-	Field string      `json:"field"` // Fieldname and alias
-	Comp  string      `json:"comp"`  // ==,!=,<,<=,>,>=
-	Value interface{} `json:"value"`
+	Or         bool        `json:"or"`          // and (False) or (True)
+	BlockStart bool        `json:"block_start"` // extra ( character at the beginning of the filter
+	BlockEnd   bool        `json:"block_end"`   // extra ) character at the end of the filter
+	Field      string      `json:"field"`       // Fieldname and alias
+	Comp       string      `json:"comp"`        // ==,!=,<,<=,>,>=
+	Value      interface{} `json:"value"`
 }
 
 // [Browser] meta data definition

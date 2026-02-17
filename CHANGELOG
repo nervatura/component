@@ -1,3 +1,7 @@
+## 1.7.54
+- Browser component: BrowserFilter add BlockStart, BlockEnd options
+- Button component: add OnClick option (Allow you to embed scripts inline to respond to events directly on an element)
+
 ## 1.7.53
 - Table component: TableEventFormUpdate boolen type bug fixes
 
