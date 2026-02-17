@@ -226,10 +226,12 @@ func (bro *Browser) validationFilters(propValue interface{}) []BrowserFilter {
 		for _, filter := range v {
 			if filterMap, ok := filter.(ut.IM); ok {
 				value = append(value, BrowserFilter{
-					Or:    ut.ToBoolean(filterMap["or"], false),
-					Field: ut.ToString(filterMap["field"], ""),
-					Comp:  ut.ToString(filterMap["comp"], ""),
-					Value: ut.ToString(filterMap["value"], ""),
+					Or:         ut.ToBoolean(filterMap["or"], false),
+					BlockStart: ut.ToBoolean(filterMap["block_start"], false),
+					BlockEnd:   ut.ToBoolean(filterMap["block_end"], false),
+					Field:      ut.ToString(filterMap["field"], ""),
+					Comp:       ut.ToString(filterMap["comp"], ""),
+					Value:      ut.ToString(filterMap["value"], ""),
 				})
 			}
 		}
