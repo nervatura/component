@@ -1,4 +1,4 @@
-## 1.7.54-55
+## 1.7.54-56
 - Browser component: BrowserFilter add BlockStart, BlockEnd options
 - Button component: add OnClick option (Allow you to embed scripts inline to respond to events directly on an element)
 

@@ -514,10 +514,12 @@ func (cli *Client) ToFilters(value string, cfFilters []any) (filters []BrowserFi
 	for _, filter := range cfFilters {
 		if filterMap, valid := filter.(ut.IM); valid {
 			filters = append(filters, BrowserFilter{
-				Or:    ut.ToBoolean(filterMap["or"], false),
-				Field: ut.ToString(filterMap["field"], ""),
-				Comp:  ut.ToString(filterMap["comp"], ""),
-				Value: ut.ToString(filterMap["value"], value),
+				Or:         ut.ToBoolean(filterMap["or"], false),
+				BlockStart: ut.ToBoolean(filterMap["block_start"], false),
+				BlockEnd:   ut.ToBoolean(filterMap["block_end"], false),
+				Field:      ut.ToString(filterMap["field"], ""),
+				Comp:       ut.ToString(filterMap["comp"], ""),
+				Value:      ut.ToString(filterMap["value"], value),
 			})
 		}
 	}
