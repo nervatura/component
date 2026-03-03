@@ -85,8 +85,8 @@ func (app *App) checkSessionTable() (db *sql.DB, err error) {
 }
 
 func (app *App) getSessionValue(db *sql.DB, sessionID string) (value string, err error) {
-	sqlString := fmt.Sprintf("SELECT value FROM %s WHERE id='%s'", sessionTable, sessionID)
-	row := db.QueryRow(sqlString)
+	sqlString := fmt.Sprintf("SELECT value FROM %s WHERE id=?", sessionTable)
+	row := db.QueryRow(sqlString, sessionID)
 	if err = row.Scan(&value); err == sql.ErrNoRows {
 		value = ""
 	}
@@ -99,15 +99,16 @@ func (app *App) SaveDbSession(sessionID string, data any) (err error) {
 	if db, err = app.checkSessionTable(); err == nil {
 		var bin []byte
 		if bin, err = json.Marshal(data); err == nil {
+			var params []any = []any{sessionID, bin, time.Now().Unix()}
 			var sqlString string = fmt.Sprintf(
-				"INSERT INTO %s(id, value, stamp) VALUES('%s', '%s', '%s')",
-				sessionTable, sessionID, bin, time.Now().Format("2006-01-02T15:04:05-0700"))
+				"INSERT INTO %s(id, value, stamp) VALUES(?, ?, ?)", sessionTable)
 			value, _ := app.getSessionValue(db, sessionID)
 			if value != "" {
+				params = []any{bin, sessionID}
 				sqlString = fmt.Sprintf(
-					"UPDATE %s SET value='%s' WHERE id='%s'", sessionTable, bin, sessionID)
+					"UPDATE %s SET value=? WHERE id=?", sessionTable)
 			}
-			_, err = db.Exec(sqlString)
+			_, err = db.Exec(sqlString, params...)
 		}
 	}
 	defer db.Close()

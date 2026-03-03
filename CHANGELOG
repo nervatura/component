@@ -1,3 +1,6 @@
+## 1.7.57
+- Demo application: database session security and stability fixes
+
 ## 1.7.54-56
 - Browser component: BrowserFilter add BlockStart, BlockEnd options
 - Button component: add OnClick option (Allow you to embed scripts inline to respond to events directly on an element)
